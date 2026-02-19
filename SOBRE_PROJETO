@@ -1,0 +1,92 @@
+
+A Zella não é apenas mais um aplicativo de controle de gastos; é um mecanismo de mudança comportamental desenhado para transformar a relação de jovens adultos (18–35 anos) com o dinheiro. Enquanto apps tradicionais focam em planilhas burocráticas, a Zella utiliza a lógica de micro-aprendizado do Duolingo e o feedback visual de jogos como Subway Surfers para tornar a gestão financeira uma jornada progressiva e menos intimidadora.
++2
+
+🎯 Objetivo: Da Inclusão à Saúde Financeira
+O propósito central da Zella é migrar o usuário da simples "inclusão financeira" (ter uma conta bancária) para a saúde financeira real. Isso significa que o objetivo não é apenas registrar transações, mas gerar resultados práticos:
++2
+
+
+Segurança Financeira: Capacidade de cumprir compromissos de curto prazo.
++3
+
+
+Resiliência: Habilidade de absorver choques financeiros, como emergências médicas ou perda de emprego.
++2
+
+
+Controle e Liberdade: Sentir-se confiante nas decisões atuais para alcançar objetivos de longo prazo.
++1
+
+⚙️ Como a Zella Funciona: A Jornada dos Degraus
+O aplicativo organiza a vida do usuário em 6 Degraus, que funcionam como níveis de um jogo, representando o amadurecimento financeiro. A progressão é baseada em comportamento e evidência, não apenas em status social:
++3
+
+
+Respiração (Degrau 1): Foco em parar de piorar e entender para onde o dinheiro está indo.
++1
+
+
+Organização (Degrau 2): Diferenciar gastos essenciais de opcionais para ganhar margem.
+
+
+Estabilidade (Degrau 3): Criar um pequeno fundo de emergência e fechar o mês no azul.
++1
+
+
+Segurança (Degrau 4): Consolidar a proteção financeira e evitar compras por impulso.
++1
+
+
+Consciência (Degrau 5): Fazer o dinheiro trabalhar através de investimentos simples.
++1
+
+
+Autonomia (Degrau 6): Alcançar a liberdade de escolha onde o dinheiro não é mais o mestre.
++1
+
+🎮 Mecanismos e Gamificação
+Para manter o engajamento, a Zella utiliza loops de recompensa rápida e micro-interações de 30 a 90 segundos:
++1
+
+
+Missões Diárias: Pequenas tarefas que geram XP e Moedas.
++1
+
+
+Badges (Símbolos de Conquista): Diferente de prêmios vazios, celebram marcos reais, como criar a primeira reserva.
++1
+
+
+Streaks: Incentivam a constância, fundamental para a mudança de hábito financeiro.
++1
+
+
+Tom Humano: A comunicação é empática e sem julgamentos, combatendo o estresse associado às dívidas.
++1
+
+📱 Visão Geral das Telas (O Mapa do MVP)
+O fluxo da Zella foi desenhado para ser intuitivo e de baixa fricção inicial:
++1
+
+
+Onboarding Diagnóstico: Três perguntas rápidas que definem o Degrau inicial do usuário, sem a necessidade imediata de conectar bancos.
++1
+
+
+Home (Dashboard): O centro de comando, exibindo o Degrau atual, a missão do dia e o progresso visual da jornada.
++1
+
+
+Mapa de Degraus: Uma visualização vertical inspirada em jogos, mostrando onde o usuário está e o que falta para subir de nível.
++1
+
+
+Feed de Missões: Uma biblioteca de ações práticas, desde listar dívidas até comparar investimentos.
++1
+
+
+Registro Rápido: Interface de entrada manual otimizada para gastos e rendas, focada em velocidade (menos de 3 segundos).
+
+
+Área de Dívidas e Metas: Telas específicas para visualizar o "plano de ataque" às dívidas e o progresso do fundo de emergência.

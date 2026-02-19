@@ -10,12 +10,23 @@ interface UserState {
     streak: number
     name: string
 
+    transactions: Transaction[]
+
     // Actions
     completeOnboarding: (step: number, name: string) => void
     addXp: (amount: number) => void
     addCoins: (amount: number) => void
     incrementStreak: () => void
+    addTransaction: (transaction: Transaction) => void
     resetProgress: () => void
+}
+
+export interface Transaction {
+    id: string
+    amount: number
+    category: string
+    type: 'expense' | 'income'
+    date: string
 }
 
 export const useUserStore = create<UserState>()(
@@ -27,12 +38,14 @@ export const useUserStore = create<UserState>()(
             coins: 0,
             streak: 0,
             name: "",
+            transactions: [],
 
             completeOnboarding: (step, name) => set({ hasOnboarded: true, currentStep: step, name }),
             addXp: (amount) => set((state) => ({ xp: state.xp + amount })),
             addCoins: (amount) => set((state) => ({ coins: state.coins + amount })),
             incrementStreak: () => set((state) => ({ streak: state.streak + 1 })),
-            resetProgress: () => set({ hasOnboarded: false, currentStep: 1, xp: 0, coins: 0, streak: 0, name: "" }),
+            addTransaction: (t) => set((state) => ({ transactions: [t, ...state.transactions] })),
+            resetProgress: () => set({ hasOnboarded: false, currentStep: 1, xp: 0, coins: 0, streak: 0, name: "", transactions: [] }),
         }),
         {
             name: 'zella-storage',

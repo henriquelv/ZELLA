@@ -130,13 +130,15 @@ export default function DashboardPage() {
 
             {/* FLOATING ACTION BUTTON */}
             <div className="fixed bottom-24 right-6 z-40">
-                <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="w-14 h-14 bg-gradient-to-r from-primary to-emerald-500 rounded-full shadow-2xl shadow-primary/30 flex items-center justify-center text-white"
-                >
-                    <Plus className="w-8 h-8" />
-                </motion.button>
+                <Link href="/add">
+                    <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="w-14 h-14 bg-gradient-to-r from-primary to-emerald-500 rounded-full shadow-2xl shadow-primary/30 flex items-center justify-center text-white"
+                    >
+                        <Plus className="w-8 h-8" />
+                    </motion.button>
+                </Link>
             </div>
 
             <BottomNav />

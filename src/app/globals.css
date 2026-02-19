@@ -29,74 +29,78 @@
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
-  
+
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
   @keyframes accordion-down {
-    from { height: 0; }
-    to { height: var(--radix-accordion-content-height); }
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--radix-accordion-content-height);
+    }
   }
+
   @keyframes accordion-up {
-    from { height: var(--radix-accordion-content-height); }
-    to { height: 0; }
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+
+    to {
+      height: 0;
+    }
   }
 }
 
 :root {
-  --background: 210 40% 98%; /* Soft White/Blueish */
-  --foreground: 222 47% 11%;
-
-  --primary: 150 100% 35%; /* Vibrant Green/Emerald */
-  --primary-foreground: 210 40% 98%;
-
-  --secondary: 260 100% 65%; /* Vibrant Purple */
-  --secondary-foreground: 210 40% 98%;
-
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 222.2 84% 4.9%;
-
-  --radius: 0.75rem;
-}
-
-.dark {
-  --background: 222.2 84% 4.9%;
+  /* Navy Blue / Deep Charcoal Base */
+  --background: 222 47% 11%;
+  /* #0a192f equivalent-ish */
   --foreground: 210 40% 98%;
+  /* Light text */
 
-  --primary: 150 100% 45%;
-  --primary-foreground: 222.2 47.4% 11.2%;
+  /* Vibrant Mint Green */
+  --primary: 160 100% 40%;
+  /* #00cc88 or similar */
+  --primary-foreground: 222 47% 11%;
+  /* Dark text on mint */
 
-  --secondary: 260 100% 70%;
+  /* Gentle Purple for secondary */
+  --secondary: 250 60% 60%;
   --secondary-foreground: 210 40% 98%;
 
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;
 
-  --accent: 217.2 32.6% 17.5%;
+  --accent: 217 33% 17%;
   --accent-foreground: 210 40% 98%;
 
-  --destructive: 0 62.8% 30.6%;
+  --destructive: 0 84% 60%;
   --destructive-foreground: 210 40% 98%;
 
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 212.7 26.8% 83.9%;
+  --border: 217 33% 20%;
+  --input: 217 33% 20%;
+  --ring: 160 100% 40%;
+  /* Ring matches Primary */
+
+  --radius: 1rem;
+  /* More rounded premium feel */
+}
+
+/* Ensure consistent dark mode since the default is now dark-themed */
+.dark {
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+  /* Same as root because we are enforcing dark theme by default based on prompt */
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }

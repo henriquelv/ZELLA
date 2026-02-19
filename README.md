@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Zella 🚀
 
-## Getting Started
+Zella é uma aplicação de **educação financeira gamificada** focada em transformar a relação de jovens adultos com o dinheiro. Diferente de planilhas chatas, o Zella usa mecânicas de jogos (RPG, Missões, Níveis) para criar hábitos financeiros saudáveis.
 
-First, run the development server:
+## Funcionalidades Principais 🌟
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+*   **Onboarding Diagnóstico**: Identifica o perfil financeiro do usuário e define seu ponto de partida (Degrau).
+*   **Jornada Gamificada**: Um mapa vertical de 6 degraus, indo da "Sobrevivência" à "Autonomia".
+*   **Missões Diárias**: Desafios rápidos (1-15 min) que geram XP e Moedas, focados em ações reais.
+*   **Micro-Game de Classificação**: Uma interface estilo "Tinder" para classificar gastos entre *Essencial* e *Estilo de Vida*, com feedback imediato.
+*   **Design Premium**: Interface moderna, *mobile-first*, com modo escuro e animações fluidas.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Stack Tecnológica 💻
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+*   **Framework**: Next.js 16 (App Router)
+*   **Linguagem**: TypeScript
+*   **Estilização**: Tailwind CSS v4
+*   **Animações**: Framer Motion
+*   **Ícones**: Lucide React
+*   **Estado Local**: Zustand (com Persistência)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Como Rodar Localmente
 
-## Learn More
+1.  Clone o repositório:
+    ```bash
+    git clone https://github.com/henriquelv/ZELLA.git
+    ```
+2.  Instale as dependências:
+    ```bash
+    npm install
+    ```
+3.  Rode o servidor de desenvolvimento:
+    ```bash
+    npm run dev
+    ```
+4.  Acesse `http://localhost:3000`.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+*Desenvolvido com foco em UX e Engajamento.*

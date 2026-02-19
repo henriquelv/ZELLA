@@ -1,46 +1,97 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "lucide-react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { Check, Sparkles } from "lucide-react";
+import { useUserStoreHydrated } from "@/store/useStore";
+// Import Button just for type safety if needed, though not used in splash
+import { Button } from "@/components/ui/button";
 
-export default function Home() {
+export default function SplashPage() {
+  const router = useRouter();
+  const user = useUserStoreHydrated((state) => state);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate initial load / "Respire" moment
+    const timer = setTimeout(() => {
+      setLoading(false);
+
+      // Navigation Logic
+      if (user && user.hasOnboarded) {
+        router.push("/dashboard");
+      } else {
+        router.push("/onboarding");
+      }
+    }, 2500); // 2.5s for the "breath" effect
+
+    return () => clearTimeout(timer);
+  }, [user, router]);
+
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-background to-secondary/10 px-6 text-center">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center relative overflow-hidden">
+      {/* Background Ambience */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-secondary/5 pointer-events-none" />
+
+      {/* Pulsing Glow behind Logo */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="space-y-6 max-w-md"
-      >
-        <div className="relative inline-block">
-          <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary to-secondary opacity-70 blur-lg animate-pulse" />
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-background border shadow-xl mx-auto">
-            <Sparkles className="h-8 w-8 text-primary" />
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.3, 0.6, 0.3],
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        className="absolute w-64 h-64 bg-primary/20 rounded-full blur-3xl"
+      />
+
+      <div className="relative z-10 space-y-8">
+        {/* Logo Container */}
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="flex flex-col items-center"
+        >
+          <div className="relative">
+            <div className="w-20 h-20 bg-gradient-to-tr from-primary to-emerald-300 rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/20 mb-6">
+              <Sparkles className="text-background w-10 h-10" />
+            </div>
           </div>
-        </div>
 
-        <h1 className="text-5xl font-bold tracking-tighter font-heading bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          Zella
-        </h1>
+          <h1 className="text-4xl font-bold font-heading tracking-tight text-foreground">
+            Zella
+          </h1>
+        </motion.div>
 
-        <p className="text-xl text-muted-foreground font-medium leading-relaxed">
-          Sua jornada para a <span className="text-foreground">liberdade financeira</span> começa com um único passo.
-        </p>
+        {/* Microcopy with Fade In */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.8 }}
+          className="space-y-2"
+        >
+          <p className="text-lg font-medium text-muted-foreground">
+            Respire...
+          </p>
+          <p className="text-sm text-muted-foreground/60">
+            Estamos preparando seu próximo passo.
+          </p>
+        </motion.div>
+      </div>
 
-        <div className="pt-8">
-          <Link href="/onboarding">
-            <Button size="lg" variant="premium" className="w-full text-lg group h-14 rounded-2xl">
-              Começar Jornada
-              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-            </Button>
-          </Link>
-        </div>
-
-        <p className="text-xs text-muted-foreground pt-4">
-          Sem planilhas chatas. Apenas progresso real.
-        </p>
+      {/* Footer slogan */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.5, duration: 1 }}
+        className="absolute bottom-10 text-xs text-muted-foreground/40 font-medium uppercase tracking-widest"
+      >
+        Dinheiro sob controle, mente em paz
       </motion.div>
     </main>
   );

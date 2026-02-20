@@ -103,8 +103,8 @@ export default function FinancesPage() {
             <header className="px-6 pt-14 pb-4">
                 <div className="flex justify-between items-end mb-6">
                     <div>
-                        <h1 className="text-3xl font-bold font-heading">Hub Financeiro</h1>
-                        <p className="text-sm text-muted-foreground font-medium mt-1">Sua central de inteligência</p>
+                        <h1 className="text-3xl font-bold font-heading">Sua Base</h1>
+                        <p className="text-sm text-muted-foreground font-medium mt-1">Controle de Recursos e Vazamentos</p>
                     </div>
                 </div>
 
@@ -160,13 +160,13 @@ export default function FinancesPage() {
 
                                     <div className="flex gap-4 mt-6">
                                         <div className="flex-1 bg-emerald-500/10 rounded-xl p-3 border border-emerald-500/20">
-                                            <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider mb-1">Receitas</p>
+                                            <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider mb-1">Conquistas</p>
                                             <p className="text-sm font-bold text-emerald-500">
                                                 + R$ {user.transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0).toFixed(2)}
                                             </p>
                                         </div>
                                         <div className="flex-1 bg-destructive/10 rounded-xl p-3 border border-destructive/20">
-                                            <p className="text-[10px] text-destructive font-bold uppercase tracking-wider mb-1">Despesas</p>
+                                            <p className="text-[10px] text-destructive font-bold uppercase tracking-wider mb-1">Vazamentos</p>
                                             <p className="text-sm font-bold border-destructive text-destructive">
                                                 - R$ {user.transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0).toFixed(2)}
                                             </p>
@@ -201,7 +201,7 @@ export default function FinancesPage() {
                                         <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                                             <PlusCircle className="w-6 h-6" />
                                         </div>
-                                        <h3 className="font-bold text-sm">Nova Receita</h3>
+                                        <h3 className="font-bold text-sm">Registrar Conquista</h3>
                                     </CardContent>
                                 </Card>
 
@@ -213,7 +213,7 @@ export default function FinancesPage() {
                                         <div className="w-12 h-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center group-hover:scale-110 transition-transform">
                                             <MinusCircle className="w-6 h-6" />
                                         </div>
-                                        <h3 className="font-bold text-sm">Nova Despesa</h3>
+                                        <h3 className="font-bold text-sm">Registrar Vazamento</h3>
                                     </CardContent>
                                 </Card>
                             </div>

@@ -10,7 +10,7 @@ export function BottomNav() {
 
     const links = [
         { href: "/dashboard", label: "Home", icon: Home },
-        { href: "/finances", label: "Controle", icon: Wallet },
+        { href: "/finances", label: "Base", icon: Wallet },
         { href: "/missions", label: "Missões", icon: GamepadIcon },
         { href: "/metas", label: "Metas", icon: Target },
         { href: "/profile", label: "Perfil", icon: User },

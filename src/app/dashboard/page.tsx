@@ -29,11 +29,11 @@ import { AppHeader } from "@/components/ui/app-header";
 import { PageLoader } from "@/components/ui/page-loader";
 
 const QUICK_ACTIONS = [
-    { label: "Controle", icon: PiggyBank, href: "/finances", color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { label: "Base", icon: PiggyBank, href: "/finances", color: "text-emerald-500", bg: "bg-emerald-500/10" },
     { label: "Jornada", icon: MapIcon, href: "/journey", color: "text-blue-500", bg: "bg-blue-500/10" },
     { label: "Missões", icon: GamepadIcon, href: "/missions", color: "text-violet-500", bg: "bg-violet-500/10" },
     { label: "Social", icon: Users, href: "/social", color: "text-orange-500", bg: "bg-orange-500/10" },
-    { label: "IA Finanças", icon: Sparkles, href: "/finances", color: "text-primary", bg: "bg-primary/10" },
+    { label: "Scanner IA", icon: Sparkles, href: "/finances", color: "text-primary", bg: "bg-primary/10" },
     { label: "Perfil", icon: Trophy, href: "/profile", color: "text-yellow-500", bg: "bg-yellow-500/10" },
 ];
 
@@ -96,9 +96,9 @@ export default function DashboardPage() {
                                     Missão Atual
                                 </Badge>
                             </div>
-                            <CardTitle className="text-xl leading-tight">Registre o seu dia</CardTitle>
+                            <CardTitle className="text-xl leading-tight">Patrulha Diária</CardTitle>
                             <CardDescription className="text-sm mt-1">
-                                Anote pelo menos 1 despesa ou receita hoje para manter o controle e ganhar +20 XP.
+                                Mapeie pelo menos 1 vazamento ou conquista hoje para fortificar sua base e ganhar +20 XP.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="relative z-10">
@@ -107,7 +107,7 @@ export default function DashboardPage() {
                                 onClick={() => router.push("/finances")}
                             >
                                 <PiggyBank className="w-5 h-5 mr-2" />
-                                Adicionar Registro
+                                Mapear Terreno
                             </Button>
                         </CardContent>
                     </Card>
@@ -142,7 +142,7 @@ export default function DashboardPage() {
                 {/* 3. QUICK ACTIONS GRID */}
                 <section>
                     <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4 px-1">
-                        Acesso Rápido
+                        Ações Rápidas
                     </h2>
                     <div className="grid grid-cols-3 gap-3">
                         {QUICK_ACTIONS.map((action) => (

@@ -47,7 +47,9 @@ export default function SplashPage() {
           router.push("/onboarding");
         }
       } else {
-        router.push("/auth");
+        // Temporarily bypassing login for testing
+        useUserStore.getState().completeOnboarding(1, "Testador");
+        router.push("/dashboard");
       }
       setLoading(false);
     }, 1200); // Reduced from 2s to 1.2s

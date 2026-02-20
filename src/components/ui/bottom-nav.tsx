@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Map, GamepadIcon, Target, Wallet, ShoppingBag } from "lucide-react";
+import { Home, Map, GamepadIcon, Target, Wallet, ShoppingBag, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function BottomNav() {
@@ -13,7 +13,7 @@ export function BottomNav() {
         { href: "/finances", label: "Controle", icon: Wallet },
         { href: "/missions", label: "Missões", icon: GamepadIcon },
         { href: "/metas", label: "Metas", icon: Target },
-        { href: "/shop", label: "Loja", icon: ShoppingBag },
+        { href: "/profile", label: "Perfil", icon: User },
     ];
 
     // Don't show on onboarding or login

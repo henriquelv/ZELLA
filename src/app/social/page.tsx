@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { SetStateAction, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -14,27 +14,29 @@ import {
     Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "../../components/ui/input";
 import { cn } from "@/lib/utils";
 import { useUserStoreHydrated } from "@/store/useStore";
+import { AvatarSelector, AVATARS } from "@/components/ui/avatar-selector";
+import { PageLoader } from "@/components/ui/page-loader";
 
 // --- Types ---
 interface SocialUser {
     id: string;
     name: string;
     xp: number;
-    avatarColor: string;
+    avatarId: string;
     isFriend: boolean;
     rank: number;
 }
 
 // --- Mock Data ---
 const MOCK_USERS: SocialUser[] = [
-    { id: "1", name: "Ana Clara", xp: 12500, avatarColor: "bg-purple-500", isFriend: true, rank: 1 },
-    { id: "2", name: "João Pedro", xp: 11200, avatarColor: "bg-blue-500", isFriend: false, rank: 2 },
-    { id: "3", name: "Mariana Silva", xp: 9800, avatarColor: "bg-pink-500", isFriend: true, rank: 3 },
-    { id: "4", name: "Carlos Eduardo", xp: 8500, avatarColor: "bg-green-500", isFriend: false, rank: 4 },
-    { id: "5", name: "Fernanda Lima", xp: 7200, avatarColor: "bg-orange-500", isFriend: true, rank: 5 },
+    { id: "1", name: "Ana Clara", xp: 12500, avatarId: "alien", isFriend: true, rank: 1 },
+    { id: "2", name: "João Pedro", xp: 11200, avatarId: "robot", isFriend: false, rank: 2 },
+    { id: "3", name: "Mariana Silva", xp: 9800, avatarId: "lion", isFriend: true, rank: 3 },
+    { id: "4", name: "Carlos Eduardo", xp: 8500, avatarId: "dog", isFriend: false, rank: 4 },
+    { id: "5", name: "Fernanda Lima", xp: 7200, avatarId: "default", isFriend: true, rank: 5 },
 ];
 
 const staggerContainer = {
@@ -52,15 +54,20 @@ export default function SocialPage() {
     const currentUser = useUserStoreHydrated((state) => state);
     const [activeTab, setActiveTab] = useState<"ranking" | "friends">("ranking");
     const [searchQuery, setSearchQuery] = useState("");
+    const [isAvatarModalOpen, setAvatarModalOpen] = useState(false);
+
+    if (!currentUser) {
+        return <PageLoader message="Preparando ranking..." />;
+    }
 
     // Merge current user into mock ranking for display
     const rankingList = [
         ...MOCK_USERS,
         {
             id: "me",
-            name: currentUser?.name || "Você",
-            xp: currentUser?.xp || 0,
-            avatarColor: "bg-primary",
+            name: currentUser.name || "Você",
+            xp: currentUser.xp || 0,
+            avatarId: currentUser.activeAvatar || "default",
             isFriend: false,
             rank: 99, // dynamic rank would be calculated in real app
         },
@@ -129,7 +136,7 @@ export default function SocialPage() {
                         placeholder="Buscar usuários..."
                         className="pl-9 bg-card/50 border-white/10 rounded-xl h-11"
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e: { target: { value: SetStateAction<string>; }; }) => setSearchQuery(e.target.value)}
                     />
                 </div>
             </header>
@@ -174,11 +181,14 @@ export default function SocialPage() {
                                     </div>
 
                                     {/* Avatar */}
-                                    <div className={cn(
-                                        "w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shrink-0 shadow-lg",
-                                        user.avatarColor
-                                    )}>
-                                        {user.name.charAt(0)}
+                                    <div
+                                        onClick={() => isMe && setAvatarModalOpen(true)}
+                                        className={cn(
+                                            "w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 shadow-lg transition-all",
+                                            AVATARS.find(a => a.id === user.avatarId)?.color || "bg-primary",
+                                            isMe && "cursor-pointer hover:scale-105 active:scale-95 ring-2 ring-primary ring-offset-2 ring-offset-background"
+                                        )}>
+                                        {AVATARS.find(a => a.id === user.avatarId)?.icon || "👤"}
                                     </div>
 
                                     {/* Info */}
@@ -208,6 +218,8 @@ export default function SocialPage() {
                     </motion.div>
                 </AnimatePresence>
             </main>
+
+            <AvatarSelector isOpen={isAvatarModalOpen} onClose={() => setAvatarModalOpen(false)} />
         </div>
     );
 }

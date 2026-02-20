@@ -6,6 +6,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Bell, Check, Clock, Info, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { PageLoader } from "@/components/ui/page-loader";
+import { useUserStoreHydrated } from "@/store/useStore";
+import { BottomNav } from "@/components/ui/bottom-nav";
 
 // --- Types ---
 interface Notification {
@@ -65,7 +68,12 @@ const staggerItem = {
 
 export default function InboxPage() {
     const router = useRouter();
+    const user = useUserStoreHydrated((state) => state);
     const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
+
+    if (!user) {
+        return <PageLoader message="Buscando mensagens..." />;
+    }
 
     const markAllRead = () => {
         setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
@@ -184,6 +192,7 @@ export default function InboxPage() {
                     )}
                 </AnimatePresence>
             </main>
+            <BottomNav />
         </div>
     );
 }

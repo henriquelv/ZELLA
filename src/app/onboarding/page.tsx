@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { ArrowRight, Check, Trophy, AlertTriangle, ShieldCheck, TrendingUp } from "lucide-react";
 import { useUserStoreHydrated } from "@/store/useStore";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import { steps } from "@/data/steps";
 
 // New Questions per User Spec
@@ -50,15 +51,23 @@ export default function OnboardingPage() {
     const router = useRouter();
     const userStore = useUserStoreHydrated((state) => state);
 
-    const currentQ = questions[currentQuestionIndex];
-    const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+    const currentSafeIndex = Math.min(currentQuestionIndex, questions.length - 1);
+    const currentQ = questions[currentSafeIndex];
+    const progress = ((currentSafeIndex + 1) / questions.length) * 100;
+    const [isTransitioning, setIsTransitioning] = useState(false);
 
     const handleOptionSelect = (value: string) => {
+        if (isTransitioning) return;
+        setIsTransitioning(true);
+
         const newAnswers = { ...answers, [currentQ.id]: value };
         setAnswers(newAnswers);
 
         if (currentQuestionIndex < questions.length - 1) {
-            setTimeout(() => setCurrentQuestionIndex((prev) => prev + 1), 250);
+            setTimeout(() => {
+                setCurrentQuestionIndex((prev) => prev + 1);
+                setIsTransitioning(false);
+            }, 250);
         } else {
             calculateResult(newAnswers);
         }
@@ -102,8 +111,18 @@ export default function OnboardingPage() {
         }, 2000);
     };
 
-    const handleFinish = () => {
+    const handleFinish = async () => {
         if (!name.trim()) return;
+
+        // Try syncing with Supabase if logged in
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData.session) {
+            await supabase.from('profiles').update({
+                name: name,
+                current_step: resultStepId
+            }).eq('id', sessionData.session.user.id);
+        }
+
         if (userStore) {
             userStore.completeOnboarding(resultStepId, name);
             router.push("/dashboard");
@@ -150,8 +169,8 @@ export default function OnboardingPage() {
                                     key={option.value}
                                     variant="outline"
                                     className={`w-full h-auto py-5 px-6 justify-start text-left text-base rounded-2xl border transition-all ${answers[currentQ.id] === option.value
-                                            ? "border-primary bg-primary/10 ring-1 ring-primary text-foreground"
-                                            : "bg-card hover:bg-accent/50 hover:border-primary/30 border-border/50"
+                                        ? "border-primary bg-primary/10 ring-1 ring-primary text-foreground"
+                                        : "bg-card hover:bg-accent/50 hover:border-primary/30 border-border/50"
                                         }`}
                                     onClick={() => handleOptionSelect(option.value)}
                                 >

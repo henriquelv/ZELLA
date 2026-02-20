@@ -55,17 +55,50 @@
 }
 
 :root {
-  /* Deep Navy - matches logo background/text color */
-  --background: 218 60% 9%;
-  --foreground: 210 40% 96%;
+  /* LIGHT MODE (Clean, Modern, Trustworthy) */
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11%;
 
   /* --- ZELLA BRAND BLUE --- */
-  /* Matches the dominant blue in the Z logo gradient (#0056B3 / #0177D6) */
   --primary: 210 100% 42%;
   --primary-foreground: 0 0% 100%;
 
   /* --- ZELLA BRAND GREEN --- */
-  /* Matches the green at the bottom of the Z logo gradient (#3DB34A) */
+  --secondary: 133 52% 45%;
+  --secondary-foreground: 0 0% 100%;
+
+  /* Muted / Cards */
+  --muted: 210 40% 94%;
+  --muted-foreground: 215 16% 47%;
+
+  --accent: 210 40% 92%;
+  --accent-foreground: 222 47% 11%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 210 100% 42%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+
+  --radius: 1rem;
+}
+
+.dark {
+  /* DARK MODE (Deep Navy) */
+  --background: 218 60% 9%;
+  --foreground: 210 40% 96%;
+
+  /* --- ZELLA BRAND BLUE --- */
+  --primary: 210 100% 42%;
+  --primary-foreground: 0 0% 100%;
+
+  /* --- ZELLA BRAND GREEN --- */
   --secondary: 133 52% 45%;
   --secondary-foreground: 0 0% 100%;
 
@@ -87,15 +120,6 @@
   --card-foreground: 210 40% 96%;
   --popover: 218 45% 12%;
   --popover-foreground: 210 40% 96%;
-
-  --radius: 1rem;
-}
-
-/* Ensure consistent dark mode since the default is now dark-themed */
-.dark {
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
-  /* Same as root because we are enforcing dark theme by default based on prompt */
 }
 
 @layer base {

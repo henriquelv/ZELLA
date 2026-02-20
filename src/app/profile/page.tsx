@@ -13,10 +13,13 @@ import {
     Trophy,
     Flame,
     Target,
+    Star,
+    Coins as CoinsIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useUserStoreHydrated } from "@/store/useStore";
+import { XPOrbScene } from "@/components/ui/3d-scenes";
 
 const STATS = [
     { label: "Dias Seguidos", icon: Flame, color: "text-orange-500", bg: "bg-orange-500/10", key: "streak" },
@@ -38,10 +41,24 @@ export default function ProfilePage() {
 
     return (
         <div className="min-h-screen bg-background pb-24">
-            {/* Header / Banner */}
-            <div className="relative h-48 bg-gradient-to-br from-primary via-primary/80 to-secondary/50">
-                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay" />
-                <div className="absolute top-6 right-6">
+            {/* Header / Banner with 3D XP Orbs */}
+            <div className="relative h-52 bg-gradient-to-br from-[#1a3fa8] via-[#2563eb] to-[#16a34a] overflow-hidden">
+                {/* 3D floating orbs */}
+                <div className="absolute inset-0 opacity-70">
+                    <XPOrbScene size={400} />
+                </div>
+                {/* XP + Coins overlay */}
+                <div className="absolute bottom-4 left-5 right-5 flex justify-between items-end">
+                    <div className="flex gap-3">
+                        <div className="bg-white/20 backdrop-blur-sm rounded-2xl px-3 py-2 flex items-center gap-1.5 border border-white/20">
+                            <Star className="w-4 h-4 text-yellow-300" />
+                            <span className="font-bold text-white text-sm">{user.xp.toLocaleString()} XP</span>
+                        </div>
+                        <div className="bg-white/20 backdrop-blur-sm rounded-2xl px-3 py-2 flex items-center gap-1.5 border border-white/20">
+                            <CoinsIcon className="w-4 h-4 text-amber-300" />
+                            <span className="font-bold text-white text-sm">{user.coins} moedas</span>
+                        </div>
+                    </div>
                     <Button
                         variant="ghost"
                         size="icon"

@@ -3,10 +3,17 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Check, Sparkles } from "lucide-react";
-import { useUserStoreHydrated } from "@/store/useStore";
-// Import Button just for type safety if needed, though not used in splash
+import { useUserStoreHydrated, useUserStore } from "@/store/useStore";
+import { supabase } from "@/lib/supabase";
+import { ZellaLogo } from "@/components/ui/logo";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
+
+const ZLogoScene = dynamic(
+  () => import("@/components/ui/3d-scenes").then(m => ({ default: m.ZLogoScene })),
+  { ssr: false, loading: () => <ZellaLogo size="lg" /> }
+);
+
 
 export default function SplashPage() {
   const router = useRouter();
@@ -14,17 +21,36 @@ export default function SplashPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate initial load / "Respire" moment
-    const timer = setTimeout(() => {
-      setLoading(false);
+    // Start redirect timer immediately — don't wait for Supabase
+    const timer = setTimeout(async () => {
+      const { data } = await supabase.auth.getSession();
 
-      // Navigation Logic
-      if (user && user.hasOnboarded) {
-        router.push("/dashboard");
+      // Sync profile in background (non-blocking)
+      if (data.session) {
+        const { user: authUser } = data.session;
+        supabase.from('profiles').select('*').eq('id', authUser.id).single().then(({ data: profile }) => {
+          if (profile) {
+            useUserStore.getState().syncWithSupabase({
+              xp: profile.xp,
+              streak: profile.streak,
+              currentStep: profile.current_step,
+              activeAvatar: profile.active_avatar,
+              unlockedAvatars: profile.unlocked_avatars || ['default'],
+              name: profile.name || ""
+            });
+          }
+        });
+        // Navigate immediately while profile syncs in background
+        if (user && user.hasOnboarded) {
+          router.push("/dashboard");
+        } else {
+          router.push("/onboarding");
+        }
       } else {
-        router.push("/onboarding");
+        router.push("/auth");
       }
-    }, 2500); // 2.5s for the "breath" effect
+      setLoading(false);
+    }, 1200); // Reduced from 2s to 1.2s
 
     return () => clearTimeout(timer);
   }, [user, router]);
@@ -57,15 +83,17 @@ export default function SplashPage() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="flex flex-col items-center"
         >
-          <div className="relative">
-            <div className="w-20 h-20 bg-gradient-to-tr from-primary to-emerald-300 rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/20 mb-6">
-              <Sparkles className="text-background w-10 h-10" />
-            </div>
-          </div>
-
-          <h1 className="text-4xl font-bold font-heading tracking-tight text-foreground">
-            Zella
-          </h1>
+          {/* 3D spinning Z Logo */}
+          <ZLogoScene size={220} />
+          {/* Text brand below */}
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className="-mt-4"
+          >
+            <ZellaLogo size="md" showText />
+          </motion.div>
         </motion.div>
 
         {/* Microcopy with Fade In */}

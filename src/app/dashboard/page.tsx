@@ -15,7 +15,8 @@ import {
     GamepadIcon,
     Sparkles,
     Users,
-    Zap
+    Zap,
+    ArrowRight
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { steps } from "@/data/steps";
@@ -73,71 +74,123 @@ export default function DashboardPage() {
             <main className="px-6 space-y-8 mt-6">
                 {/* 1. GAMIFIED PROFILE HEADER */}
                 <motion.section
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-5 bg-card/40 border border-white/5 backdrop-blur-md p-4 rounded-3xl shadow-xl shadow-primary/5"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="relative group flex items-center gap-5 bg-card/40 border border-white/5 backdrop-blur-md p-5 rounded-[2.25rem] shadow-xl shadow-primary/5 overflow-hidden"
                 >
+                    {/* Animated HUD Background */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-500" />
+
                     <div className="relative shrink-0">
-                        {/* Avatar Ring */}
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-primary via-blue-500 to-emerald-400 p-[2px] shadow-[0_0_20px_rgba(59,130,246,0.5)]">
+                        {/* Avatar Ring with Pulsing Effect */}
+                        <motion.div
+                            animate={{ scale: [1, 1.05, 1] }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                            className="w-20 h-20 rounded-full bg-gradient-to-tr from-primary via-blue-500 to-emerald-400 p-[3px] shadow-[0_0_25px_rgba(59,130,246,0.4)]"
+                        >
                             <div className="w-full h-full bg-card rounded-full flex items-center justify-center overflow-hidden">
                                 {(() => {
                                     const av = AVATARS.find(a => a.id === user.activeAvatar) || AVATARS[0];
                                     return (
-                                        <div className={`w-full h-full ${av.color} flex items-center justify-center text-2xl`}>
+                                        <div className={`w-full h-full ${av.color} flex items-center justify-center text-3xl transition-transform group-hover:scale-110 duration-500`}>
                                             {av.icon}
                                         </div>
                                     );
                                 })()}
                             </div>
-                        </div>
+                        </motion.div>
                         {/* Level Badge overlapping */}
-                        <Badge className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase tracking-wider bg-primary border border-primary-foreground/20 shadow-md h-auto py-0.5 px-2">
+                        <Badge className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-black uppercase tracking-wider bg-primary border border-primary-foreground/20 shadow-lg h-auto py-1 px-3 rounded-full">
                             LVL {xpLevel}
                         </Badge>
                     </div>
 
                     <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start mb-1">
-                            <h1 className="text-xl font-bold font-heading truncate leading-none">
-                                Olá, {user.name.split(" ")[0]}
-                            </h1>
-                            <div className="flex items-center gap-1.5 bg-orange-500/10 text-orange-500 px-2 py-1 rounded-md">
-                                <Flame className="w-3.5 h-3.5 fill-current" />
-                                <span className="text-xs font-bold leading-none">{user.streak}</span>
+                        <div className="flex justify-between items-center mb-1.5">
+                            <div>
+                                <h1 className="text-xl font-bold font-heading truncate leading-none mb-1">
+                                    {user.name.split(" ")[0]}
+                                </h1>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Cód: Z-{(user as any).id?.substring(0, 4).toUpperCase() || 'EX01'}</p>
+                            </div>
+                            <div className="flex items-center gap-1.5 bg-orange-500/10 text-orange-500 px-2.5 py-1.5 rounded-xl border border-orange-500/20 shadow-sm">
+                                <Flame className="w-4 h-4 fill-current" />
+                                <span className="text-xs font-black leading-none">{user.streak}</span>
                             </div>
                         </div>
 
-                        <div className="mt-2.5">
-                            <div className="flex justify-between text-[10px] text-muted-foreground font-bold tracking-widest uppercase mb-1.5">
-                                <span>{xpProgress} / 100 XP</span>
-                                <span className="truncate text-right max-w-[100px] text-primary/80">
-                                    <span className="opacity-50 mr-1">RUMO:</span>{nextStepData?.title || "MESTRE"}
+                        <div className="mt-4">
+                            <div className="flex justify-between text-[9px] text-muted-foreground font-black tracking-widest uppercase mb-2">
+                                <span className="flex items-center gap-1"><Trophy className="w-3 h-3" /> {xpProgress} / 100 XP</span>
+                                <span className="truncate text-right max-w-[120px] text-primary">
+                                    <span className="opacity-40 mr-1">DESTINO:</span>{nextStepData?.title || "Mestre"}
                                 </span>
                             </div>
-                            <Progress value={xpProgress} className="h-2 bg-muted/50 rounded-full overflow-hidden" indicatorClassName="bg-gradient-to-r from-primary to-blue-400" />
+                            <div className="relative">
+                                <Progress value={xpProgress} className="h-2.5 bg-muted/80 rounded-full overflow-hidden" indicatorClassName="bg-gradient-to-r from-primary via-blue-400 to-emerald-400 animate-pulse" />
+                                {/* Micro-lines for HUD feel */}
+                                <div className="absolute top-0 left-0 w-full h-full flex justify-between px-1 pointer-events-none opacity-20">
+                                    {[1, 2, 3, 4, 5, 6, 7, 8].map(i => <div key={i} className="w-[1px] h-full bg-white" />)}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </motion.section>
 
                 {/* 1.5 PROACTIVE INSIGHT — ZELLA AI */}
                 <motion.section
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.08 }}
+                    transition={{ delay: 0.1 }}
                 >
                     <InsightsWidget transactions={user.transactions} currentStep={user.currentStep} />
                 </motion.section>
 
-                {/* 2. SMART HERO ACTION (The True Automation) */}
+                {/* 2. JOURNEY PROGRESS CARD */}
+                <motion.section
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                >
+                    <div className="relative p-5 rounded-[2.25rem] bg-card/60 border border-white/5 backdrop-blur-sm overflow-hidden group">
+                        {/* Decorative HUD element */}
+                        <div className="absolute -top-10 -left-10 w-24 h-24 bg-primary/5 rounded-full blur-2xl" />
+
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transform group-hover:rotate-12 transition-transform duration-500", currentStepData.color)}>
+                                    <currentStepData.icon className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-sm leading-none">Degrau {user.currentStep}</h3>
+                                    <p className="text-[10px] text-muted-foreground font-bold uppercase mt-1 tracking-widest">{currentStepData.title}</p>
+                                </div>
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => router.push('/journey')} className="text-[10px] font-bold uppercase tracking-widest h-8 px-3 rounded-full hover:bg-white/5">
+                                Ver Mapa <ArrowRight className="w-3 h-3 ml-1" />
+                            </Button>
+                        </div>
+
+                        <div className="space-y-3">
+                            {currentStepData.checkpoints.slice(0, 2).map((cp, i) => (
+                                <div key={i} className="flex items-center gap-3 bg-muted/20 p-3 rounded-2xl border border-white/5 hover:border-white/10 transition-all cursor-default group/cp">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary/40 group-hover/cp:scale-150 transition-transform" />
+                                    <span className="text-xs font-bold text-foreground/80">{cp}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </motion.section>
+
+                {/* 2.5 SMART HERO ACTION */}
                 <motion.section
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.1 }}
+                    transition={{ delay: 0.2 }}
                 >
                     <div
                         onClick={() => router.push("/finances")}
-                        className="group relative bg-card border border-primary/20 rounded-[2rem] p-6 overflow-hidden cursor-pointer hover:border-primary/50 transition-all duration-500 shadow-2xl shadow-primary/10"
+                        className="group relative bg-gradient-to-br from-primary/90 to-blue-700 rounded-[2.25rem] p-7 overflow-hidden cursor-pointer shadow-2xl shadow-primary/20 hover:scale-[1.02] transition-all duration-500 active:scale-[0.98]"
                     >
                         {/* Animated gradient background sweep */}
                         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />

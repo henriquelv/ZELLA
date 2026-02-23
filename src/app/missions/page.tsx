@@ -427,15 +427,18 @@ const GOAL_SUGGESTIONS: Array<{ title: string; description: string; category: "s
     { title: "Controlar gastos por 7 dias", description: "Registrar todas as despesas durante uma semana completa.", category: "habit", xpReward: 60 },
 ];
 
-function GameResult({ score, total, onBack }: { score: number; total: number; onBack: () => void }) {
+function GameResult({ missionId, score, total, onBack }: { missionId: string, score: number; total: number; onBack: () => void }) {
     const { playSound } = useGameSound();
     const pct = score / total;
-    const xp = Math.round(pct * 80);
-    const { addXp, addCoins, addGoal, goals } = useUserStore.getState();
+
+    const { addGoal, goals, missions, saveMissionCompletion } = useUserStore.getState();
+    const currentMission = missions.find(m => m.id === missionId);
+
+    const xpReward = currentMission ? Math.round(currentMission.xp_reward * pct) : Math.round(80 * pct);
+    const coinsReward = currentMission ? Math.round(currentMission.coins_reward * pct) : Math.round(20 * pct);
 
     useEffect(() => {
-        addXp(xp);
-        addCoins(Math.round(pct * 20));
+        saveMissionCompletion(missionId, score, xpReward, coinsReward);
         if (pct >= 0.5) playSound('success');
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -470,11 +473,11 @@ function GameResult({ score, total, onBack }: { score: number; total: number; on
 
             <div className="flex justify-center gap-6">
                 <div className="text-center">
-                    <div className="flex items-center gap-1 font-bold text-yellow-500"><Star className="w-4 h-4" />+{xp} XP</div>
+                    <div className="flex items-center gap-1 font-bold text-yellow-500"><Star className="w-4 h-4" />+{xpReward} XP</div>
                     <p className="text-xs text-muted-foreground">Conquistado</p>
                 </div>
                 <div className="text-center">
-                    <div className="flex items-center gap-1 font-bold text-amber-500"><Coins className="w-4 h-4" />+{Math.round(pct * 20)}</div>
+                    <div className="flex items-center gap-1 font-bold text-amber-500"><Coins className="w-4 h-4" />+{coinsReward}</div>
                     <p className="text-xs text-muted-foreground">Moedas</p>
                 </div>
             </div>
@@ -509,63 +512,29 @@ function GameResult({ score, total, onBack }: { score: number; total: number; on
 // ───────────────────────────────
 // MAIN MISSIONS PAGE
 // ───────────────────────────────
-const GAMES = [
-    {
-        id: "sorter",
-        title: "Classifique os Gastos",
-        subtitle: "Necessidade, Desejo ou Desperdício?",
-        icon: Target,
-        color: "bg-violet-500",
-        bg: "bg-violet-500/10",
-        colorText: "text-violet-500",
-        xp: "até 80 XP",
-        coins: "até 20 moedas"
-    },
-    {
-        id: "budget",
-        title: "Desafio de Orçamento",
-        subtitle: "Distribua R$ 3.000 de forma inteligente",
-        icon: Zap,
-        color: "bg-emerald-500",
-        bg: "bg-emerald-500/10",
-        colorText: "text-emerald-500",
-        xp: "até 80 XP",
-        coins: "até 20 moedas"
-    },
-    {
-        id: "trivia",
-        title: "Trivia Financeira",
-        subtitle: "Teste seus conhecimentos financeiros!",
-        icon: HelpCircle,
-        color: "bg-blue-500",
-        bg: "bg-blue-500/10",
-        colorText: "text-blue-500",
-        xp: "até 80 XP",
-        coins: "até 20 moedas"
-    },
-    {
-        id: "invest",
-        title: "Simulador de Investimento",
-        subtitle: "Escolha os melhores ativos para lucrar",
-        icon: TrendingUp,
-        color: "bg-orange-500",
-        bg: "bg-orange-500/10",
-        colorText: "text-orange-500",
-        xp: "até 80 XP",
-        coins: "até 20 moedas"
-    },
-    {
-        id: "swipe",
-        title: "Arraste & Classifique",
-        subtitle: "Arraste os cartões: Necessidade ou Desejo?",
-        icon: CreditCard,
-        color: "bg-pink-500",
-        bg: "bg-pink-500/10",
-        colorText: "text-pink-500",
-        xp: "até 80 XP",
-        coins: "até 20 moedas"
-    },
-];
+const ICON_MAP: Record<string, any> = {
+    Target: Target,
+    Zap: Zap,
+    HelpCircle: HelpCircle,
+    TrendingUp: TrendingUp,
+    CreditCard: CreditCard
+};
+
+const COLOR_MAP: Record<string, string> = {
+    Target: "bg-violet-500",
+    Zap: "bg-emerald-500",
+    HelpCircle: "bg-blue-500",
+    TrendingUp: "bg-orange-500",
+    CreditCard: "bg-pink-500",
+};
+
+const TEXT_COLOR_MAP: Record<string, string> = {
+    Target: "text-violet-500",
+    Zap: "text-emerald-500",
+    HelpCircle: "text-blue-500",
+    TrendingUp: "text-orange-500",
+    CreditCard: "text-pink-500",
+};
 
 export default function MissionsPage() {
     const user = useUserStoreHydrated(s => s);
@@ -573,6 +542,8 @@ export default function MissionsPage() {
     const [result, setResult] = useState<{ score: number; total: number } | null>(null);
 
     if (!user) return <PageLoader message="Carregando missões..." />;
+
+    const games = user.missions;
 
     const handleFinish = (score: number, total: number) => {
         setResult({ score, total });
@@ -595,7 +566,7 @@ export default function MissionsPage() {
                     )}
                     <div>
                         <h1 className="text-xl font-bold font-heading">
-                            {activeGame ? GAMES.find(g => g.id === activeGame)?.title ?? "Missões" : "Missões & Games"}
+                            {activeGame ? games.find(g => g.id === activeGame)?.title ?? "Missões" : "Missões & Games"}
                         </h1>
                         {!activeGame && <p className="text-xs text-muted-foreground font-medium">Aprenda brincando e ganhe XP</p>}
                     </div>
@@ -607,7 +578,7 @@ export default function MissionsPage() {
                     {/* RESULT */}
                     {result ? (
                         <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                            <GameResult score={result.score} total={result.total} onBack={handleBack} />
+                            <GameResult missionId={activeGame!} score={result.score} total={result.total} onBack={handleBack} />
                         </motion.div>
                     ) : activeGame === "sorter" ? (
                         <motion.div key="sorter" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -651,40 +622,55 @@ export default function MissionsPage() {
                                 </div>
                             </div>
 
-                            {GAMES.map((game, i) => (
-                                <motion.div
-                                    key={game.id}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: i * 0.1 }}
-                                >
-                                    <button
-                                        onClick={() => setActiveGame(game.id)}
-                                        className="w-full text-left"
+                            {games.map((game, i) => {
+                                const IconComp = ICON_MAP[game.icon] || GamepadIcon;
+                                const isCompleted = user.userMissions.some(m => m.mission_id === game.id);
+
+                                return (
+                                    <motion.div
+                                        key={game.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.1 }}
                                     >
-                                        <Card className="border-border/50 hover:border-primary/30 hover:shadow-md transition-all cursor-pointer active:scale-[0.99]">
-                                            <CardContent className="p-5 flex items-center gap-4">
-                                                <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center shrink-0", game.bg)}>
-                                                    <game.icon className={cn("w-7 h-7", game.colorText)} />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <h3 className="font-bold text-base">{game.title}</h3>
-                                                    <p className="text-xs text-muted-foreground mt-0.5">{game.subtitle}</p>
-                                                    <div className="flex gap-3 mt-2">
-                                                        <p className="text-xs font-bold text-yellow-500 flex items-center gap-1">
-                                                            <Star className="w-3 h-3" /> {game.xp}
-                                                        </p>
-                                                        <p className="text-xs font-bold text-amber-500 flex items-center gap-1">
-                                                            <Coins className="w-3 h-3" /> {game.coins}
-                                                        </p>
+                                        <button
+                                            onClick={() => setActiveGame(game.id)}
+                                            className="w-full text-left"
+                                        >
+                                            <Card className={cn(
+                                                "border-border/50 hover:border-primary/30 transition-all cursor-pointer active:scale-[0.99] relative overflow-hidden",
+                                                isCompleted && "opacity-80 grayscale-[0.3] bg-muted/20"
+                                            )}>
+                                                {isCompleted && (
+                                                    <div className="absolute top-2 right-2 bg-emerald-500/20 text-emerald-500 p-1 rounded-full border border-emerald-500/20">
+                                                        <CheckCircle2 className="w-4 h-4" />
                                                     </div>
-                                                </div>
-                                                <ChevronLeft className="w-5 h-5 text-muted-foreground rotate-180" />
-                                            </CardContent>
-                                        </Card>
-                                    </button>
-                                </motion.div>
-                            ))}
+                                                )}
+                                                <CardContent className="p-5 flex items-center gap-4">
+                                                    <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center shrink-0", COLOR_MAP[game.icon] || "bg-primary/10")}>
+                                                        <IconComp className={cn("w-7 h-7", TEXT_COLOR_MAP[game.icon] || "text-primary")} />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h3 className="font-bold text-base flex items-center gap-2">
+                                                            {game.title}
+                                                        </h3>
+                                                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{game.subtitle}</p>
+                                                        <div className="flex gap-3 mt-2">
+                                                            <p className="text-xs font-bold text-yellow-500 flex items-center gap-1">
+                                                                <Star className="w-3 h-3" /> Atê {game.xp_reward} XP
+                                                            </p>
+                                                            <p className="text-xs font-bold text-amber-500 flex items-center gap-1">
+                                                                <Coins className="w-3 h-3" /> Atê {game.coins_reward}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <ChevronLeft className="w-5 h-5 text-muted-foreground rotate-180" />
+                                                </CardContent>
+                                            </Card>
+                                        </button>
+                                    </motion.div>
+                                );
+                            })}
                         </motion.div>
                     )}
                 </AnimatePresence>

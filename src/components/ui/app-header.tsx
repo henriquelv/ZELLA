@@ -1,18 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ZellaLogo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 import { Bell, Trophy } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./button";
-import { useUserStoreHydrated } from "@/store/useStore";
+import { useUserStoreHydrated, useUserStore } from "@/store/useStore";
 import { AvatarSelector, AVATARS } from "./avatar-selector";
 import { cn } from "@/lib/utils";
 
 export function AppHeader() {
     const user = useUserStoreHydrated(s => s);
+    const loadUserData = useUserStore(s => s.loadUserData);
     const [isAvatarOpen, setIsAvatarOpen] = useState(false);
+
+    useEffect(() => {
+        loadUserData();
+    }, [loadUserData]);
 
     const activeAvatarRecord = AVATARS.find(a => a.id === user?.activeAvatar) || AVATARS[0];
 

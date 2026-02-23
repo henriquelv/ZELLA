@@ -11,6 +11,7 @@ interface UserState {
     coins: number
     streak: number
     name: string
+    id: string | null
 
     // Gamification
     lastLoginDate: string | null
@@ -19,6 +20,8 @@ interface UserState {
     dailyQuizCompletedAt: string | null
 
     transactions: Transaction[]
+    missions: Mission[]
+    userMissions: UserMissionCompletion[]
 
     // Actions
     completeOnboarding: (step: number, name: string) => void
@@ -40,7 +43,9 @@ interface UserState {
     toggleGoal: (id: string) => void
 
     // Supabase Sync
+    loadUserData: () => Promise<void>
     syncWithSupabase: (data: Partial<UserState>) => void
+    saveMissionCompletion: (missionId: string, score: number, xpReward: number, coinsReward: number) => Promise<void>
 }
 
 export interface Transaction {
@@ -62,6 +67,22 @@ export interface Goal {
     xpReward: number
 }
 
+export interface Mission {
+    id: string
+    title: string
+    subtitle: string
+    xp_reward: number
+    coins_reward: number
+    category: string
+    icon: string
+}
+
+export interface UserMissionCompletion {
+    mission_id: string
+    completed_at: string
+    score: number
+}
+
 export const useUserStore = create<UserState>()(
     persist(
         (set, get) => ({
@@ -71,6 +92,7 @@ export const useUserStore = create<UserState>()(
             coins: 0,
             streak: 0,
             name: "",
+            id: null,
 
             lastLoginDate: null,
             unlockedAvatars: ['default'],
@@ -79,17 +101,13 @@ export const useUserStore = create<UserState>()(
 
             transactions: [],
             goals: [],
+            missions: [],
+            userMissions: [],
 
             completeOnboarding: (step, name) => set({ hasOnboarded: true, currentStep: step, name }),
             addXp: (amount) => {
                 set((state) => {
                     const newXp = state.xp + amount;
-                    // Background sync
-                    supabase.auth.getSession().then(({ data }) => {
-                        if (data.session) {
-                            supabase.from('profiles').update({ xp: newXp }).eq('id', data.session.user.id);
-                        }
-                    });
                     return { xp: newXp };
                 });
             },
@@ -101,25 +119,15 @@ export const useUserStore = create<UserState>()(
                     let xpGained = 0;
                     let updatedGoals = [...state.goals];
 
-                    // --- Auto-Completion / Goal Tracking Logic ---
                     if (t.type === 'expense') {
-                        // Check if this expense violates an active spending goal
                         updatedGoals = updatedGoals.map(goal => {
                             if (!goal.completed && goal.category === 'spending' && goal.title.includes(t.category)) {
-                                // Simple logic: if they spend on a category they had a goal to avoid, they fail it.
-                                // In a more complex app, we'd check if `t.amount` exceeds a threshold or if it's past the 7 days.
-                                // For now, let's mark it completed but with 0 XP reward to show failure, or just keep it open but notify.
-                                // Let's mark it as 'failed' by completing it but granting 0 XP. 
-                                // Alternatively, we just don't grant XP here.
-                                // Actually, let's just make it a visual thing for now, or reduce XP.
-                                // To keep it simple: If they spend on that category, the goal is marked complete (failed) so it stops tracking.
                                 return { ...goal, completed: true, xpReward: 0, title: goal.title + " (Falhou⚠️)" };
                             }
                             return goal;
                         });
                     }
 
-                    // For incomes or other types, maybe auto-complete saving goals
                     if (t.type === 'income') {
                         updatedGoals = updatedGoals.map(goal => {
                             if (!goal.completed && goal.category === 'saving') {
@@ -132,7 +140,7 @@ export const useUserStore = create<UserState>()(
 
                     const newXp = state.xp + xpGained;
 
-                    // Background sync
+                    // Manual push for transaction table (profiles.transactions is now gone)
                     supabase.auth.getSession().then(({ data }) => {
                         if (data.session) {
                             supabase.from('transactions').insert({
@@ -145,13 +153,6 @@ export const useUserStore = create<UserState>()(
                                 name: t.category,
                                 is_ai_generated: t.isAiGenerated || false
                             }).then();
-
-                            if (xpGained > 0 || updatedGoals !== state.goals) {
-                                supabase.from('profiles').update({
-                                    xp: newXp,
-                                    goals: updatedGoals
-                                }).eq('id', data.session.user.id);
-                            }
                         }
                     });
 
@@ -164,7 +165,8 @@ export const useUserStore = create<UserState>()(
             },
             resetProgress: () => set({
                 hasOnboarded: false, currentStep: 1, xp: 0, coins: 0, streak: 0, name: "",
-                transactions: [], goals: [], lastLoginDate: null, unlockedAvatars: ['default'], activeAvatar: 'default', dailyQuizCompletedAt: null
+                transactions: [], goals: [], lastLoginDate: null, unlockedAvatars: ['default'], activeAvatar: 'default', dailyQuizCompletedAt: null,
+                missions: [], userMissions: []
             }),
 
             checkAndApplyStreak: () => {
@@ -181,7 +183,6 @@ export const useUserStore = create<UserState>()(
                     if (daysDiff === 1) {
                         set({ lastLoginDate: today, streak: get().streak + 1 });
                     } else if (daysDiff > 1) {
-                        // Lost streak
                         set({ lastLoginDate: today, streak: 1 });
                     }
                 }
@@ -209,7 +210,103 @@ export const useUserStore = create<UserState>()(
             toggleGoal: (id) => set((state) => ({
                 goals: state.goals.map(g => g.id === id ? { ...g, completed: !g.completed } : g)
             })),
-            syncWithSupabase: (data) => set((state) => ({ ...state, ...data }))
+            syncWithSupabase: (data) => set((state) => ({ ...state, ...data })),
+
+            loadUserData: async () => {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return;
+
+                const userId = session.user.id;
+
+                // 1. Fetch Profile
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', userId)
+                    .single();
+
+                if (profile) {
+                    const typedProfile = profile as any;
+                    set({
+                        id: typedProfile.id || null,
+                        name: typedProfile.name || get().name,
+                        xp: typedProfile.xp ?? get().xp,
+                        coins: typedProfile.coins ?? get().coins,
+                        streak: typedProfile.streak ?? get().streak,
+                        currentStep: typedProfile.current_step ?? get().currentStep,
+                        activeAvatar: typedProfile.active_avatar || get().activeAvatar,
+                        unlockedAvatars: typedProfile.unlocked_avatars || get().unlockedAvatars,
+                        goals: typedProfile.goals || get().goals,
+                        dailyQuizCompletedAt: typedProfile.daily_quiz_completed_at,
+                        hasOnboarded: typedProfile.name ? true : get().hasOnboarded
+                    });
+                }
+
+                // 2. Fetch Transactions
+                const { data: txs } = await supabase
+                    .from('transactions')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .order('date', { ascending: false });
+
+                if (txs) {
+                    set({
+                        transactions: txs.map(t => ({
+                            id: t.id,
+                            amount: Number(t.amount),
+                            category: t.category,
+                            type: t.type,
+                            date: t.date,
+                            isAiGenerated: t.is_ai_generated
+                        }))
+                    });
+                }
+
+                // 3. Fetch Missions & completions
+                const { data: missions } = await supabase.from('missions').select('*');
+                const { data: userCompletions } = await supabase
+                    .from('user_missions')
+                    .select('*')
+                    .eq('user_id', userId);
+
+                if (missions) set({ missions });
+                if (userCompletions) {
+                    set({
+                        userMissions: userCompletions.map(c => ({
+                            mission_id: c.mission_id,
+                            completed_at: c.completed_at,
+                            score: c.score
+                        }))
+                    });
+                }
+            },
+
+            saveMissionCompletion: async (missionId, score, xpReward, coinsReward) => {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return;
+
+                const userId = session.user.id;
+
+                // Update Local State
+                set(state => ({
+                    xp: state.xp + xpReward,
+                    coins: state.coins + coinsReward,
+                    userMissions: [
+                        ...state.userMissions.filter(m => m.mission_id !== missionId),
+                        { mission_id: missionId, completed_at: new Date().toISOString(), score }
+                    ]
+                }));
+
+                // Update Remote Data
+                await supabase.from('user_missions').upsert({
+                    user_id: userId,
+                    mission_id: missionId,
+                    score,
+                    completed_at: new Date().toISOString()
+                });
+
+                // Profile sync will happen automatically via useUserStore.subscribe below
+            }
         }),
         {
             name: 'zella-storage',
@@ -266,16 +363,38 @@ if (typeof window !== 'undefined') {
                 const { data } = await supabase.auth.getSession();
                 if (data.session) {
                     const userId = data.session.user.id;
+
+                    // Logic for auto-advancing steps based on balance
+                    const expenses = state.transactions.filter(t => t.type === 'expense');
+                    const incomes = state.transactions.filter(t => t.type === 'income');
+                    const totalExp = expenses.reduce((a, b) => a + Number(b.amount), 0);
+                    const totalInc = incomes.reduce((a, b) => a + Number(b.amount), 0);
+                    const balance = totalInc - totalExp;
+
+                    let calculatedStep = 1;
+                    if (balance > 10000) calculatedStep = 6;
+                    else if (expenses.some(t => t.category.toLowerCase().includes('invest'))) calculatedStep = 5;
+                    else if (balance > 3000) calculatedStep = 4;
+                    else if (balance > 500) calculatedStep = 3;
+                    else if (balance > 0) calculatedStep = 2;
+
+                    // If manually set higher in onboarding, don't downgrade
+                    const finalStep = Math.max(state.currentStep, calculatedStep);
+
                     await supabase.from('profiles').update({
                         xp: state.xp,
                         coins: state.coins,
                         streak: state.streak,
-                        transactions: state.transactions,
                         goals: state.goals,
                         daily_quiz_completed_at: state.dailyQuizCompletedAt,
                         active_avatar: state.activeAvatar,
-                        unlocked_avatars: state.unlockedAvatars
+                        unlocked_avatars: state.unlockedAvatars,
+                        current_step: finalStep,
                     }).eq('id', userId);
+
+                    if (finalStep !== state.currentStep) {
+                        useUserStore.setState({ currentStep: finalStep });
+                    }
                 }
             }, 1500); // Debounce to prevent spamming the database
         }

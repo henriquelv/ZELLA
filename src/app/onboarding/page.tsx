@@ -4,7 +4,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ArrowRight, Trophy, AlertTriangle, ShieldCheck, TrendingUp, Flame, Target, Sparkles, Coins } from "lucide-react";
+import { ArrowRight, Trophy, AlertTriangle, ShieldCheck, TrendingUp, Flame, Target, Sparkles, Coins, Wallet } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useUserStoreHydrated } from "@/store/useStore";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -142,9 +143,10 @@ export default function OnboardingPage() {
     const resultStepInfo = steps.find(s => s.id === resultData.stepId) || steps[0];
 
     return (
-        <div className="flex min-h-screen flex-col bg-background p-6 max-w-md mx-auto relative overflow-hidden selection:bg-primary/20">
-            {/* Immersive Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5 pointer-events-none -z-10" />
+        <div className="flex min-h-screen flex-col bg-background p-6 max-w-md mx-auto relative overflow-hidden selection:bg-primary/20 bg-gradient-to-tr from-background via-emerald-500/5 to-blue-500/5">
+            {/* Immersive Glassmorphic Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10 pointer-events-none -z-10" />
+            <div className="absolute top-0 left-0 w-full h-full bg-white/5 backdrop-blur-[2px] pointer-events-none -z-10" />
 
             {step === 2 && (
                 <div className="w-full py-6 absolute top-0 left-0 px-6 z-20">
@@ -173,22 +175,40 @@ export default function OnboardingPage() {
                                 <ZLogoScene size={112} />
                             </div>
                             <h1 className="text-3xl font-black font-heading leading-tight mt-2">
-                                Chega de dinheiro<br />
-                                <span className="text-primary italic">sumindo sem explicação.</span>
+                                Construa sua liberdade financeira<br />
+                                <span className="text-primary italic">com inteligência.</span>
                             </h1>
                             <p className="text-muted-foreground font-medium text-sm/relaxed max-w-xs mx-auto">
-                                O Zella não é mais um app de controle de gastos. É o seu coach financeiro que te ajuda a sair do buraco de verdade.
+                                Transformamos o caos financeiro em resiliência. O Zella te guia rumo à independência com estratégias baseadas em dados reais.
                             </p>
                         </div>
 
-                        {/* Value props — o que você vai conseguir */}
+                        {/* Financial Health Pillars */}
+                        <div className="grid grid-cols-2 gap-3">
+                            {[
+                                { title: "Gastar Melhor", icon: Wallet, desc: "Foco no que importa.", color: "text-blue-500", bg: "bg-blue-500/10" },
+                                { title: "Microvitórias", icon: Sparkles, desc: "Poupar sem esforço.", color: "text-emerald-500", bg: "bg-emerald-500/10" },
+                                { title: "Crédito Consciente", icon: Target, desc: "Uso estratégico.", color: "text-purple-500", bg: "bg-purple-500/10" },
+                                { title: "Plano Sem Culpa", icon: ShieldCheck, desc: "Liberdade real.", color: "text-orange-500", bg: "bg-orange-500/10" },
+                            ].map(p => (
+                                <div key={p.title} className="bg-card/40 border border-white/5 backdrop-blur-sm p-4 rounded-2xl flex flex-col items-center text-center group hover:bg-card/60 transition-all">
+                                    <div className={cn("w-10 h-10 rounded-full flex items-center justify-center mb-2", p.bg)}>
+                                        <p.icon className={cn("w-5 h-5", p.color)} />
+                                    </div>
+                                    <p className="font-bold text-[11px] leading-tight mb-1">{p.title}</p>
+                                    <p className="text-[9px] text-muted-foreground">{p.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Value props */}
                         <div className="space-y-2.5">
                             {[
-                                { emoji: "🔍", title: "Descobrir onde seu dinheiro some", desc: "Identificamos os vazamentos que você nem percebe." },
-                                { emoji: "💡", title: "Insights reais do seu extrato", desc: "A IA analisa seus dados e aponta o que cortar primeiro." },
-                                { emoji: "🏆", title: "Resultado em semanas, não anos", desc: "Usuários como você economizam R$ 200–500/mês no 1º mês." },
+                                { emoji: "🔍", title: "Monitoramento de Vazamentos", desc: "Identificamos erosões no seu patrimônio em tempo real." },
+                                { emoji: "💡", title: "Inteligência Estratégica", desc: "A IA traduz extratos em planos de ação imediatos." },
+                                { emoji: "🏆", title: "Diagnóstico Dinâmico", desc: "Descubra seu Score de Saúde Financeira e receba missões personalizadas para subir de nível." },
                             ].map(v => (
-                                <div key={v.title} className="flex items-start gap-4 bg-card/60 border border-border/50 rounded-2xl p-4">
+                                <div key={v.title} className="flex items-start gap-4 bg-card/60 border border-black/5 rounded-2xl p-4">
                                     <span className="text-2xl shrink-0">{v.emoji}</span>
                                     <div>
                                         <p className="font-bold text-sm">{v.title}</p>
@@ -198,23 +218,24 @@ export default function OnboardingPage() {
                             ))}
                         </div>
 
-                        {/* Not a bank app disclaimer */}
-                        <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-2xl p-3">
-                            <span className="text-xl shrink-0">🚫</span>
-                            <p className="text-xs font-bold text-muted-foreground">
-                                <span className="text-primary">Não somos</span> Mobills, Guiabolso ou planilha do Google. Somos seu parceiro de evolução financeira.
-                            </p>
-                        </div>
+                        {/* Trust Layer */}
+                        <div className="space-y-4">
+                            <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 text-center">
+                                <p className="text-[10px] font-medium text-muted-foreground leading-relaxed">
+                                    <span className="text-primary font-bold">Sua privacidade é prioridade.</span> Utilizamos a infraestrutura do Open Finance com segurança bancária para traduzir seus dados em decisões melhores, nunca para vender produtos.
+                                </p>
+                            </div>
 
-                        <Button
-                            variant="premium"
-                            size="lg"
-                            className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/25 hover:scale-[1.02] transition-transform"
-                            onClick={() => setStep(2)}
-                        >
-                            <Sparkles className="w-5 h-5 mr-2" />
-                            Quero mudar minha situação
-                        </Button>
+                            <Button
+                                variant="premium"
+                                size="lg"
+                                className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/25 hover:scale-[1.02] transition-transform"
+                                onClick={() => setStep(2)}
+                            >
+                                <Sparkles className="w-5 h-5 mr-2" />
+                                Iniciar Jornada
+                            </Button>
+                        </div>
                     </motion.div>
                 )}
 

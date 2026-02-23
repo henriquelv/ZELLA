@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
 type Transaction = {
@@ -18,7 +20,21 @@ interface ExpenseDistributionChartProps {
 const COLORS = ['#ef4444', '#f97316', '#eab308', '#84cc16', '#06b6d4', '#8b5cf6', '#d946ef'];
 
 export function ExpenseDistributionChart({ transactions }: ExpenseDistributionChartProps) {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const expenses = transactions.filter(t => t.type === 'expense');
+
+    if (!mounted) {
+        return (
+            <div className="h-72 w-full bg-card rounded-2xl border border-border/50 shadow-sm p-4 flex items-center justify-center">
+                <p className="text-xs text-muted-foreground animate-pulse">Carregando gráfico...</p>
+            </div>
+        );
+    }
 
     if (expenses.length === 0) {
         return (

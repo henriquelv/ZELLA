@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, PlusCircle, MinusCircle } from "lucide-react";
+import { X, PlusCircle, MinusCircle, Loader2 } from "lucide-react";
 import { Button } from "./button";
 import { cn } from "@/lib/utils";
 import { useUserStoreHydrated } from "@/store/useStore";
+import { useGameSound } from "@/hooks/use-game-sound";
 
 interface AddTransactionModalProps {
     isOpen: boolean;
@@ -13,15 +14,26 @@ interface AddTransactionModalProps {
 
 export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }: AddTransactionModalProps) {
     const user = useUserStoreHydrated((state) => state);
+    const { playSound } = useGameSound();
     const [type, setType] = useState<'income' | 'expense'>(initialType);
     const [amount, setAmount] = useState("");
     const [category, setCategory] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [missionTriggered, setMissionTriggered] = useState<{ category: string, amount: number } | null>(null);
 
     // Reset when modal opens
-    useState(() => {
+    useEffect(() => {
         if (isOpen) setMissionTriggered(null);
-    });
+    }, [isOpen]);
+
+    // Close on ESC key
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isOpen) onClose();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, onClose]);
 
     if (!isOpen || !user) return null;
 
@@ -32,43 +44,52 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
         const numAmount = parseFloat(amount.replace(",", "."));
         if (isNaN(numAmount) || numAmount <= 0) return;
 
-        user.addTransaction({
-            id: crypto.randomUUID(),
-            amount: numAmount,
-            category,
-            type,
-            date: new Date().toISOString()
-        });
+        setIsSubmitting(true);
 
-        // Gamification reward for logging
-        user.addXp(10);
-
-        // Check for Contextual Mission Trigger
-        const nonEssentialCategories = ["Lazer", "Roupas", "Tecnologia", "Festas"];
-        if (type === 'expense' && numAmount > 100 && nonEssentialCategories.includes(category)) {
-            setMissionTriggered({ category, amount: numAmount });
-            user.addGoal({
+        // Simulate network delay to show the loading state (Zella is mostly local via Zustand right now)
+        setTimeout(() => {
+            user.addTransaction({
                 id: crypto.randomUUID(),
-                title: `Freiar gastos com ${category}`,
-                description: `Compra alta (R$ ${numAmount.toFixed(2)}) detectada. Evite gastar com ${category} por 7 dias.`,
-                category: 'spending',
-                xpReward: 150,
-                completed: false,
-                createdAt: new Date().toISOString()
+                amount: numAmount,
+                category,
+                type,
+                date: new Date().toISOString()
             });
-            // Auto close after showing the mission overlay
-            setTimeout(() => {
-                setAmount("");
-                setCategory("");
-                setMissionTriggered(null);
-                onClose();
-            }, 3000);
-            return;
-        }
 
-        setAmount("");
-        setCategory("");
-        onClose();
+            // Gamification reward for logging
+            user.addXp(10);
+
+            // Check for Contextual Mission Trigger
+            const nonEssentialCategories = ["Lazer", "Roupas", "Tecnologia", "Festas"];
+            if (type === 'expense' && numAmount > 100 && nonEssentialCategories.includes(category)) {
+                setIsSubmitting(false);
+                setMissionTriggered({ category, amount: numAmount });
+                playSound('error');
+                user.addGoal({
+                    id: crypto.randomUUID(),
+                    title: `Freiar gastos com ${category}`,
+                    description: `Compra alta (R$ ${numAmount.toFixed(2)}) detectada. Evite gastar com ${category} por 7 dias.`,
+                    category: 'spending',
+                    xpReward: 150,
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                });
+                // Auto close after showing the mission overlay
+                setTimeout(() => {
+                    setAmount("");
+                    setCategory("");
+                    setMissionTriggered(null);
+                    onClose();
+                }, 3000);
+                return;
+            }
+
+            setIsSubmitting(false);
+            setAmount("");
+            setCategory("");
+            playSound('coin');
+            onClose();
+        }, 500); // 500ms artificial delay to show UI pattern
     };
 
     return (
@@ -121,21 +142,23 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
                         <div className="flex bg-muted/50 p-1 rounded-2xl mb-6">
                             <button
                                 type="button"
-                                onClick={() => setType('income')}
+                                onClick={() => { setType('income'); playSound('click'); }}
                                 className={cn(
-                                    "flex-1 py-2.5 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2",
+                                    "flex-1 py-2.5 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50",
                                     type === 'income' ? "bg-emerald-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground"
                                 )}
+                                disabled={isSubmitting}
                             >
                                 <PlusCircle className="w-4 h-4" /> Receita
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setType('expense')}
+                                onClick={() => { setType('expense'); playSound('click'); }}
                                 className={cn(
-                                    "flex-1 py-2.5 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2",
+                                    "flex-1 py-2.5 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50",
                                     type === 'expense' ? "bg-destructive text-white shadow-md" : "text-muted-foreground hover:text-foreground"
                                 )}
+                                disabled={isSubmitting}
                             >
                                 <MinusCircle className="w-4 h-4" /> Despesa
                             </button>
@@ -147,11 +170,13 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
                                 <input
                                     type="number"
                                     step="0.01"
+                                    inputMode="decimal"
                                     placeholder="0.00"
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
-                                    className="w-full text-3xl font-bold bg-transparent border-b-2 border-border/50 focus:border-primary focus:outline-none py-2 transition-colors"
+                                    className="w-full text-3xl font-bold bg-transparent border-b-2 border-border/50 focus:border-primary focus:outline-none py-2 transition-colors disabled:opacity-50"
                                     required
+                                    disabled={isSubmitting}
                                 />
                             </div>
 
@@ -160,8 +185,9 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
                                 <select
                                     value={category}
                                     onChange={(e) => setCategory(e.target.value)}
-                                    className="w-full text-base bg-muted/30 border border-border/50 rounded-xl px-4 py-3 focus:border-primary focus:outline-none transition-colors cursor-pointer"
+                                    className="w-full text-base bg-muted/30 border border-border/50 rounded-xl px-4 py-3 focus:border-primary focus:outline-none transition-colors cursor-pointer disabled:opacity-50"
                                     required
+                                    disabled={isSubmitting}
                                 >
                                     <option value="">Selecione uma categoria...</option>
                                     {type === 'income' ? (
@@ -191,8 +217,13 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
                                 </select>
                             </div>
 
-                            <Button type="submit" className="w-full h-14 text-base font-bold rounded-xl mt-4 shadow-lg active:scale-95 transition-all">
-                                Confirmar Lançamento
+                            <Button
+                                type="submit"
+                                className="w-full h-14 text-base font-bold rounded-xl mt-4 shadow-lg active:scale-95 transition-all"
+                                disabled={isSubmitting || !amount || !category}
+                            >
+                                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
+                                {isSubmitting ? "Registrando..." : "Confirmar Lançamento"}
                             </Button>
                         </form>
                     </div>

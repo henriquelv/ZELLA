@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { useGameSound } from "@/hooks/use-game-sound";
 
 // ─── Card data ─────────────────────────────────────────────────────────────
 const CARDS = [
@@ -86,6 +87,7 @@ function SwipeCard({ card, onSwipe, isTop }: {
 }
 
 export function SwipeCardGame({ onFinish }: SwipeCardGameProps) {
+    const { playSound } = useGameSound();
     const [index, setIndex] = useState(0);
     const [score, setScore] = useState(0);
     const [lastResult, setLastResult] = useState<{ label: string; correct: boolean; exp: string } | null>(null);
@@ -95,7 +97,12 @@ export function SwipeCardGame({ onFinish }: SwipeCardGameProps) {
     const handleSwipe = (dir: "left" | "right") => {
         const correctDir = current.category === "Necessidade" ? "left" : "right";
         const correct = dir === correctDir;
-        if (correct) setScore(s => s + 1);
+        if (correct) {
+            setScore(s => s + 1);
+            playSound('coin');
+        } else {
+            playSound('error');
+        }
 
         setLastResult({ label: current.label, correct, exp: current.example });
 

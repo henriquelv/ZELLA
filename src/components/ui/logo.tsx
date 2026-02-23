@@ -5,12 +5,12 @@ import { cn } from "@/lib/utils";
 
 interface LogoProps {
     className?: string;
-    size?: "sm" | "md" | "lg";
+    size?: "sm" | "md" | "lg" | "xl";
     showText?: boolean;
 }
 
 export function ZellaLogo({ className, size = "md", showText = true }: LogoProps) {
-    const dims = { sm: 32, md: 44, lg: 72 };
+    const dims = { sm: 32, md: 44, lg: 72, xl: 110 };
     const d = dims[size];
 
     return (
@@ -68,6 +68,7 @@ export function ZellaLogo({ className, size = "md", showText = true }: LogoProps
                     "text-lg": size === "sm",
                     "text-2xl": size === "md",
                     "text-4xl": size === "lg",
+                    "text-6xl": size === "xl",
                 })}>
                     <span className="text-[#1a4fc8] dark:text-[#60a5fa]">Z</span>
                     <span className="text-foreground">ELLA</span>

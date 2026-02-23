@@ -12,56 +12,7 @@ interface Message {
     content: string;
 }
 
-// Simple rule-based financial response engine (no API key needed)
-function generateResponse(msg: string, state: {
-    xp: number;
-    coins: number;
-    transactions: Array<{ category: string; amount: number; type: string }>;
-}): string {
-    const lower = msg.toLowerCase();
-    const expenses = state.transactions.filter(t => t.type === "expense");
-    const income = state.transactions.filter(t => t.type === "income");
-    const totalExp = expenses.reduce((a, b) => a + b.amount, 0);
-    const totalInc = income.reduce((a, b) => a + b.amount, 0);
-    const balance = totalInc - totalExp;
 
-    if (lower.includes("saldo") || lower.includes("balanço") || lower.includes("situação")) {
-        return `📊 Sua situação financeira atual:\n• Receitas: R$ ${totalInc.toFixed(2)}\n• Despesas: R$ ${totalExp.toFixed(2)}\n• Saldo: R$ ${balance.toFixed(2)}\n• XP acumulado: ${state.xp}\n\n${balance >= 0 ? "✅ Parabéns! Você está no positivo." : "⚠️ Atenção: seus gastos superam sua renda. Vamos ajustar?"}`;
-    }
-
-    if (lower.includes("gastei") || lower.includes("gast") || lower.includes("despesa")) {
-        const topCats = expenses
-            .reduce((acc: Record<string, number>, t) => {
-                acc[t.category] = (acc[t.category] || 0) + t.amount; return acc;
-            }, {});
-        const sorted = Object.entries(topCats).sort((a, b) => b[1] - a[1]).slice(0, 3);
-        const lines = sorted.map(([cat, v]) => `• ${cat}: R$ ${v.toFixed(2)}`).join("\n");
-        return `💸 Seus maiores gastos:\n${lines || "Nenhuma despesa registrada ainda."}\n\nDica: Identifique gastos desnecessários e você pode economizar este mês!`;
-    }
-
-    if (lower.includes("economiz") || lower.includes("poupar") || lower.includes("reserva")) {
-        const saving = balance * 0.2;
-        return `💰 Dica de poupança:\n\nSeguindo a regra 50/30/20:\n• 50% para necessidades\n• 30% para desejos\n• 20% para poupança\n\nCom sua renda, você deveria poupar aproximadamente R$ ${saving.toFixed(2)} por mês.\n\nComece pequeno — qualquer valor já é um ótimo começo!`;
-    }
-
-    if (lower.includes("invest") || lower.includes("renda fixa") || lower.includes("ações")) {
-        return `📈 Dicas de investimento:\n\n1. **Emergência primeiro** — Tenha 6 meses de gastos guardados\n2. **Tesouro Direto** — Seguro, com garantia do governo\n3. **CDB/LCI/LCA** — Acima de 100% do CDI são boas opções\n4. **Ações** — Indicado apenas com perfil moderado ou agressivo\n\nQual é seu objetivo: segurança ou crescimento?`;
-    }
-
-    if (lower.includes("dívida") || lower.includes("divid") || lower.includes("débito")) {
-        return `⚠️ Gestão de dívidas:\n\n1. Liste todas as dívidas com taxas de juros\n2. Priorize as de **maior juros** para pagar primeiro\n3. Negocie desconto para pagamento à vista\n4. Evite novas dívidas enquanto paga as atuais\n\nO método "bola de neve" é ótimo: pague a menor dívida primeiro e use esse valor para a próxima!`;
-    }
-
-    if (lower.includes("oi") || lower.includes("olá") || lower.includes("ola") || lower.includes("bom dia") || lower.includes("boa tarde")) {
-        return `👋 Olá! Sou a Zella AI, sua assistente financeira pessoal!\n\nPosso te ajudar com:\n• 📊 Ver seu saldo e despesas\n• 💰 Dicas de poupança\n• 📈 Orientações sobre investimentos\n• ⚠️ Gestão de dívidas\n\nO que você gostaria de saber?`;
-    }
-
-    if (lower.includes("obrigado") || lower.includes("valeu")) {
-        return `😊 Fico feliz em ajudar! Continue registrando suas finanças e ganhe mais XP!\n\nLembre-se: todo grande patrimônio começou com um pequeno passo. 🚀`;
-    }
-
-    return `🤔 Não entendi totalmente, mas posso te ajudar com:\n\n• "Qual meu saldo?"\n• "Onde estou gastando mais?"\n• "Como economizar?"\n• "Como investir?"\n• "Como sair das dívidas?"\n\nTente uma dessas perguntas!`;
-}
 
 interface AIChatProps {
     isOpen: boolean;
@@ -71,7 +22,16 @@ interface AIChatProps {
 export function AIFinancialChat({ isOpen, onClose }: AIChatProps) {
     const user = useUserStoreHydrated(s => s);
     const [messages, setMessages] = useState<Message[]>([
-        { role: "assistant", content: "👋 Olá! Sou a **Zella AI**, sua conselheira financeira pessoal. Como posso ajudar hoje?" }
+        {
+            role: "assistant",
+            content: user?.transactions && user.transactions.length > 0
+                ? `🔥 Olá! Já dei uma olhada nos seus dados. Seu maior gasto está em **${(() => {
+                    const cats: Record<string, number> = {};
+                    user.transactions.filter(t => t.type === 'expense').forEach(t => { cats[t.category] = (cats[t.category] || 0) + t.amount; });
+                    return Object.entries(cats).sort(([, a], [, b]) => b - a)[0]?.[0] || 'alimentação';
+                })()} **. Quer que eu te mostre como cortar isso sem sofrer?`
+                : `👋 Olá! Sou a **Zella**, sua coach financeira. Antes de qualquer coisa: qual é o seu maior problema com dinheiro hoje — dívidas, gastos descontrolados ou falta de reserva?`
+        }
     ]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
@@ -81,22 +41,42 @@ export function AIFinancialChat({ isOpen, onClose }: AIChatProps) {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    const send = () => {
+    const send = async () => {
         if (!input.trim() || !user) return;
         const userMsg = input.trim();
         setInput("");
-        setMessages(m => [...m, { role: "user", content: userMsg }]);
+
+        const newMessages: Message[] = [...messages, { role: "user", content: userMsg }];
+        setMessages(newMessages);
         setLoading(true);
 
-        setTimeout(() => {
-            const response = generateResponse(userMsg, {
-                xp: user.xp,
-                coins: user.coins,
-                transactions: user.transactions,
+        try {
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    messages: newMessages.slice(-6),
+                    userContext: {
+                        xp: user.xp,
+                        coins: user.coins,
+                        transactions: user.transactions,
+                        currentStep: user.currentStep,
+                    }
+                })
             });
-            setMessages(m => [...m, { role: "assistant", content: response }]);
+
+            const data = await res.json();
+
+            if (res.ok && data.reply) {
+                setMessages(m => [...m, { role: "assistant", content: data.reply }]);
+            } else {
+                setMessages(m => [...m, { role: "assistant", content: "⚠️ Desculpe, estou com problemas de conexão. Tente novamente em alguns segundos." }]);
+            }
+        } catch (error) {
+            setMessages(m => [...m, { role: "assistant", content: "⚠️ Ocorreu um erro ao conectar com a IA." }]);
+        } finally {
             setLoading(false);
-        }, 600);
+        }
     };
 
     return (
@@ -193,7 +173,7 @@ export function AIFinancialChat({ isOpen, onClose }: AIChatProps) {
                                 onChange={e => setInput(e.target.value)}
                                 onKeyDown={e => e.key === "Enter" && send()}
                                 placeholder="Pergunte sobre suas finanças..."
-                                className="flex-1 bg-muted/50 border border-border/50 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors"
+                                className="flex-1 bg-background border border-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground placeholder:text-muted-foreground transition-all shadow-inner"
                             />
                             <Button
                                 onClick={send}

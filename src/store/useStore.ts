@@ -49,6 +49,7 @@ export interface Transaction {
     category: string
     type: 'expense' | 'income'
     date: string
+    isAiGenerated?: boolean
 }
 
 export interface Goal {
@@ -95,20 +96,70 @@ export const useUserStore = create<UserState>()(
             addCoins: (amount) => set((state) => ({ coins: state.coins + amount })),
             incrementStreak: () => set((state) => ({ streak: state.streak + 1 })),
             addTransaction: (t) => {
-                set((state) => ({ transactions: [t, ...state.transactions] }));
-                // Background sync
-                supabase.auth.getSession().then(({ data }) => {
-                    if (data.session) {
-                        supabase.from('transactions').insert({
-                            id: t.id,
-                            user_id: data.session.user.id,
-                            amount: t.amount,
-                            category: t.category,
-                            type: t.type,
-                            date: t.date,
-                            name: t.category // Basic fallback
-                        }).then();
+                set((state) => {
+                    const newTransactions = [t, ...state.transactions];
+                    let xpGained = 0;
+                    let updatedGoals = [...state.goals];
+
+                    // --- Auto-Completion / Goal Tracking Logic ---
+                    if (t.type === 'expense') {
+                        // Check if this expense violates an active spending goal
+                        updatedGoals = updatedGoals.map(goal => {
+                            if (!goal.completed && goal.category === 'spending' && goal.title.includes(t.category)) {
+                                // Simple logic: if they spend on a category they had a goal to avoid, they fail it.
+                                // In a more complex app, we'd check if `t.amount` exceeds a threshold or if it's past the 7 days.
+                                // For now, let's mark it completed but with 0 XP reward to show failure, or just keep it open but notify.
+                                // Let's mark it as 'failed' by completing it but granting 0 XP. 
+                                // Alternatively, we just don't grant XP here.
+                                // Actually, let's just make it a visual thing for now, or reduce XP.
+                                // To keep it simple: If they spend on that category, the goal is marked complete (failed) so it stops tracking.
+                                return { ...goal, completed: true, xpReward: 0, title: goal.title + " (Falhou⚠️)" };
+                            }
+                            return goal;
+                        });
                     }
+
+                    // For incomes or other types, maybe auto-complete saving goals
+                    if (t.type === 'income') {
+                        updatedGoals = updatedGoals.map(goal => {
+                            if (!goal.completed && goal.category === 'saving') {
+                                xpGained += goal.xpReward;
+                                return { ...goal, completed: true };
+                            }
+                            return goal;
+                        });
+                    }
+
+                    const newXp = state.xp + xpGained;
+
+                    // Background sync
+                    supabase.auth.getSession().then(({ data }) => {
+                        if (data.session) {
+                            supabase.from('transactions').insert({
+                                id: t.id,
+                                user_id: data.session.user.id,
+                                amount: t.amount,
+                                category: t.category,
+                                type: t.type,
+                                date: t.date,
+                                name: t.category,
+                                is_ai_generated: t.isAiGenerated || false
+                            }).then();
+
+                            if (xpGained > 0 || updatedGoals !== state.goals) {
+                                supabase.from('profiles').update({
+                                    xp: newXp,
+                                    goals: updatedGoals
+                                }).eq('id', data.session.user.id);
+                            }
+                        }
+                    });
+
+                    return {
+                        transactions: newTransactions,
+                        goals: updatedGoals,
+                        xp: newXp
+                    };
                 });
             },
             resetProgress: () => set({
@@ -167,15 +218,66 @@ export const useUserStore = create<UserState>()(
     )
 )
 
-// To preserve instant load while waiting for hydration, we can return the unhydrated initial state first.
-// However, since persist causes a hydration error if UI differs, we handle Skeleton/Loading states inside the component.
-export function useUserStoreHydrated<T>(selector: (state: UserState) => T): T | null {
-    const result = useUserStore(selector)
-    const [hydrated, setHydrated] = useState(false)
 
-    useEffect(() => {
-        setHydrated(true)
-    }, [])
+// ─────────────────────────────────────────────────────────────────────────────
+// Hook de hidratação correto usando a API oficial do Zustand persist.
+// Retorna o estado IMEDIATAMENTE — nunca retorna null.
+// Páginas podem usar `user.hasOnboarded` sem qualquer PageLoader por hidratação.
+// ─────────────────────────────────────────────────────────────────────────────
+export function useUserStoreHydrated<T>(selector: (state: UserState) => T): T {
+    return useUserStore(selector);
+}
 
-    return hydrated ? result : null
+// ─────────────────────────────────────────────────────────────────────────────
+// Hook para verificar se o store já foi hidratado do localStorage.
+// Use isso APENAS quando você precisa de um guard antes de renderizar dados.
+// ─────────────────────────────────────────────────────────────────────────────
+export function useIsHydrated(): boolean {
+    const [hydrated, setHydrated] = useState(false);
+    useEffect(() => { setHydrated(true); }, []);
+    return hydrated;
+}
+
+// Global Supabase Auto-Sync 
+// Listens to Zustand changes and debounces an update to Supabase
+if (typeof window !== 'undefined') {
+    let syncTimeout: NodeJS.Timeout | null = null;
+    let isInitialSync = true; // Prevent syncing back initial hydration
+
+    useUserStore.subscribe((state, prevState) => {
+        if (isInitialSync) {
+            isInitialSync = false;
+            return;
+        }
+
+        const fieldsChanged =
+            state.xp !== prevState.xp ||
+            state.coins !== prevState.coins ||
+            state.streak !== prevState.streak ||
+            state.transactions.length !== prevState.transactions.length ||
+            state.goals.length !== prevState.goals.length ||
+            state.dailyQuizCompletedAt !== prevState.dailyQuizCompletedAt ||
+            state.activeAvatar !== prevState.activeAvatar ||
+            state.unlockedAvatars.length !== prevState.unlockedAvatars.length;
+
+        if (fieldsChanged) {
+            if (syncTimeout) clearTimeout(syncTimeout);
+            syncTimeout = setTimeout(async () => {
+                const { data } = await supabase.auth.getSession();
+                if (data.session) {
+                    const userId = data.session.user.id;
+                    await supabase.from('profiles').update({
+                        xp: state.xp,
+                        coins: state.coins,
+                        streak: state.streak,
+                        transactions: state.transactions,
+                        goals: state.goals,
+                        daily_quiz_completed_at: state.dailyQuizCompletedAt,
+                        active_avatar: state.activeAvatar,
+                        unlocked_avatars: state.unlockedAvatars
+                    }).eq('id', userId);
+                }
+            }, 1500); // Debounce to prevent spamming the database
+        }
+    });
 }

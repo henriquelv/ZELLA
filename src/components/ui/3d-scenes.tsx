@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useRef } from "react";
+import { Suspense, useRef, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { RoundedBox, MeshDistortMaterial, Float, Stars } from "@react-three/drei";
 import * as THREE from "three";
@@ -81,14 +81,14 @@ function Trophy3D() {
 
 // ─── Floating XP Orbs ────────────────────────────────────────────────────────
 function XPOrbs() {
-    const orbs = Array.from({ length: 6 }, (_, i) => ({
+    const orbs = useMemo(() => Array.from({ length: 6 }, (_, i) => ({
         x: (Math.random() - 0.5) * 3,
         y: (Math.random() - 0.5) * 2,
         z: (Math.random() - 0.5) * 1,
         size: 0.08 + Math.random() * 0.1,
         speed: 0.5 + Math.random() * 1,
         offset: Math.random() * Math.PI * 2,
-    }));
+    })), []);
 
     return (
         <>

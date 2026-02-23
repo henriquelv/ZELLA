@@ -93,15 +93,15 @@ export default function OnboardingPage() {
             // Diagnosis Logic
             if (q1 === "A" || q3 === "A") {
                 calculatedStep = 1;
-                profileTitle = "Sobrevivente";
+                profileTitle = "Perfil Focado";
                 missionText = "Parar o sangramento. Vamos mapear para onde seu dinheiro está fugindo e conter os danos imediatos.";
             } else if (q1 === "C" && q2 === "C") {
                 calculatedStep = 4;
-                profileTitle = "Mestre do Ouro";
+                profileTitle = "Investidor Ágil";
                 missionText = "Otimizar suas reservas e começar a multiplicar seus ativos financeiros.";
             } else if (q3 === "C") {
                 calculatedStep = 3;
-                profileTitle = "Caçador de Rendimentos";
+                profileTitle = "Buscador de Rendimentos";
                 missionText = "Acelerar sua capacidade de gerar sobras mensais para fortificar sua reserva.";
             }
 
@@ -164,33 +164,60 @@ export default function OnboardingPage() {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="flex-1 flex flex-col items-center justify-center text-center space-y-8"
+                        className="flex-1 flex flex-col justify-center space-y-6"
                     >
-                        <div className="relative w-48 h-48">
-                            <div className="absolute inset-0 bg-primary/20 blur-[50px] rounded-full animate-pulse" />
-                            <ZLogoScene size={192} />
+                        {/* Big hero statement */}
+                        <div className="text-center space-y-3">
+                            <div className="relative w-28 h-28 mx-auto">
+                                <div className="absolute inset-0 bg-primary/20 blur-[40px] rounded-full animate-pulse" />
+                                <ZLogoScene size={112} />
+                            </div>
+                            <h1 className="text-3xl font-black font-heading leading-tight mt-2">
+                                Chega de dinheiro<br />
+                                <span className="text-primary italic">sumindo sem explicação.</span>
+                            </h1>
+                            <p className="text-muted-foreground font-medium text-sm/relaxed max-w-xs mx-auto">
+                                O Zella não é mais um app de controle de gastos. É o seu coach financeiro que te ajuda a sair do buraco de verdade.
+                            </p>
                         </div>
 
-                        <div className="space-y-3 relative z-10">
-                            <h1 className="text-3xl font-bold font-heading leading-tight">
-                                Esqueça as <span className="text-primary italic">planilhas chatas.</span>
-                            </h1>
-                            <p className="text-muted-foreground font-medium text-base/relaxed max-w-[280px] mx-auto">
-                                Zella é seu RPG financeiro. Para te equipar corretamente, preciso escanear sua saúde atual.
+                        {/* Value props — o que você vai conseguir */}
+                        <div className="space-y-2.5">
+                            {[
+                                { emoji: "🔍", title: "Descobrir onde seu dinheiro some", desc: "Identificamos os vazamentos que você nem percebe." },
+                                { emoji: "💡", title: "Insights reais do seu extrato", desc: "A IA analisa seus dados e aponta o que cortar primeiro." },
+                                { emoji: "🏆", title: "Resultado em semanas, não anos", desc: "Usuários como você economizam R$ 200–500/mês no 1º mês." },
+                            ].map(v => (
+                                <div key={v.title} className="flex items-start gap-4 bg-card/60 border border-border/50 rounded-2xl p-4">
+                                    <span className="text-2xl shrink-0">{v.emoji}</span>
+                                    <div>
+                                        <p className="font-bold text-sm">{v.title}</p>
+                                        <p className="text-xs text-muted-foreground mt-0.5">{v.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Not a bank app disclaimer */}
+                        <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-2xl p-3">
+                            <span className="text-xl shrink-0">🚫</span>
+                            <p className="text-xs font-bold text-muted-foreground">
+                                <span className="text-primary">Não somos</span> Mobills, Guiabolso ou planilha do Google. Somos seu parceiro de evolução financeira.
                             </p>
                         </div>
 
                         <Button
                             variant="premium"
                             size="lg"
-                            className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/25 mt-8 hover:scale-[1.02] transition-transform"
+                            className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/25 hover:scale-[1.02] transition-transform"
                             onClick={() => setStep(2)}
                         >
                             <Sparkles className="w-5 h-5 mr-2" />
-                            Iniciar Diagnóstico
+                            Quero mudar minha situação
                         </Button>
                     </motion.div>
                 )}
+
 
                 {/* QUESTIONS PHASE */}
                 {step === 2 && (
@@ -214,8 +241,8 @@ export default function OnboardingPage() {
                                     whileTap={{ scale: 0.98 }}
                                     key={option.value}
                                     className={`w-full group relative overflow-hidden flex items-center p-4 rounded-2xl border-2 transition-all duration-200 text-left ${answers[currentQ.id] === option.value
-                                            ? "border-primary bg-primary/10 shadow-[0_0_15px_rgba(var(--primary),0.15)]"
-                                            : "border-border/50 bg-card/80 backdrop-blur hover:border-primary/40 hover:bg-card"
+                                        ? "border-primary bg-primary/10 shadow-[0_0_15px_rgba(var(--primary),0.15)]"
+                                        : "border-border/50 bg-card/80 backdrop-blur hover:border-primary/40 hover:bg-card"
                                         }`}
                                     onClick={() => handleOptionSelect(option.value)}
                                 >
@@ -247,10 +274,10 @@ export default function OnboardingPage() {
                         </div>
                         <div className="space-y-2">
                             <h2 className="text-2xl font-bold font-heading">
-                                Processando Aura...
+                                Processando Perfil...
                             </h2>
                             <p className="text-muted-foreground font-medium animate-pulse">
-                                Mapeando vulnerabilidades financeiras
+                                Mapeando sua saúde financeira
                             </p>
                         </div>
                     </motion.div>
@@ -278,7 +305,7 @@ export default function OnboardingPage() {
                                     Diagnóstico Concluído
                                 </Badge>
                                 <h1 className="text-3xl font-bold font-heading text-foreground leading-tight">
-                                    Aura: {resultData.title}
+                                    Perfil: {resultData.title}
                                 </h1>
                             </div>
                         </div>
@@ -318,58 +345,59 @@ export default function OnboardingPage() {
                             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </Button>
                     </motion.div>
-                )}
+                )
+                }
 
                 {/* NAME COLLECTION */}
-                {step === 5 && (
-                    <motion.div
-                        key="name"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="flex-1 flex flex-col justify-center space-y-8"
-                    >
-                        <div className="space-y-3 text-center">
-                            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2 text-primary">
-                                <Trophy className="w-8 h-8" />
+                {
+                    step === 5 && (
+                        <motion.div
+                            key="name"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="flex-1 flex flex-col justify-center space-y-8"
+                        >
+                            <div className="space-y-3 text-center">
+                                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2 text-primary">
+                                    <Trophy className="w-8 h-8" />
+                                </div>
+                                <h2 className="text-3xl font-bold font-heading">
+                                    Tudo Pronto!
+                                </h2>
+                                <p className="text-muted-foreground font-medium">Sua jornada começa agora. Como devemos te chamar?</p>
                             </div>
-                            <h2 className="text-3xl font-bold font-heading">
-                                Preparando o Terreno
-                            </h2>
-                            <p className="text-muted-foreground font-medium">As crônicas precisam de um herói. Qual o seu nome?</p>
-                        </div>
 
-                        <div className="relative max-w-xs mx-auto w-full">
-                            <input
-                                type="text"
-                                placeholder="Nome do Jogador"
-                                className="w-full text-center text-2xl font-bold border-b-2 border-border/50 bg-transparent py-4 focus:outline-none focus:border-primary placeholder:text-muted-foreground/30 transition-colors text-foreground"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                autoFocus
-                            />
-                        </div>
+                            <div className="relative max-w-xs mx-auto w-full">
+                                <input
+                                    type="text"
+                                    placeholder="Seu Nome ou Apelido"
+                                    className="w-full text-center text-2xl font-bold border-b-2 border-border/50 bg-transparent py-4 focus:outline-none focus:border-primary placeholder:text-muted-foreground/30 transition-colors text-foreground"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    autoFocus
+                                />
+                            </div>
 
-                        <div className="pt-8">
-                            <Button
-                                size="lg"
-                                className="w-full h-14 rounded-2xl text-lg font-bold shadow-lg shadow-primary/20 relative overflow-hidden group"
-                                onClick={handleFinish}
-                                disabled={!name.trim()}
-                            >
-                                <span className="relative z-10 flex items-center gap-2">
-                                    Adentrar Zella
-                                    <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                                </span>
-                                <div className="absolute inset-0 bg-primary-foreground/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                            </Button>
-                        </div>
-                    </motion.div>
-                )}
+                            <div className="pt-8">
+                                <Button
+                                    size="lg"
+                                    className="w-full h-14 rounded-2xl text-lg font-bold shadow-lg shadow-primary/20 relative overflow-hidden group"
+                                    onClick={handleFinish}
+                                    disabled={!name.trim()}
+                                >
+                                    <span className="relative z-10 flex items-center gap-2">
+                                        Começar Jornada
+                                        <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                                    </span>
+                                    <div className="absolute inset-0 bg-primary-foreground/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                                </Button>
+                            </div>
+                        </motion.div>
+                    )}
             </AnimatePresence>
         </div>
     );
 }
-
 function Badge({ children, variant, className }: any) {
     return (
         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${className}`}>

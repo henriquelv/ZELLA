@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -20,6 +21,8 @@ import { useUserStoreHydrated } from "@/store/useStore";
 import { BottomNav } from "@/components/ui/bottom-nav";
 import dynamic from "next/dynamic";
 import { PageLoader } from "@/components/ui/page-loader";
+import { AvatarSelector, AVATARS } from "@/components/ui/avatar-selector";
+import { supabase } from "@/lib/supabase";
 
 const XPOrbScene = dynamic(
     () => import("@/components/ui/3d-scenes").then((mod) => mod.XPOrbScene),
@@ -41,8 +44,17 @@ const MENU_ITEMS = [
 export default function ProfilePage() {
     const router = useRouter();
     const user = useUserStoreHydrated((state) => state);
+    const [isAvatarOpen, setIsAvatarOpen] = useState(false);
 
     if (!user) return <PageLoader message="Carregando perfil..." />;
+
+    const activeAvatarRecord = AVATARS.find(a => a.id === user.activeAvatar) || AVATARS[0];
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        user.resetProgress();
+        router.push("/");
+    };
 
     return (
         <div className="min-h-screen bg-background pb-32 overflow-x-hidden selection:bg-primary/20">
@@ -75,10 +87,19 @@ export default function ProfilePage() {
                     className="flex flex-col items-center"
                 >
                     <div className="relative mb-4">
-                        <div className="w-28 h-28 rounded-full border-4 border-background bg-zinc-800 flex items-center justify-center text-4xl font-bold font-heading text-white shadow-xl ring-2 ring-primary/20">
-                            {user.name ? user.name.charAt(0).toUpperCase() : "T"}
-                        </div>
-                        <button className="absolute bottom-0 right-0 p-2.5 bg-primary text-white rounded-full shadow-lg border-4 border-background hover:scale-110 active:scale-95 transition-transform">
+                        <button
+                            onClick={() => setIsAvatarOpen(true)}
+                            className={cn(
+                                "w-28 h-28 rounded-full border-4 border-background flex items-center justify-center text-5xl shadow-xl ring-2 ring-primary/20 transition-transform hover:scale-105 active:scale-95",
+                                activeAvatarRecord.color
+                            )}
+                        >
+                            {activeAvatarRecord.icon}
+                        </button>
+                        <button
+                            onClick={() => setIsAvatarOpen(true)}
+                            className="absolute bottom-0 right-0 p-2.5 bg-primary text-white rounded-full shadow-lg border-4 border-background hover:scale-110 active:scale-95 transition-transform"
+                        >
                             <Camera className="w-4 h-4" />
                         </button>
                     </div>
@@ -152,15 +173,14 @@ export default function ProfilePage() {
                     <Button
                         variant="ghost"
                         className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 gap-2 h-14 rounded-2xl font-bold text-base transition-colors"
-                        onClick={() => {
-                            user.resetProgress();
-                            router.push("/");
-                        }}
+                        onClick={handleLogout}
                     >
                         <LogOut className="w-5 h-5" />
                         Sair da Conta
                     </Button>
                 </motion.div>
+
+                <AvatarSelector isOpen={isAvatarOpen} onClose={() => setIsAvatarOpen(false)} />
             </main>
 
             <BottomNav />

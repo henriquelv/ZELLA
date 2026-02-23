@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Trophy, CheckCircle2, BrainCircuit } from "lucide-react";
 import { useUserStore } from "@/store/useStore";
 import { cn } from "@/lib/utils";
+import { useGameSound } from "@/hooks/use-game-sound";
 
 interface QuizData {
     question: string;
@@ -16,6 +17,7 @@ interface QuizData {
 
 export function DailyQuiz() {
     const { dailyQuizCompletedAt, completeDailyQuiz, xp } = useUserStore();
+    const { playSound } = useGameSound();
     const [selectedQ, setSelectedQ] = useState<QuizData | null>(null);
     const [selectedOpt, setSelectedOpt] = useState<number | null>(null);
     const [answered, setAnswered] = useState(false);
@@ -106,11 +108,13 @@ export function DailyQuiz() {
 
         // Se acertou, ganha +50 XP
         if (idx === selectedQ.correctIndex) {
+            playSound('success');
             setTimeout(() => {
                 completeDailyQuiz(50);
             }, 2500);
         } else {
             // Se errou, ganha consolação +10 XP
+            playSound('error');
             setTimeout(() => {
                 completeDailyQuiz(10);
             }, 3500);

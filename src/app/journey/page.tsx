@@ -4,16 +4,14 @@ import { useUserStoreHydrated } from "@/store/useStore";
 import { BottomNav } from "@/components/ui/bottom-nav";
 import { cn } from "@/lib/utils";
 import { steps } from "@/data/steps";
-import { Check, Lock, Star, Trophy } from "lucide-react";
+import { Check, Lock, Star, Trophy, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DailyQuiz } from "@/components/ui/daily-quiz";
-
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { PageLoader } from "@/components/ui/page-loader";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { X } from "lucide-react";
 
 export default function JourneyPage() {
     const user = useUserStoreHydrated((state) => state);
@@ -82,7 +80,7 @@ export default function JourneyPage() {
                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Como ganhar XP?</p>
                                 <ul className="text-sm font-medium space-y-2">
                                     <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Registrar gastos em Finanças (-20 XP)</li>
-                                    <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-violet-500" /> Jogar minigames (+80 XP)</li>
+                                    <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-violet-500" /> Completar Desafios Rápidos (+80 XP)</li>
                                     <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-orange-500" /> Completar Metas (até +200 XP)</li>
                                 </ul>
                             </div>

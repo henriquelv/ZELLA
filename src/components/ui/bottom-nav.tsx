@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Map, GamepadIcon, Target, Wallet, ShoppingBag, User } from "lucide-react";
+import { Home, Wallet, GamepadIcon, Users, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function BottomNav() {
@@ -12,7 +12,7 @@ export function BottomNav() {
         { href: "/dashboard", label: "Home", icon: Home },
         { href: "/finances", label: "Base", icon: Wallet },
         { href: "/missions", label: "Missões", icon: GamepadIcon },
-        { href: "/metas", label: "Metas", icon: Target },
+        { href: "/social", label: "Social", icon: Users },
         { href: "/profile", label: "Perfil", icon: User },
     ];
 
@@ -30,7 +30,7 @@ export function BottomNav() {
                             key={href}
                             href={href}
                             className={cn(
-                                "relative flex flex-col items-center justify-center w-full h-full space-y-1 transition-all duration-200 active:scale-95 group",
+                                "relative flex flex-col items-center justify-center w-full h-full min-h-[44px] space-y-1 transition-all duration-200 active:scale-95 group cursor-pointer",
                                 isActive
                                     ? "text-primary"
                                     : "text-muted-foreground hover:text-foreground"

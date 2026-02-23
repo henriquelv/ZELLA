@@ -15,6 +15,7 @@ import {
 import dynamic from "next/dynamic";
 import { SwipeCardGame } from "@/components/ui/swipe-card-game";
 import Link from "next/link";
+import { useGameSound } from "@/hooks/use-game-sound";
 
 const TrophyScene = dynamic(() => import("@/components/ui/3d-scenes").then(m => ({ default: m.TrophyScene })), { ssr: false, loading: () => <div className="w-40 h-40 mx-auto flex items-center justify-center"><Trophy className="w-14 h-14 text-yellow-500 animate-pulse" /></div> });
 const CoinScene = dynamic(() => import("@/components/ui/3d-scenes").then(m => ({ default: m.CoinScene })), { ssr: false, loading: () => <div className="w-36 h-36 mx-auto flex items-center justify-center"><Trophy className="w-12 h-12 text-blue-500 animate-pulse" /></div> });
@@ -33,6 +34,7 @@ const TRIVIA_QS = [
 ];
 
 function FinancialTrivia({ onFinish }: { onFinish: (s: number, t: number) => void }) {
+    const { playSound } = useGameSound();
     const [qIdx, setQIdx] = useState(0);
     const [score, setScore] = useState(0);
     const [chosen, setChosen] = useState<number | null>(null);
@@ -43,7 +45,12 @@ function FinancialTrivia({ onFinish }: { onFinish: (s: number, t: number) => voi
         if (chosen !== null) return;
         setChosen(i);
         setShowExp(true);
-        if (i === q.ans) setScore(s => s + 1);
+        if (i === q.ans) {
+            setScore(s => s + 1);
+            playSound('success');
+        } else {
+            playSound('error');
+        }
     };
 
     const handleNext = () => {
@@ -241,6 +248,7 @@ const SORTER_ITEMS = [
 const CATEGORIES = ["Necessidade", "Desejo", "Desperdício"];
 
 function SpendingSorter({ onFinish }: { onFinish: (score: number, total: number) => void }) {
+    const { playSound } = useGameSound();
     const [currentIdx, setCurrentIdx] = useState(0);
     const [score, setScore] = useState(0);
     const [feedback, setFeedback] = useState<null | "correct" | "wrong">(null);
@@ -254,7 +262,12 @@ function SpendingSorter({ onFinish }: { onFinish: (score: number, total: number)
         setChosen(cat);
         const correct = cat === item.correct;
         setFeedback(correct ? "correct" : "wrong");
-        if (correct) setScore(s => s + 1);
+        if (correct) {
+            setScore(s => s + 1);
+            playSound('coin');
+        } else {
+            playSound('error');
+        }
 
         setTimeout(() => {
             setFeedback(null);
@@ -415,6 +428,7 @@ const GOAL_SUGGESTIONS: Array<{ title: string; description: string; category: "s
 ];
 
 function GameResult({ score, total, onBack }: { score: number; total: number; onBack: () => void }) {
+    const { playSound } = useGameSound();
     const pct = score / total;
     const xp = Math.round(pct * 80);
     const { addXp, addCoins, addGoal, goals } = useUserStore.getState();
@@ -422,6 +436,7 @@ function GameResult({ score, total, onBack }: { score: number; total: number; on
     useEffect(() => {
         addXp(xp);
         addCoins(Math.round(pct * 20));
+        if (pct >= 0.5) playSound('success');
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -617,13 +632,22 @@ export default function MissionsPage() {
                     ) : (
                         /* GAME LIST */
                         <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-                            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-center gap-3">
-                                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary shrink-0">
+                            {/* Personalized context banner by user step */}
+                            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-start gap-3">
+                                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary shrink-0 mt-0.5">
                                     <GamepadIcon className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <p className="font-bold text-sm">Aprenda jogando!</p>
-                                    <p className="text-xs text-muted-foreground">Complete missões para ganhar XP, moedas, e evoluir na Jornada.</p>
+                                    <p className="font-bold text-sm">
+                                        {user.currentStep <= 1
+                                            ? "🚀 Comece por aqui — estes games vão te mostrar o básico que ninguém te ensinou"
+                                            : user.currentStep <= 3
+                                                ? "⚡ Games para quem quer evoluir rápido — cada um leva menos de 5 minutos"
+                                                : "🏆 Nível avançado — teste seu domínio financeiro e ganhe XP extra"}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                        Complete um game → ganhe XP → destrave o próximo degrau da Jornada.
+                                    </p>
                                 </div>
                             </div>
 

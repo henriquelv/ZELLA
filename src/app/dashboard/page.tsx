@@ -74,44 +74,48 @@ export default function DashboardPage() {
             <AppHeader />
 
             <main className="px-5 space-y-5 mt-4 max-w-lg mx-auto relative z-10">
-                {/* 1. PROFILE STATUS — Like mockup "Explorer Status" */}
-                <motion.section
+                {/* 1. HERO MISSION SUMMARY */}
+                <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white/70 backdrop-blur-sm border border-black/[0.05] rounded-3xl p-5 shadow-sm"
                 >
-                    <div className="flex items-center gap-4">
-                        {/* Level circle like mockup */}
-                        <div className="w-14 h-14 rounded-full border-[3px] border-[#2563eb] flex items-center justify-center shrink-0">
-                            <span className="text-lg font-bold text-[#2563eb]">{currentLevel}</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-0.5">
-                                <div>
-                                    <h3 className="font-bold text-[15px] text-gray-900 leading-tight">
-                                        {currentStepData.title}
-                                    </h3>
-                                    <p className="text-[12px] text-gray-400 mt-0.5">
-                                        Level {currentLevel}, <span className="font-medium text-gray-500">{user.xp}/{xpNeeded} XP</span>
-                                    </p>
+                    <Link href="/profile" className="block bg-white/70 backdrop-blur-sm border border-black/[0.05] rounded-3xl p-5 shadow-sm hover:border-[#2563eb]/30 transition-colors">
+                        <div className="flex items-center gap-4">
+                            {/* Level circle like mockup */}
+                            <div className="w-14 h-14 rounded-full border-[3px] border-[#2563eb] flex items-center justify-center shrink-0">
+                                <span className="text-lg font-bold text-[#2563eb]">{currentLevel}</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between mb-0.5">
+                                    <div>
+                                        <h3 className="font-bold text-[15px] text-gray-900 leading-tight">
+                                            {currentStepData.title}
+                                        </h3>
+                                        <p className="text-[12px] text-gray-400 mt-0.5">
+                                            Level {currentLevel}, <span className="font-medium text-gray-500">{user.xp}/{xpNeeded} XP</span>
+                                        </p>
+                                    </div>
+                                    <span className="text-[13px] font-bold text-[#2563eb]">{xpProgress}%</span>
                                 </div>
-                                <span className="text-[13px] font-bold text-[#2563eb]">{xpProgress}%</span>
+                                {/* Progress bar */}
+                                <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden mt-2">
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${xpProgress}%` }}
+                                        transition={{ duration: 1, ease: "easeOut" }}
+                                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#2563eb] to-[#16a34a] rounded-full"
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between mt-2">
+                                    <p className="text-[11px] text-gray-400">
+                                        Degrau Atual: <span className="font-semibold text-gray-600">{currentStepData.title}</span>
+                                    </p>
+                                    <span className="text-[10px] uppercase font-bold text-[#2563eb] bg-blue-50 px-2 py-0.5 rounded-full">Ver Perfil</span>
+                                </div>
                             </div>
-                            {/* Progress bar */}
-                            <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden mt-2">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${xpProgress}%` }}
-                                    transition={{ duration: 1, ease: "easeOut" }}
-                                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#2563eb] to-[#16a34a] rounded-full"
-                                />
-                            </div>
-                            <p className="text-[11px] text-gray-400 mt-2">
-                                Degrau Atual: <span className="font-semibold text-gray-600">{currentStepData.title}</span>
-                            </p>
                         </div>
-                    </div>
-                </motion.section>
+                    </Link>
+                </motion.div>
 
                 {/* 1.1 — STREAK + METRICS ROW */}
                 <motion.section

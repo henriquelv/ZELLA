@@ -60,6 +60,8 @@ export interface UserState {
     loadUserData: () => Promise<void>
     syncWithSupabase: (data: Partial<UserState>) => void
     saveMissionCompletion: (missionId: string, score: number, xpReward: number, coinsReward: number) => Promise<void>
+
+    calculateMetricsFromTransactions: () => void
 }
 
 export interface Transaction {
@@ -188,7 +190,6 @@ export const useUserStore = create<UserState>()(
                     const newXp = state.xp + xpGained;
 
                     // Manual push for transaction table (profiles.transactions is now gone)
-                    // Manual push for transaction table (profiles.transactions is now gone)
                     (async () => {
                         const { data } = await supabase.auth.getSession();
                         if (data.session) {
@@ -211,6 +212,7 @@ export const useUserStore = create<UserState>()(
                         xp: newXp
                     };
                 });
+                get().calculateMetricsFromTransactions();
             },
             resetProgress: () => set({
                 hasOnboarded: false, currentStep: 1, level: 1, xp: 0, coins: 0, streak: 0, name: "",
@@ -219,6 +221,64 @@ export const useUserStore = create<UserState>()(
                 activeAvatar: 'default', dailyQuizCompletedAt: null, dailyCoinsEarned: 0,
                 missions: [], userMissions: []
             }),
+
+            calculateMetricsFromTransactions: () => {
+                set((state: UserState) => {
+                    if (state.revenue === 0) return state;
+
+                    const now = new Date();
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(now.getDate() - 30);
+
+                    const recentTransactions = state.transactions.filter(t => new Date(t.date) >= thirtyDaysAgo);
+
+                    let incoming = 0;
+                    let survivalExpenses = 0;
+                    let lifestyleExpenses = 0;
+                    let drainExpenses = 0;
+
+                    const activeRevenue = state.revenue; // Base is fixed revenue month
+
+                    recentTransactions.forEach(t => {
+                        if (t.type === 'income') {
+                            incoming += t.amount;
+                        } else {
+                            const cat = t.category;
+                            if (['Alimentação', 'Saúde', 'Moradia', 'Transporte', 'Educação'].includes(cat)) {
+                                survivalExpenses += t.amount;
+                            } else if (['Lazer', 'Roupas', 'Tecnologia'].includes(cat)) {
+                                lifestyleExpenses += t.amount;
+                            } else if (['Assinaturas', 'Festas'].includes(cat)) {
+                                drainExpenses += t.amount;
+                            } else {
+                                lifestyleExpenses += t.amount; // default fallback
+                            }
+                        }
+                    });
+
+                    const totalExpenses = survivalExpenses + lifestyleExpenses + drainExpenses;
+                    const endBalance = activeRevenue - totalExpenses;
+
+                    const ie = (endBalance / activeRevenue) * 100;
+                    const is = (survivalExpenses / activeRevenue) * 100;
+                    const idMetric = (drainExpenses / activeRevenue) * 100;
+
+                    const rs = state.fixedCosts > 0 ? (state.totalBalance / state.fixedCosts) : 0;
+
+                    let newStep = 1;
+
+                    if (rs >= 6 && ie > 20 && idMetric < 5) newStep = 6;
+                    else if (rs >= 3 && ie > 15 && idMetric < 7) newStep = 5;
+                    else if (rs >= 1 && ie > 10 && idMetric < 10 && is <= 70) newStep = 4;
+                    else if (rs >= 0.5 && ie > 5 && idMetric < 15 && is <= 75) newStep = 3;
+                    else if (ie > 0 && idMetric <= 20 && is <= 80) newStep = 2;
+                    else newStep = 1;
+
+                    // Fallback to highest previously unlocked if fallback rules apply, but here we just assign to keep strict LogicaBack.
+                    // Ideally we only update if better.
+                    return { ie, is, idMetric, rs, currentStep: newStep };
+                });
+            },
 
             checkAndApplyStreak: () => {
                 const today = format(new Date(), 'yyyy-MM-dd');

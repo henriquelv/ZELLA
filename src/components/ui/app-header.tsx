@@ -31,12 +31,12 @@ export function AppHeader() {
                         {activeAvatarRecord.icon}
                     </div>
                 </button>
-                <div className="flex flex-col">
+                <Link href="/profile" className="flex flex-col hover:opacity-80 transition-opacity">
                     <span className="font-heading font-bold text-[17px] leading-tight tracking-tight text-gray-900">
                         Olá, {user?.name?.split(" ")[0] || 'Explorer'}
                     </span>
-                    <span className="text-[11px] text-gray-400 font-medium">Bem-vindo de volta!</span>
-                </div>
+                    <span className="text-[11px] text-[#2563eb] font-bold">Ver Perfil Completo</span>
+                </Link>
             </div>
             <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5 bg-white/70 backdrop-blur-sm border border-black/[0.06] px-3.5 py-2 rounded-full shadow-sm">

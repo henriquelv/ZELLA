@@ -62,6 +62,7 @@ export interface UserState {
     saveMissionCompletion: (missionId: string, score: number, xpReward: number, coinsReward: number) => Promise<void>
 
     calculateMetricsFromTransactions: () => void
+    generateContextualGoals: () => void
 }
 
 export interface Transaction {
@@ -277,6 +278,58 @@ export const useUserStore = create<UserState>()(
                     // Fallback to highest previously unlocked if fallback rules apply, but here we just assign to keep strict LogicaBack.
                     // Ideally we only update if better.
                     return { ie, is, idMetric, rs, currentStep: newStep };
+                });
+                get().generateContextualGoals();
+            },
+
+            generateContextualGoals: () => {
+                set((state: UserState) => {
+                    const now = new Date();
+                    const fourteenDaysAgo = new Date();
+                    fourteenDaysAgo.setDate(now.getDate() - 14);
+
+                    const recentTransactions = state.transactions.filter(t => new Date(t.date) >= fourteenDaysAgo && t.type === 'expense');
+
+                    if (recentTransactions.length === 0) return state;
+
+                    // Group by category
+                    const spendingByCategory: Record<string, number> = {};
+                    recentTransactions.forEach(t => {
+                        spendingByCategory[t.category] = (spendingByCategory[t.category] || 0) + t.amount;
+                    });
+
+                    // Target Drenos (Assinaturas, Festas) and Estilo de Vida (Lazer, Roupas)
+                    const targetCategories = ['Assinaturas', 'Festas', 'Lazer', 'Roupas', 'Tecnologia'];
+                    let highestTargetCat = '';
+                    let highestTargetAmount = 0;
+
+                    for (const cat of targetCategories) {
+                        if (spendingByCategory[cat] > highestTargetAmount) {
+                            highestTargetAmount = spendingByCategory[cat];
+                            highestTargetCat = cat;
+                        }
+                    }
+
+                    // Se gastou mais de R$ 100 numa categoria "ruim/superflua" em 14 dias
+                    if (highestTargetAmount > 100 && highestTargetCat !== '') {
+                        // Verifica se já não tem uma meta ativa para essa categoria
+                        const hasActiveGoalForCat = state.goals.some(g => !g.completed && g.category === 'spending' && g.title.includes(highestTargetCat));
+
+                        if (!hasActiveGoalForCat) {
+                            const newGoal: Goal = {
+                                id: crypto.randomUUID(),
+                                title: `Freiar gastos com ${highestTargetCat}`,
+                                description: `Você gastou R$ ${highestTargetAmount.toFixed(2)} com ${highestTargetCat} recentemente. Tente evitar esse gasto nos próximos dias para melhorar seu Índice de Drenos.`,
+                                category: 'spending',
+                                xpReward: 150,
+                                completed: false,
+                                createdAt: new Date().toISOString()
+                            };
+                            return { goals: [newGoal, ...state.goals] };
+                        }
+                    }
+
+                    return state;
                 });
             },
 

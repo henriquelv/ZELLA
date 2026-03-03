@@ -120,31 +120,41 @@ function OrbMesh({ x, y, z, size, speed, offset }: {
 // ─── 3D Z Logo ────────────────────────────────────────────────────────────────
 function ZLogo3D() {
     const groupRef = useRef<THREE.Group>(null);
+    const scaleRef = useRef(0);
 
     useFrame((state) => {
         if (!groupRef.current) return;
-        groupRef.current.rotation.y = state.clock.elapsedTime * 0.5;
+
+        // Epic Entry Animation: Scale up from 0 to 1 with elastic feel
+        if (scaleRef.current < 1) {
+            scaleRef.current = THREE.MathUtils.lerp(scaleRef.current, 1.05, 0.05);
+            const s = Math.min(1, scaleRef.current);
+            groupRef.current.scale.set(s, s, s);
+        }
+
+        groupRef.current.rotation.y = state.clock.elapsedTime * 0.6;
+        groupRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
     });
 
     return (
-        <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.4}>
-            <group ref={groupRef}>
-                {/* Top bar */}
+        <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
+            <group ref={groupRef} scale={[0, 0, 0]}>
+                {/* Top bar - Blue */}
                 <mesh position={[0, 0.7, 0]}>
-                    <RoundedBox args={[1.6, 0.28, 0.28]} radius={0.1}>
-                        <meshStandardMaterial color="#2563eb" metalness={0.7} roughness={0.2} />
+                    <RoundedBox args={[1.6, 0.3, 0.3]} radius={0.08}>
+                        <meshStandardMaterial color="#2563eb" metalness={0.8} roughness={0.1} emissive="#1d4ed8" emissiveIntensity={0.2} />
                     </RoundedBox>
                 </mesh>
-                {/* Diagonal */}
+                {/* Diagonal - White/Silver */}
                 <mesh position={[0, 0, 0]} rotation={[0, 0, -Math.PI / 4]}>
-                    <RoundedBox args={[1.8, 0.28, 0.28]} radius={0.1}>
-                        <meshStandardMaterial color="#1d4ed8" metalness={0.7} roughness={0.2} />
+                    <RoundedBox args={[1.9, 0.3, 0.3]} radius={0.08}>
+                        <meshStandardMaterial color="#ffffff" metalness={0.9} roughness={0.05} emissive="#ffffff" emissiveIntensity={0.1} />
                     </RoundedBox>
                 </mesh>
-                {/* Bottom bar */}
+                {/* Bottom bar - Green */}
                 <mesh position={[0, -0.7, 0]}>
-                    <RoundedBox args={[1.6, 0.28, 0.28]} radius={0.1}>
-                        <meshStandardMaterial color="#16a34a" metalness={0.7} roughness={0.2} />
+                    <RoundedBox args={[1.6, 0.3, 0.3]} radius={0.08}>
+                        <meshStandardMaterial color="#22c55e" metalness={0.8} roughness={0.1} emissive="#16a34a" emissiveIntensity={0.2} />
                     </RoundedBox>
                 </mesh>
             </group>

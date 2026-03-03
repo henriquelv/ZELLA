@@ -3,13 +3,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { ArrowRight, Trophy, AlertTriangle, ShieldCheck, TrendingUp, Flame, Target, Sparkles, Coins, Wallet } from "lucide-react";
+import { ArrowRight, Sparkles, Wallet, Target, ShieldCheck, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUserStoreHydrated } from "@/store/useStore";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { steps } from "@/data/steps";
 import dynamic from "next/dynamic";
 
 const ZLogoScene = dynamic(
@@ -17,120 +15,31 @@ const ZLogoScene = dynamic(
     { ssr: false }
 );
 
-const DIAGNOSTIC_QUESTIONS = [
-    {
-        id: "feeling",
-        question: "Como você se sente quando chega o fim do mês?",
-        options: [
-            { label: "Sufocado e no vermelho", value: "A", icon: AlertTriangle, color: "text-red-500", bg: "bg-red-500/10" },
-            { label: "No limite, quase empatando", value: "B", icon: ShieldCheck, color: "text-yellow-500", bg: "bg-yellow-500/10" },
-            { label: "Tranquilo, sobra um pouco", value: "C", icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-        ],
-    },
-    {
-        id: "resilience",
-        question: "Se sua principal fonte de renda parasse hoje, por quanto tempo você sobreviveria?",
-        options: [
-            { label: "Desespero imediato (< 1 mês)", value: "A", icon: Flame, color: "text-orange-500", bg: "bg-orange-500/10" },
-            { label: "Consigo segurar uns 3 meses", value: "B", icon: Target, color: "text-blue-500", bg: "bg-blue-500/10" },
-            { label: "Tenho reservas (> 6 meses)", value: "C", icon: Trophy, color: "text-violet-500", bg: "bg-violet-500/10" },
-        ],
-    },
-    {
-        id: "goal",
-        question: "Qual é a sua Missão Principal agora?",
-        options: [
-            { label: "Apagar o incêndio das dívidas", value: "A", icon: AlertTriangle, color: "text-red-500", bg: "bg-red-500/10" },
-            { label: "Tapar os vazamentos (organizar)", value: "B", icon: ShieldCheck, color: "text-yellow-500", bg: "bg-yellow-500/10" },
-            { label: "Multiplicar meu ouro (investir)", value: "C", icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-        ],
-    },
-];
-
 export default function OnboardingPage() {
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [answers, setAnswers] = useState<Record<string, string>>({});
-    const [step, setStep] = useState(1); // 1: Info, 2: Questions, 3: Analyzing, 4: Result, 5: Name
-    const [resultData, setResultData] = useState<{ stepId: number, title: string, mission: string }>({ stepId: 1, title: "", mission: "" });
+    const [step, setStep] = useState(1);
     const [name, setName] = useState("");
-    const [isTransitioning, setIsTransitioning] = useState(false);
 
     const router = useRouter();
     const userStore = useUserStoreHydrated((state) => state);
-
-    const currentSafeIndex = Math.min(currentQuestionIndex, DIAGNOSTIC_QUESTIONS.length - 1);
-    const currentQ = DIAGNOSTIC_QUESTIONS[currentSafeIndex];
-    const progress = ((currentSafeIndex + 1) / DIAGNOSTIC_QUESTIONS.length) * 100;
-
-    const handleOptionSelect = (value: string) => {
-        if (isTransitioning) return;
-        setIsTransitioning(true);
-
-        const newAnswers = { ...answers, [currentQ.id]: value };
-        setAnswers(newAnswers);
-
-        if (currentQuestionIndex < DIAGNOSTIC_QUESTIONS.length - 1) {
-            setTimeout(() => {
-                setCurrentQuestionIndex((prev) => prev + 1);
-                setIsTransitioning(false);
-            }, 300);
-        } else {
-            calculateResult(newAnswers);
-        }
-    };
-
-    const calculateResult = (finalAnswers: Record<string, string>) => {
-        setStep(3); // Analyzing
-
-        setTimeout(() => {
-            const q1 = finalAnswers["feeling"];
-            const q2 = finalAnswers["resilience"];
-            const q3 = finalAnswers["goal"];
-
-            let calculatedStep = 2;
-            let profileTitle = "Estrategista em Treinamento";
-            let missionText = "Identificar fugas de dinheiro na sua rotina e construir sua primeira defesa.";
-
-            // Diagnosis Logic
-            if (q1 === "A" || q3 === "A") {
-                calculatedStep = 1;
-                profileTitle = "Perfil Focado";
-                missionText = "Parar o sangramento. Vamos mapear para onde seu dinheiro está fugindo e conter os danos imediatos.";
-            } else if (q1 === "C" && q2 === "C") {
-                calculatedStep = 4;
-                profileTitle = "Investidor Ágil";
-                missionText = "Otimizar suas reservas e começar a multiplicar seus ativos financeiros.";
-            } else if (q3 === "C") {
-                calculatedStep = 3;
-                profileTitle = "Buscador de Rendimentos";
-                missionText = "Acelerar sua capacidade de gerar sobras mensais para fortificar sua reserva.";
-            }
-
-            setResultData({ stepId: calculatedStep, title: profileTitle, mission: missionText });
-            setStep(4); // Show Result
-        }, 2500);
-    };
 
     const handleFinish = async () => {
         if (!name.trim()) return;
         if (!userStore) return;
 
-        // Try syncing with Supabase if logged in
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData.session) {
             await supabase.from('profiles').update({
                 name: name,
-                current_step: resultData.stepId
+                current_step: 1
             }).eq('id', sessionData.session.user.id);
         }
 
-        userStore.completeOnboarding(resultData.stepId, name);
+        userStore.completeOnboarding(1, name);
 
-        // Setup initial goal to guide them right away
         userStore.addGoal({
             id: crypto.randomUUID(),
             title: "Primeira Vitória",
-            description: "Registre 3 vazamentos de dinheiro (despesas) para a Zella AI analisar o dano.",
+            description: "Registre 3 gastos para a Zella AI analisar seus padrões.",
             category: "habit",
             xpReward: 100,
             completed: false,
@@ -140,289 +49,118 @@ export default function OnboardingPage() {
         router.push("/dashboard");
     };
 
-    const resultStepInfo = steps.find(s => s.id === resultData.stepId) || steps[0];
-
     return (
-        <div className="flex min-h-screen flex-col bg-background p-6 max-w-md mx-auto relative overflow-hidden selection:bg-primary/20 bg-gradient-to-tr from-background via-emerald-500/5 to-blue-500/5">
-            {/* Immersive Glassmorphic Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10 pointer-events-none -z-10" />
-            <div className="absolute top-0 left-0 w-full h-full bg-white/5 backdrop-blur-[2px] pointer-events-none -z-10" />
-
-            {step === 2 && (
-                <div className="w-full py-6 absolute top-0 left-0 px-6 z-20">
-                    <div className="flex justify-between items-center text-xs text-muted-foreground mb-3 font-bold uppercase tracking-wider">
-                        <span className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-primary" /> Diagnóstico Zella</span>
-                        <span>{currentQuestionIndex + 1}/{DIAGNOSTIC_QUESTIONS.length}</span>
-                    </div>
-                    <Progress value={progress} className="h-2 bg-secondary/20" indicatorClassName="bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
-                </div>
-            )}
+        <div className="flex min-h-screen flex-col bg-[#f4f6fb] p-6 max-w-md mx-auto relative overflow-hidden">
+            {/* Ambient Glow */}
+            <div className="fixed inset-0 pointer-events-none z-0">
+                <div className="absolute top-0 right-0 w-[60%] h-[50%] bg-blue-400/[0.06] rounded-full blur-[120px]" />
+                <div className="absolute bottom-0 left-0 w-[50%] h-[50%] bg-green-400/[0.04] rounded-full blur-[100px]" />
+            </div>
 
             <AnimatePresence mode="wait">
-                {/* INTRO PHASE */}
+                {/* STEP 1: Welcome */}
                 {step === 1 && (
                     <motion.div
                         key="intro"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="flex-1 flex flex-col justify-center space-y-6"
+                        className="flex-1 flex flex-col justify-center space-y-8 relative z-10"
                     >
-                        {/* Big hero statement */}
-                        <div className="text-center space-y-3">
-                            <div className="relative w-28 h-28 mx-auto">
-                                <div className="absolute inset-0 bg-primary/20 blur-[40px] rounded-full animate-pulse" />
-                                <ZLogoScene size={112} />
+                        <div className="text-center space-y-4">
+                            <div className="relative w-28 h-28 mx-auto mb-4">
+                                <div className="absolute inset-0 bg-blue-400/10 blur-[40px] rounded-full" />
+                                <div className="bg-white/70 backdrop-blur-sm border border-black/[0.05] p-3 rounded-3xl shadow-sm relative z-10">
+                                    <ZLogoScene size={88} />
+                                </div>
                             </div>
-                            <h1 className="text-3xl font-black font-heading leading-tight mt-2">
-                                Construa sua liberdade financeira<br />
-                                <span className="text-primary italic">com inteligência.</span>
+                            <h1 className="text-3xl font-bold text-gray-900 leading-tight">
+                                Liberdade Financeira<br />
+                                <span className="bg-gradient-to-r from-[#2563eb] to-[#16a34a] bg-clip-text text-transparent">Estratégica.</span>
                             </h1>
-                            <p className="text-muted-foreground font-medium text-sm/relaxed max-w-xs mx-auto">
-                                Transformamos o caos financeiro em resiliência. O Zella te guia rumo à independência com estratégias baseadas em dados reais.
+                            <p className="text-gray-500 text-[15px] leading-relaxed max-w-[280px] mx-auto">
+                                A Zella transforma o caos em resiliência com inteligência artificial.
                             </p>
                         </div>
 
-                        {/* Financial Health Pillars */}
+                        {/* Features grid */}
                         <div className="grid grid-cols-2 gap-3">
                             {[
-                                { title: "Gastar Melhor", icon: Wallet, desc: "Foco no que importa.", color: "text-blue-500", bg: "bg-blue-500/10" },
-                                { title: "Microvitórias", icon: Sparkles, desc: "Poupar sem esforço.", color: "text-emerald-500", bg: "bg-emerald-500/10" },
-                                { title: "Crédito Consciente", icon: Target, desc: "Uso estratégico.", color: "text-purple-500", bg: "bg-purple-500/10" },
-                                { title: "Plano Sem Culpa", icon: ShieldCheck, desc: "Liberdade real.", color: "text-orange-500", bg: "bg-orange-500/10" },
+                                { title: "Gastar Melhor", icon: Wallet, color: "text-blue-600", bg: "bg-blue-50" },
+                                { title: "Microvitórias", icon: Sparkles, color: "text-emerald-600", bg: "bg-emerald-50" },
+                                { title: "Crédito Elite", icon: Target, color: "text-purple-600", bg: "bg-purple-50" },
+                                { title: "Plano Zella", icon: ShieldCheck, color: "text-orange-600", bg: "bg-orange-50" },
                             ].map(p => (
-                                <div key={p.title} className="bg-card/40 border border-white/5 backdrop-blur-sm p-4 rounded-2xl flex flex-col items-center text-center group hover:bg-card/60 transition-all">
-                                    <div className={cn("w-10 h-10 rounded-full flex items-center justify-center mb-2", p.bg)}>
+                                <div key={p.title} className="bg-white/70 backdrop-blur-sm border border-black/[0.05] p-4 rounded-2xl flex items-center gap-3 shadow-sm">
+                                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", p.bg)}>
                                         <p.icon className={cn("w-5 h-5", p.color)} />
                                     </div>
-                                    <p className="font-bold text-[11px] leading-tight mb-1">{p.title}</p>
-                                    <p className="text-[9px] text-muted-foreground">{p.desc}</p>
+                                    <span className="font-semibold text-[13px] text-gray-700">{p.title}</span>
                                 </div>
                             ))}
                         </div>
 
-                        {/* Value props */}
-                        <div className="space-y-2.5">
-                            {[
-                                { emoji: "🔍", title: "Monitoramento de Vazamentos", desc: "Identificamos erosões no seu patrimônio em tempo real." },
-                                { emoji: "💡", title: "Inteligência Estratégica", desc: "A IA traduz extratos em planos de ação imediatos." },
-                                { emoji: "🏆", title: "Diagnóstico Dinâmico", desc: "Descubra seu Score de Saúde Financeira e receba missões personalizadas para subir de nível." },
-                            ].map(v => (
-                                <div key={v.title} className="flex items-start gap-4 bg-card/60 border border-black/5 rounded-2xl p-4">
-                                    <span className="text-2xl shrink-0">{v.emoji}</span>
-                                    <div>
-                                        <p className="font-bold text-sm">{v.title}</p>
-                                        <p className="text-xs text-muted-foreground mt-0.5">{v.desc}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Trust Layer */}
-                        <div className="space-y-4">
-                            <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 text-center">
-                                <p className="text-[10px] font-medium text-muted-foreground leading-relaxed">
-                                    <span className="text-primary font-bold">Sua privacidade é prioridade.</span> Utilizamos a infraestrutura do Open Finance com segurança bancária para traduzir seus dados em decisões melhores, nunca para vender produtos.
-                                </p>
-                            </div>
+                        <div className="space-y-3 pt-4">
+                            <p className="text-center text-[12px] text-gray-400">
+                                🔒 Privacidade blindada. Dados criptografados.
+                            </p>
 
                             <Button
-                                variant="premium"
-                                size="lg"
-                                className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/25 hover:scale-[1.02] transition-transform"
+                                className="w-full h-14 rounded-2xl text-[15px] font-bold shadow-md bg-gradient-to-r from-[#2563eb] to-[#1e40af] text-white hover:opacity-95 active:scale-[0.98] transition-all border-0"
                                 onClick={() => setStep(2)}
                             >
-                                <Sparkles className="w-5 h-5 mr-2" />
-                                Iniciar Jornada
+                                <Sparkles className="w-4 h-4 mr-2" />
+                                Começar
                             </Button>
                         </div>
                     </motion.div>
                 )}
 
-
-                {/* QUESTIONS PHASE */}
+                {/* STEP 2: Name */}
                 {step === 2 && (
                     <motion.div
-                        key={`q-${currentQ.id}`}
-                        initial={{ opacity: 0, x: 20 }}
+                        key="name"
+                        initial={{ opacity: 0, x: 30 }}
                         animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3, type: "spring", damping: 25 }}
-                        className="flex-1 flex flex-col justify-center space-y-8 pt-10"
+                        exit={{ opacity: 0, x: -30 }}
+                        className="flex-1 flex flex-col justify-center space-y-10 relative z-10"
                     >
-                        <div className="space-y-4">
-                            <h2 className="text-2xl font-bold font-heading leading-tight text-foreground shadow-sm">
-                                {currentQ.question}
+                        <div className="space-y-3 text-center">
+                            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <Trophy className="w-8 h-8 text-[#2563eb]" />
+                            </div>
+                            <h2 className="text-3xl font-bold text-gray-900 leading-tight">
+                                Como devemos te chamar?
                             </h2>
+                            <p className="text-gray-500 text-[14px] max-w-[250px] mx-auto">
+                                Sua jornada lendária começa agora.
+                            </p>
                         </div>
 
-                        <div className="space-y-3">
-                            {currentQ.options.map((option) => (
-                                <motion.button
-                                    whileTap={{ scale: 0.98 }}
-                                    key={option.value}
-                                    className={`w-full group relative overflow-hidden flex items-center p-4 rounded-2xl border-2 transition-all duration-200 text-left ${answers[currentQ.id] === option.value
-                                        ? "border-primary bg-primary/10 shadow-[0_0_15px_rgba(var(--primary),0.15)]"
-                                        : "border-border/50 bg-card/80 backdrop-blur hover:border-primary/40 hover:bg-card"
-                                        }`}
-                                    onClick={() => handleOptionSelect(option.value)}
-                                >
-                                    <div className={`p-3 rounded-xl mr-4 transition-colors ${answers[currentQ.id] === option.value ? "bg-primary text-primary-foreground shadow-inner" : option.bg
-                                        }`}>
-                                        <option.icon className={`w-5 h-5 ${answers[currentQ.id] === option.value ? "text-primary-foreground" : option.color}`} />
-                                    </div>
-                                    <span className="flex-1 font-bold text-foreground/90">{option.label}</span>
-                                </motion.button>
-                            ))}
+                        <div className="max-w-xs mx-auto w-full">
+                            <input
+                                type="text"
+                                placeholder="Seu nome"
+                                className="w-full text-center text-2xl font-bold border-b-2 border-gray-200 bg-transparent py-4 focus:outline-none focus:border-[#2563eb] placeholder:text-gray-300 transition-colors text-gray-900"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+
+                        <div className="pt-6">
+                            <Button
+                                className="w-full h-14 rounded-2xl text-[15px] font-bold shadow-md bg-gradient-to-r from-[#2563eb] to-[#1e40af] text-white hover:opacity-95 active:scale-[0.98] transition-all group border-0"
+                                onClick={handleFinish}
+                                disabled={!name.trim()}
+                            >
+                                Construir Legado
+                                <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                            </Button>
                         </div>
                     </motion.div>
                 )}
-
-                {/* ANALYZING PHASE */}
-                {step === 3 && (
-                    <motion.div
-                        key="analyzing"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex-1 flex flex-col items-center justify-center text-center space-y-8"
-                    >
-                        <div className="relative">
-                            <div className="absolute inset-0 border-4 border-t-primary border-r-primary border-b-primary/20 border-l-primary/20 rounded-full w-24 h-24 animate-spin" />
-                            <div className="w-24 h-24 flex items-center justify-center">
-                                <Sparkles className="w-8 h-8 text-primary animate-pulse" />
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <h2 className="text-2xl font-bold font-heading">
-                                Processando Perfil...
-                            </h2>
-                            <p className="text-muted-foreground font-medium animate-pulse">
-                                Mapeando sua saúde financeira
-                            </p>
-                        </div>
-                    </motion.div>
-                )}
-
-                {/* RESULTS PHASE */}
-                {step === 4 && (
-                    <motion.div
-                        key="result"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="flex-1 flex flex-col justify-center space-y-8"
-                    >
-                        <div className="flex flex-col items-center text-center space-y-4">
-                            <div className="relative inline-block">
-                                <div className="absolute inset-0 bg-primary/30 blur-2xl rounded-full" />
-                                <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-primary to-emerald-400 flex items-center justify-center shadow-2xl relative ring-4 ring-background z-10">
-                                    <resultStepInfo.icon className="w-12 h-12 text-background" />
-                                </div>
-                            </div>
-
-                            <div className="space-y-1">
-                                <Badge variant="outline" className="text-primary font-bold tracking-widest uppercase text-[10px] border-primary/30 bg-primary/5 mb-2">
-                                    Diagnóstico Concluído
-                                </Badge>
-                                <h1 className="text-3xl font-bold font-heading text-foreground leading-tight">
-                                    Perfil: {resultData.title}
-                                </h1>
-                            </div>
-                        </div>
-
-                        <div className="bg-card/50 backdrop-blur-md border border-border/50 rounded-3xl p-6 shadow-xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl pointer-events-none" />
-
-                            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
-                                <Target className="w-4 h-4 text-primary" />
-                                Sua Primeira Missão
-                            </h3>
-                            <p className="text-foreground/90 font-medium leading-relaxed mb-4">
-                                {resultData.mission}
-                            </p>
-
-                            <div className="bg-background/80 rounded-2xl p-4 flex items-center justify-between border border-border/50">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-yellow-500/20 rounded-full flex items-center justify-center">
-                                        <Coins className="w-5 h-5 text-yellow-500" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-bold truncate">Recompensa Inicial</p>
-                                        <p className="text-xs text-muted-foreground">Desbloqueio Nível {resultData.stepId}</p>
-                                    </div>
-                                </div>
-                                <span className="font-bold text-yellow-500">+100 XP</span>
-                            </div>
-                        </div>
-
-                        <Button
-                            size="lg"
-                            variant="premium"
-                            className="w-full h-14 text-lg rounded-2xl shadow-xl hover:scale-[1.02] transition-transform group"
-                            onClick={() => setStep(5)}
-                        >
-                            Aceitar Missão
-                            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                        </Button>
-                    </motion.div>
-                )
-                }
-
-                {/* NAME COLLECTION */}
-                {
-                    step === 5 && (
-                        <motion.div
-                            key="name"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="flex-1 flex flex-col justify-center space-y-8"
-                        >
-                            <div className="space-y-3 text-center">
-                                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2 text-primary">
-                                    <Trophy className="w-8 h-8" />
-                                </div>
-                                <h2 className="text-3xl font-bold font-heading">
-                                    Tudo Pronto!
-                                </h2>
-                                <p className="text-muted-foreground font-medium">Sua jornada começa agora. Como devemos te chamar?</p>
-                            </div>
-
-                            <div className="relative max-w-xs mx-auto w-full">
-                                <input
-                                    type="text"
-                                    placeholder="Seu Nome ou Apelido"
-                                    className="w-full text-center text-2xl font-bold border-b-2 border-border/50 bg-transparent py-4 focus:outline-none focus:border-primary placeholder:text-muted-foreground/30 transition-colors text-foreground"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    autoFocus
-                                />
-                            </div>
-
-                            <div className="pt-8">
-                                <Button
-                                    size="lg"
-                                    className="w-full h-14 rounded-2xl text-lg font-bold shadow-lg shadow-primary/20 relative overflow-hidden group"
-                                    onClick={handleFinish}
-                                    disabled={!name.trim()}
-                                >
-                                    <span className="relative z-10 flex items-center gap-2">
-                                        Começar Jornada
-                                        <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                                    </span>
-                                    <div className="absolute inset-0 bg-primary-foreground/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                                </Button>
-                            </div>
-                        </motion.div>
-                    )}
             </AnimatePresence>
         </div>
-    );
-}
-function Badge({ children, variant, className }: any) {
-    return (
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${className}`}>
-            {children}
-        </span>
     );
 }

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
 import { Trophy, CheckCircle2, BrainCircuit } from "lucide-react";
 import { useUserStore } from "@/store/useStore";
 import { cn } from "@/lib/utils";
@@ -33,7 +32,6 @@ export function DailyQuiz() {
             return;
         }
 
-        // Cache quiz by date + level so API is never called twice in the same day
         const cacheKey = `zq_${today}_lvl${currentLevel}`;
         const cachedRaw = localStorage.getItem(cacheKey);
         if (cachedRaw) {
@@ -52,7 +50,6 @@ export function DailyQuiz() {
                     setSelectedQ(data);
                     localStorage.setItem(cacheKey, JSON.stringify(data));
                 } else {
-                    // Fallback in case of AI error
                     const fallback = {
                         question: "Qual o primeiro passo para organizar a vida financeira?",
                         options: ["Gastar tudo", "Fazer um orçamento", "Pedir empréstimo", "Ignorar as contas"],
@@ -74,30 +71,28 @@ export function DailyQuiz() {
 
     if (loading) {
         return (
-            <Card className="border-border/50 shadow-lg bg-card/60 backdrop-blur-md relative overflow-hidden h-48 animate-pulse">
-                <CardContent className="p-5 flex flex-col justify-center h-full">
-                    <div className="w-full h-4 bg-muted mb-4 rounded-full"></div>
-                    <div className="space-y-2">
-                        <div className="w-full h-8 bg-muted rounded-xl"></div>
-                        <div className="w-full h-8 bg-muted rounded-xl"></div>
-                    </div>
-                </CardContent>
-            </Card>
+            <div className="bg-white/70 backdrop-blur-sm border border-black/[0.05] rounded-3xl p-5 shadow-sm h-48 animate-pulse">
+                <div className="w-full h-4 bg-gray-100 mb-4 rounded-full" />
+                <div className="space-y-2">
+                    <div className="w-full h-10 bg-gray-100 rounded-xl" />
+                    <div className="w-full h-10 bg-gray-100 rounded-xl" />
+                </div>
+            </div>
         );
     }
 
     if (isCompleted || !selectedQ) {
         return (
-            <Card className="border-border/50 shadow-sm bg-card/40 backdrop-blur-sm overflow-hidden relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent z-0" />
-                <CardContent className="p-5 flex flex-col items-center text-center relative z-10">
-                    <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center mb-3 text-emerald-500">
+            <div className="bg-white/70 backdrop-blur-sm border border-black/[0.05] rounded-3xl p-5 shadow-sm overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent z-0" />
+                <div className="flex flex-col items-center text-center relative z-10 py-2">
+                    <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mb-3 text-emerald-500">
                         <CheckCircle2 strokeWidth={2.5} className="w-6 h-6" />
                     </div>
-                    <h3 className="font-bold">Quiz Diário Concluído!</h3>
-                    <p className="text-xs text-muted-foreground mt-1">Volte amanhã para mais desafios e XP.</p>
-                </CardContent>
-            </Card>
+                    <h3 className="font-bold text-[15px] text-gray-900">Quiz Diário Concluído!</h3>
+                    <p className="text-[12px] text-gray-400 mt-1">Volte amanhã para mais desafios e XP.</p>
+                </div>
+            </div>
         );
     }
 
@@ -106,14 +101,12 @@ export function DailyQuiz() {
         setSelectedOpt(idx);
         setAnswered(true);
 
-        // Se acertou, ganha +50 XP
         if (idx === selectedQ.correctIndex) {
             playSound('success');
             setTimeout(() => {
                 completeDailyQuiz(50);
             }, 2500);
         } else {
-            // Se errou, ganha consolação +10 XP
             playSound('error');
             setTimeout(() => {
                 completeDailyQuiz(10);
@@ -122,36 +115,38 @@ export function DailyQuiz() {
     };
 
     return (
-        <Card className="border-border/50 shadow-lg bg-card/60 backdrop-blur-md relative overflow-hidden group">
+        <div className="bg-white/70 backdrop-blur-sm border border-black/[0.05] rounded-3xl p-5 shadow-sm relative overflow-hidden group">
             {/* Decal */}
-            <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all pointer-events-none" />
+            <div className="absolute -right-6 -top-6 w-24 h-24 bg-blue-400/[0.06] rounded-full blur-[30px] pointer-events-none" />
 
-            <CardContent className="p-5 relative z-10">
-                <div className="flex items-center gap-2 mb-3">
-                    <div className="p-1.5 rounded-md bg-primary/10 text-primary">
-                        <BrainCircuit className="w-4 h-4" />
+            <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                        <BrainCircuit className="w-5 h-5 text-[#2563eb]" />
                     </div>
-                    <h3 className="text-sm font-bold uppercase tracking-wider">Quiz do Dia <span className="text-[10px] text-muted-foreground normal-case ml-1">(IA Gerado)</span></h3>
-                    <span className="ml-auto text-[10px] bg-yellow-500/10 text-yellow-600 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                    <div className="flex-1">
+                        <h3 className="text-[13px] font-bold text-gray-900">Quiz do Dia</h3>
+                        <span className="text-[10px] text-gray-400">IA Gerado</span>
+                    </div>
+                    <span className="text-[11px] bg-yellow-50 text-yellow-600 px-3 py-1.5 rounded-full font-bold flex items-center gap-1 border border-yellow-100">
                         <Trophy className="w-3 h-3" /> +50 XP
                     </span>
                 </div>
 
-                <p className="font-semibold text-[15px] mb-4 leading-snug">{selectedQ.question}</p>
+                <p className="font-semibold text-[15px] text-gray-900 mb-4 leading-snug">{selectedQ.question}</p>
 
                 <div className="space-y-2">
                     {selectedQ.options.map((opt, idx) => {
                         const isCorrect = idx === selectedQ.correctIndex;
                         const isSelected = selectedOpt === idx;
 
-                        let stateStyles = "bg-muted/50 hover:bg-muted border-transparent text-foreground/80 hover:text-foreground";
+                        let stateStyles = "bg-gray-50 hover:bg-gray-100 border-gray-100 text-gray-700";
                         if (answered) {
-                            if (isCorrect) stateStyles = "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 font-bold";
-                            else if (isSelected) stateStyles = "bg-destructive/10 border-destructive/30 text-destructive font-bold";
-                            else stateStyles = "bg-muted/30 opacity-50 border-transparent";
-                        } // If not answered but hover
-                        else {
-                            stateStyles = "bg-muted/50 hover:bg-muted border-transparent text-foreground/80 hover:text-foreground hover:scale-[1.01] active:scale-95";
+                            if (isCorrect) stateStyles = "bg-emerald-50 border-emerald-200 text-emerald-700 font-bold";
+                            else if (isSelected) stateStyles = "bg-red-50 border-red-200 text-red-600 font-bold";
+                            else stateStyles = "bg-gray-50 opacity-40 border-gray-100";
+                        } else {
+                            stateStyles = "bg-gray-50 hover:bg-gray-100 border-gray-100 text-gray-700 active:scale-[0.98]";
                         }
 
                         return (
@@ -160,7 +155,7 @@ export function DailyQuiz() {
                                 disabled={answered}
                                 onClick={() => handleSelect(idx)}
                                 className={cn(
-                                    "w-full text-left px-3 py-2.5 rounded-xl border transition-all text-sm outline-none ring-primary/20 focus-visible:ring-2",
+                                    "w-full text-left px-4 py-3 rounded-2xl border transition-all text-[14px] outline-none",
                                     stateStyles
                                 )}
                             >
@@ -178,10 +173,10 @@ export function DailyQuiz() {
                             className="overflow-hidden"
                         >
                             <div className={cn(
-                                "p-3 rounded-xl text-xs",
-                                selectedOpt === selectedQ.correctIndex ? "bg-emerald-500/10 text-emerald-700" : "bg-muted text-muted-foreground"
+                                "p-4 rounded-2xl text-[13px] leading-relaxed",
+                                selectedOpt === selectedQ.correctIndex ? "bg-emerald-50 text-emerald-700" : "bg-gray-50 text-gray-600"
                             )}>
-                                <span className="font-bold block mb-1 flex items-center gap-1">
+                                <span className="font-bold block mb-1">
                                     {selectedOpt === selectedQ.correctIndex ? "🎉 Resposta Exata!" : "❌ Educação Financeira na prática..."}
                                 </span>
                                 {selectedQ.explanation}
@@ -189,7 +184,7 @@ export function DailyQuiz() {
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }

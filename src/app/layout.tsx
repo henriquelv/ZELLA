@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const viewport: Viewport = {
-  themeColor: "#09090b",
+  themeColor: "#f8f9fc",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -49,7 +49,7 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
-          enableSystem
+          forcedTheme="light"
           disableTransitionOnChange
         >
           <div className="relative flex min-h-screen flex-col">

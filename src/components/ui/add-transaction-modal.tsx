@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, PlusCircle, MinusCircle, Loader2 } from "lucide-react";
+import { X, PlusCircle, MinusCircle, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "./button";
 import { cn } from "@/lib/utils";
 import { useUserStoreHydrated } from "@/store/useStore";
@@ -21,12 +21,10 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [missionTriggered, setMissionTriggered] = useState<{ category: string, amount: number } | null>(null);
 
-    // Reset when modal opens
     useEffect(() => {
         if (isOpen) setMissionTriggered(null);
     }, [isOpen]);
 
-    // Close on ESC key
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && isOpen) onClose();
@@ -46,7 +44,6 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
 
         setIsSubmitting(true);
 
-        // Simulate network delay to show the loading state (Zella is mostly local via Zustand right now)
         setTimeout(() => {
             user.addTransaction({
                 id: crypto.randomUUID(),
@@ -56,10 +53,8 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
                 date: new Date().toISOString()
             });
 
-            // Gamification reward for logging
             user.addXp(10);
 
-            // Check for Contextual Mission Trigger
             const nonEssentialCategories = ["Lazer", "Roupas", "Tecnologia", "Festas"];
             if (type === 'expense' && numAmount > 100 && nonEssentialCategories.includes(category)) {
                 setIsSubmitting(false);
@@ -74,7 +69,6 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
                     completed: false,
                     createdAt: new Date().toISOString()
                 });
-                // Auto close after showing the mission overlay
                 setTimeout(() => {
                     setAmount("");
                     setCategory("");
@@ -89,7 +83,7 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
             setCategory("");
             playSound('coin');
             onClose();
-        }, 500); // 500ms artificial delay to show UI pattern
+        }, 500);
     };
 
     return (
@@ -98,17 +92,19 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-end sm:items-center justify-center"
+                className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
+                onClick={onClose}
             >
                 <motion.div
                     initial={{ y: "100%" }}
                     animate={{ y: 0 }}
                     exit={{ y: "100%" }}
-                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                    className="w-full max-w-md bg-card border border-border/50 shadow-2xl rounded-t-3xl sm:rounded-3xl p-6 relative"
+                    transition={{ type: "spring", damping: 30, stiffness: 300 }}
+                    className="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl p-8 sm:p-10 relative overflow-hidden shadow-2xl"
+                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
                 >
-                    <button onClick={onClose} className="absolute top-4 right-4 p-2 text-muted-foreground hover:bg-muted rounded-full transition-colors z-20">
-                        <X className="w-5 h-5" />
+                    <button onClick={onClose} className="absolute top-5 right-5 p-2.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors z-20 group">
+                        <X className="w-5 h-5 text-gray-500 group-hover:rotate-90 transition-transform" />
                     </button>
 
                     <AnimatePresence>
@@ -117,35 +113,38 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="absolute inset-0 z-10 bg-card rounded-t-3xl sm:rounded-3xl flex flex-col items-center justify-center p-6 text-center border-4 border-destructive/20"
+                                className="absolute inset-0 z-30 bg-white rounded-t-3xl sm:rounded-3xl flex flex-col items-center justify-center p-8 text-center border-2 border-red-100"
                             >
-                                <div className="w-16 h-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mb-4">
-                                    <MinusCircle className="w-8 h-8" />
+                                <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mb-5">
+                                    <AlertTriangle className="w-8 h-8" />
                                 </div>
-                                <h3 className="font-heading font-bold text-2xl text-destructive mb-2">Alerta de Gasto Alto!</h3>
-                                <p className="text-muted-foreground font-medium mb-6">
-                                    Identificamos R$ {missionTriggered.amount.toFixed(2)} em <strong className="text-foreground">{missionTriggered.category}</strong>.
+                                <h3 className="font-bold text-2xl text-red-600 mb-2">Alarme de Gasto!</h3>
+                                <p className="text-gray-600 text-[15px] leading-relaxed mb-6">
+                                    R$ {missionTriggered.amount.toFixed(2)} em <strong className="text-[#2563eb]">{missionTriggered.category}</strong>
                                 </p>
-                                <div className="bg-orange-500/10 border border-orange-500/30 p-4 rounded-2xl">
-                                    <p className="font-bold text-orange-600 uppercase tracking-wider text-[10px] mb-1">Missão Contextual Ativada</p>
-                                    <p className="text-sm font-medium text-orange-600/90 gap-1 flex items-center justify-center">
-                                        Fique 7 dias sem gastar nesta categoria para ganhar 150 XP. Nova meta adicionada na aba Metas!
+                                <div className="bg-orange-50 border border-orange-100 p-5 rounded-2xl">
+                                    <p className="font-bold text-orange-600 text-[11px] uppercase tracking-wider mb-1">Missão Contextual</p>
+                                    <p className="text-[14px] text-gray-600 leading-relaxed">
+                                        Sobreviva 7 dias sem compras nesta categoria e ganhe <span className="text-orange-500 font-bold">150 XP</span>.
                                     </p>
                                 </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
 
-                    <div className={missionTriggered ? "opacity-0 pointer-events-none" : "opacity-100 transition-opacity"}>
-                        <h2 className="text-xl font-bold font-heading mb-6">Nova Transação</h2>
+                    <div className={missionTriggered ? "opacity-0 pointer-events-none scale-95" : "opacity-100 transition-all duration-500"}>
+                        <div className="mb-8">
+                            <h2 className="text-2xl font-bold text-gray-900">Nova Transação</h2>
+                            <p className="text-[13px] text-gray-400 mt-1">Adicione sua receita ou despesa</p>
+                        </div>
 
-                        <div className="flex bg-muted/50 p-1 rounded-2xl mb-6">
+                        <div className="flex bg-gray-100 p-1.5 rounded-2xl mb-8">
                             <button
                                 type="button"
                                 onClick={() => { setType('income'); playSound('click'); }}
                                 className={cn(
-                                    "flex-1 py-2.5 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50",
-                                    type === 'income' ? "bg-emerald-500 text-white shadow-md" : "text-muted-foreground hover:text-foreground"
+                                    "flex-1 py-3.5 text-[12px] font-bold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50",
+                                    type === 'income' ? "bg-emerald-500 text-white shadow-md" : "text-gray-500 hover:text-gray-700"
                                 )}
                                 disabled={isSubmitting}
                             >
@@ -155,8 +154,8 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
                                 type="button"
                                 onClick={() => { setType('expense'); playSound('click'); }}
                                 className={cn(
-                                    "flex-1 py-2.5 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50",
-                                    type === 'expense' ? "bg-destructive text-white shadow-md" : "text-muted-foreground hover:text-foreground"
+                                    "flex-1 py-3.5 text-[12px] font-bold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50",
+                                    type === 'expense' ? "bg-red-500 text-white shadow-md" : "text-gray-500 hover:text-gray-700"
                                 )}
                                 disabled={isSubmitting}
                             >
@@ -164,66 +163,50 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                        <form onSubmit={handleSubmit} className="space-y-6">
                             <div>
-                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Valor (R$)</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    inputMode="decimal"
-                                    placeholder="0.00"
-                                    value={amount}
-                                    onChange={(e) => setAmount(e.target.value)}
-                                    className="w-full text-3xl font-bold bg-transparent border-b-2 border-border/50 focus:border-primary focus:outline-none py-2 transition-colors disabled:opacity-50"
-                                    required
-                                    disabled={isSubmitting}
-                                />
+                                <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2 block">Valor (R$)</label>
+                                <div className="flex items-baseline">
+                                    <span className="text-2xl font-bold text-gray-300 mr-2">R$</span>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        inputMode="decimal"
+                                        placeholder="0,00"
+                                        value={amount}
+                                        onChange={(e) => setAmount(e.target.value)}
+                                        className="w-full text-5xl font-bold bg-transparent border-none focus:ring-0 focus:outline-none py-2 text-gray-900 placeholder:text-gray-200"
+                                        required
+                                        disabled={isSubmitting}
+                                        autoFocus
+                                    />
+                                </div>
+                                <div className="h-px w-full bg-gray-100 mt-2" />
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 block">Categoria</label>
+                                <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2 block">Categoria</label>
                                 <select
                                     value={category}
                                     onChange={(e) => setCategory(e.target.value)}
-                                    className="w-full text-base bg-muted/30 border border-border/50 rounded-xl px-4 py-3 focus:border-primary focus:outline-none transition-colors cursor-pointer disabled:opacity-50"
+                                    className="w-full text-[15px] font-semibold bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 focus:border-blue-200 focus:outline-none appearance-none cursor-pointer disabled:opacity-50 text-gray-800"
                                     required
                                     disabled={isSubmitting}
                                 >
-                                    <option value="">Selecione uma categoria...</option>
-                                    {type === 'income' ? (
-                                        <>
-                                            <option>Salário</option>
-                                            <option>Freelance</option>
-                                            <option>Investimentos</option>
-                                            <option>Presente</option>
-                                            <option>Venda</option>
-                                            <option>Outro</option>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <option>Alimentação</option>
-                                            <option>Moradia</option>
-                                            <option>Transporte</option>
-                                            <option>Saúde</option>
-                                            <option>Educação</option>
-                                            <option>Lazer</option>
-                                            <option>Roupas</option>
-                                            <option>Tecnologia</option>
-                                            <option>Assinaturas</option>
-                                            <option>Festas</option>
-                                            <option>Outros</option>
-                                        </>
-                                    )}
+                                    <option value="">Selecionar...</option>
+                                    {(type === 'income' ? ['Salário', 'Freelance', 'Investimentos', 'Presente', 'Venda', 'Outros'] : ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Educação', 'Lazer', 'Roupas', 'Tecnologia', 'Assinaturas', 'Festas', 'Outros']).map(opt => (
+                                        <option key={opt}>{opt}</option>
+                                    ))}
                                 </select>
                             </div>
 
                             <Button
                                 type="submit"
-                                className="w-full h-14 text-base font-bold rounded-xl mt-4 shadow-lg active:scale-95 transition-all"
+                                className="w-full h-14 text-[14px] font-bold rounded-2xl mt-4 shadow-md active:scale-[0.98] transition-all bg-gradient-to-r from-[#2563eb] to-[#1e40af] text-white border-0"
                                 disabled={isSubmitting || !amount || !category}
                             >
-                                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-                                {isSubmitting ? "Registrando..." : "Confirmar Lançamento"}
+                                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <PlusCircle className="w-5 h-5 mr-2" />}
+                                {isSubmitting ? "Salvando..." : "Registrar"}
                             </Button>
                         </form>
                     </div>

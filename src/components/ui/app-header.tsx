@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { ZellaLogo } from "./logo";
-import { ThemeToggle } from "./theme-toggle";
 import { Bell, Trophy } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./button";
@@ -22,33 +21,33 @@ export function AppHeader() {
     const activeAvatarRecord = AVATARS.find(a => a.id === user?.activeAvatar) || AVATARS[0];
 
     return (
-        <header className="px-6 pt-12 pb-4 flex justify-between items-center bg-background/80 backdrop-blur-md sticky top-0 z-40 border-b border-border/50">
+        <header className="px-5 pt-14 pb-4 flex justify-between items-center sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-black/[0.04]">
             <div className="flex items-center gap-3">
                 <button
                     onClick={() => setIsAvatarOpen(true)}
-                    className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center text-xl shadow-sm transition-transform hover:scale-105 active:scale-95 outline-none border border-border/50 ring-2 ring-primary/20",
-                        activeAvatarRecord.color
-                    )}
+                    className="w-11 h-11 rounded-full flex items-center justify-center text-2xl transition-all hover:scale-105 active:scale-95 outline-none p-[2.5px] bg-gradient-to-br from-[#2563eb] to-[#16a34a] shadow-md"
                 >
-                    {activeAvatarRecord.icon}
+                    <div className={cn("w-full h-full rounded-full flex items-center justify-center bg-white", activeAvatarRecord.color)}>
+                        {activeAvatarRecord.icon}
+                    </div>
                 </button>
                 <div className="flex flex-col">
-                    <span className="font-heading font-bold text-sm leading-tight tracking-tight">Zella</span>
-                    <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{user?.name || 'Explorer'}</span>
+                    <span className="font-heading font-bold text-[17px] leading-tight tracking-tight text-gray-900">
+                        Olá, {user?.name?.split(" ")[0] || 'Explorer'}
+                    </span>
+                    <span className="text-[11px] text-gray-400 font-medium">Bem-vindo de volta!</span>
                 </div>
             </div>
             <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 mr-1 bg-muted/50 px-2.5 py-1 rounded-full border border-border/50">
-                    <Trophy className="w-3.5 h-3.5 text-yellow-500" />
-                    <span className="text-xs font-bold">{user?.xp || 0}</span>
+                <div className="flex items-center gap-1.5 bg-white/70 backdrop-blur-sm border border-black/[0.06] px-3.5 py-2 rounded-full shadow-sm">
+                    <Trophy className="w-3.5 h-3.5 text-[#2563eb]" />
+                    <span className="text-[12px] font-bold text-gray-700">{user?.xp || 0} XP</span>
                 </div>
-                <Button variant="ghost" size="icon" asChild className="rounded-full">
+                <Button variant="ghost" size="icon" asChild className="rounded-full w-10 h-10 bg-white/70 backdrop-blur-sm border border-black/[0.06] shadow-sm hover:bg-white/90 active:scale-90 transition-all">
                     <Link href="/inbox">
-                        <Bell className="w-5 h-5 text-muted-foreground hover:text-foreground transition-colors" />
+                        <Bell className="w-[18px] h-[18px] text-gray-500" />
                     </Link>
                 </Button>
-                <ThemeToggle />
             </div>
 
             <AvatarSelector isOpen={isAvatarOpen} onClose={() => setIsAvatarOpen(false)} />

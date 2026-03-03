@@ -16,12 +16,12 @@ export function BottomNav() {
         { href: "/profile", label: "Perfil", icon: User },
     ];
 
-    // Don't show on onboarding or login
+    // Don't show on onboarding or splash
     if (pathname === "/" || pathname?.startsWith("/onboarding")) return null;
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 border-t border-border/40 bg-background/90 backdrop-blur-lg pb-safe-area z-50 shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.1)]">
-            <nav className="flex justify-around items-center h-16 max-w-md mx-auto px-2">
+        <div className="fixed bottom-0 left-0 right-0 z-50 pb-[env(safe-area-inset-bottom)]">
+            <nav className="bg-white/80 backdrop-blur-xl border-t border-black/[0.06] flex justify-around items-center h-[72px] px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
                 {links.map(({ href, label, icon: Icon }) => {
                     const isActive = pathname === href;
 
@@ -30,23 +30,23 @@ export function BottomNav() {
                             key={href}
                             href={href}
                             className={cn(
-                                "relative flex flex-col items-center justify-center w-full h-full min-h-[44px] space-y-1 transition-all duration-200 active:scale-95 group cursor-pointer",
+                                "flex flex-col items-center justify-center gap-1 min-w-[56px] py-2 transition-colors",
                                 isActive
-                                    ? "text-primary"
-                                    : "text-muted-foreground hover:text-foreground"
+                                    ? "text-[#2563eb]"
+                                    : "text-gray-400 active:text-gray-600"
                             )}
                         >
-                            {isActive && (
-                                <span className="absolute -top-0.5 w-8 h-1 bg-primary rounded-b-full shadow-[0_2px_8px_rgba(var(--primary),0.5)]" />
+                            {isActive ? (
+                                <div className="w-10 h-10 rounded-full bg-[#2563eb]/10 flex items-center justify-center">
+                                    <Icon className="h-[20px] w-[20px]" strokeWidth={2.2} />
+                                </div>
+                            ) : (
+                                <Icon className="h-[22px] w-[22px]" strokeWidth={1.6} />
                             )}
-                            <Icon
-                                className={cn(
-                                    "h-6 w-6 transition-all duration-200",
-                                    isActive ? "fill-primary/20 scale-110" : "group-hover:scale-105"
-                                )}
-                                strokeWidth={isActive ? 2.5 : 2}
-                            />
-                            <span className={cn("text-[10px] font-medium transition-colors", isActive && "font-bold")}>
+                            <span className={cn(
+                                "text-[10px] font-semibold leading-none",
+                                isActive && "font-bold"
+                            )}>
                                 {label}
                             </span>
                         </Link>

@@ -4,31 +4,45 @@ import { useState, useEffect } from 'react'
 import { format, differenceInDays } from 'date-fns'
 import { supabase } from '@/lib/supabase'
 
-interface UserState {
+export interface UserState {
     hasOnboarded: boolean
-    currentStep: number // 1 to n
+    currentStep: number // Corresponde ao "Degrau" (1 a 6)
+    level: number
     xp: number
     coins: number
     streak: number
     name: string
     id: string | null
 
+    // Métricas Financeiras (v2)
+    revenue: number
+    fixedCosts: number
+    totalBalance: number
+
+    // Índices (calculados)
+    ie: number // Índice de Eficiência
+    is: number // Índice de Sobrevivência
+    idMetric: number // Índice de Drenos (evitando conflito com id)
+    rs: number // Reserva de Segurança (meses)
+
     // Gamification
     lastLoginDate: string | null
     unlockedAvatars: string[]
     activeAvatar: string
     dailyQuizCompletedAt: string | null
+    dailyCoinsEarned: number // Reset diário para capping
 
     transactions: Transaction[]
     missions: Mission[]
     userMissions: UserMissionCompletion[]
 
     // Actions
-    completeOnboarding: (step: number, name: string) => void
+    completeOnboarding: (step: number, name: string, initialRevenue?: number) => void
     addXp: (amount: number) => void
     addCoins: (amount: number) => void
     incrementStreak: () => void
     addTransaction: (transaction: Transaction) => void
+    setFinancialData: (revenue: number, fixedCosts: number) => void
     resetProgress: () => void
 
     // Gamification Actions
@@ -78,43 +92,76 @@ export interface Mission {
 }
 
 export interface UserMissionCompletion {
-    mission_id: string
-    completed_at: string
+    missionId: string
+    completedAt: string
     score: number
 }
 
 export const useUserStore = create<UserState>()(
     persist(
         (set, get) => ({
-            hasOnboarded: false,
+            hasOnboarded: false as boolean,
             currentStep: 1,
+            level: 1,
             xp: 0,
             coins: 0,
             streak: 0,
             name: "",
             id: null,
 
+            revenue: 0,
+            fixedCosts: 0,
+            totalBalance: 0,
+            ie: 0,
+            is: 0,
+            idMetric: 0,
+            rs: 0,
+
             lastLoginDate: null,
             unlockedAvatars: ['default'],
             activeAvatar: 'default',
             dailyQuizCompletedAt: null,
+            dailyCoinsEarned: 0,
 
             transactions: [],
             goals: [],
             missions: [],
             userMissions: [],
 
-            completeOnboarding: (step, name) => set({ hasOnboarded: true, currentStep: step, name }),
-            addXp: (amount) => {
-                set((state) => {
+            completeOnboarding: (step: number, name: string, initialRevenue?: number) =>
+                set({ hasOnboarded: true, currentStep: step, name, revenue: initialRevenue || 0 }),
+
+            addXp: (amount: number) => {
+                set((state: UserState) => {
                     const newXp = state.xp + amount;
-                    return { xp: newXp };
+                    // xp(n) = 100 * (n^1.2)
+                    let currentLevel = state.level;
+                    let xpNeeded = Math.floor(100 * Math.pow(currentLevel, 1.2));
+
+                    let tempXp = newXp;
+                    let tempLevel = currentLevel;
+
+                    while (tempXp >= xpNeeded && tempLevel < 100) {
+                        tempXp -= xpNeeded;
+                        tempLevel++;
+                        xpNeeded = Math.floor(100 * Math.pow(tempLevel, 1.2));
+                    }
+
+                    return { xp: tempXp, level: tempLevel };
                 });
             },
-            addCoins: (amount) => set((state) => ({ coins: state.coins + amount })),
-            incrementStreak: () => set((state) => ({ streak: state.streak + 1 })),
-            addTransaction: (t) => {
-                set((state) => {
+            addCoins: (amount: number) => set((state: UserState) => {
+                const canEarn = Math.max(0, 50 - state.dailyCoinsEarned);
+                const actualGain = Math.min(amount, canEarn);
+                return {
+                    coins: state.coins + actualGain,
+                    dailyCoinsEarned: state.dailyCoinsEarned + actualGain
+                };
+            }),
+            incrementStreak: () => set((state: UserState) => ({ streak: state.streak + 1 })),
+            setFinancialData: (revenue: number, fixedCosts: number) => set({ revenue, fixedCosts }),
+            addTransaction: (t: Transaction) => {
+                set((state: UserState) => {
                     const newTransactions = [t, ...state.transactions];
                     let xpGained = 0;
                     let updatedGoals = [...state.goals];
@@ -141,9 +188,11 @@ export const useUserStore = create<UserState>()(
                     const newXp = state.xp + xpGained;
 
                     // Manual push for transaction table (profiles.transactions is now gone)
-                    supabase.auth.getSession().then(({ data }) => {
+                    // Manual push for transaction table (profiles.transactions is now gone)
+                    (async () => {
+                        const { data } = await supabase.auth.getSession();
                         if (data.session) {
-                            supabase.from('transactions').insert({
+                            await supabase.from('transactions').insert({
                                 id: t.id,
                                 user_id: data.session.user.id,
                                 amount: t.amount,
@@ -152,9 +201,9 @@ export const useUserStore = create<UserState>()(
                                 date: t.date,
                                 name: t.category,
                                 is_ai_generated: t.isAiGenerated || false
-                            }).then();
+                            });
                         }
-                    });
+                    })();
 
                     return {
                         transactions: newTransactions,
@@ -164,8 +213,10 @@ export const useUserStore = create<UserState>()(
                 });
             },
             resetProgress: () => set({
-                hasOnboarded: false, currentStep: 1, xp: 0, coins: 0, streak: 0, name: "",
-                transactions: [], goals: [], lastLoginDate: null, unlockedAvatars: ['default'], activeAvatar: 'default', dailyQuizCompletedAt: null,
+                hasOnboarded: false, currentStep: 1, level: 1, xp: 0, coins: 0, streak: 0, name: "",
+                revenue: 0, fixedCosts: 0, totalBalance: 0, ie: 0, is: 0, idMetric: 0, rs: 0,
+                transactions: [], goals: [], lastLoginDate: null, unlockedAvatars: ['default'],
+                activeAvatar: 'default', dailyQuizCompletedAt: null, dailyCoinsEarned: 0,
                 missions: [], userMissions: []
             }),
 
@@ -187,8 +238,8 @@ export const useUserStore = create<UserState>()(
                     }
                 }
             },
-            setActiveAvatar: (avatarId) => set({ activeAvatar: avatarId }),
-            unlockAvatar: (avatarId, cost) => {
+            setActiveAvatar: (avatarId: string) => set({ activeAvatar: avatarId }),
+            unlockAvatar: (avatarId: string, cost: number) => {
                 const state = get();
                 if (state.xp >= cost && !state.unlockedAvatars.includes(avatarId)) {
                     set({
@@ -199,18 +250,18 @@ export const useUserStore = create<UserState>()(
                 }
                 return false;
             },
-            completeDailyQuiz: (xpReward) => {
+            completeDailyQuiz: (xpReward: number) => {
                 const today = format(new Date(), 'yyyy-MM-dd');
-                set((state) => ({
+                set((state: UserState) => ({
                     dailyQuizCompletedAt: today,
                     xp: state.xp + xpReward
                 }));
             },
-            addGoal: (goal) => set((state) => ({ goals: [goal, ...state.goals] })),
-            toggleGoal: (id) => set((state) => ({
-                goals: state.goals.map(g => g.id === id ? { ...g, completed: !g.completed } : g)
+            addGoal: (goal: Goal) => set((state: UserState) => ({ goals: [goal, ...state.goals] })),
+            toggleGoal: (id: string) => set((state: UserState) => ({
+                goals: state.goals.map((g: Goal) => g.id === id ? { ...g, completed: !g.completed } : g)
             })),
-            syncWithSupabase: (data) => set((state) => ({ ...state, ...data })),
+            syncWithSupabase: (data: Partial<UserState>) => set((state: UserState) => ({ ...state, ...data })),
 
             loadUserData: async () => {
                 const { data: { session } } = await supabase.auth.getSession();
@@ -226,11 +277,32 @@ export const useUserStore = create<UserState>()(
                     .single();
 
                 if (profile) {
-                    const typedProfile = profile as any;
+                    const typedProfile = profile as {
+                        id: string;
+                        name: string;
+                        xp: number;
+                        level: number;
+                        coins: number;
+                        streak: number;
+                        current_step: number;
+                        active_avatar: string;
+                        unlocked_avatars: string[];
+                        goals: any[];
+                        daily_quiz_completed_at: string | null;
+                        revenue: number;
+                        fixed_costs: number;
+                        ie: number;
+                        is: number;
+                        id_metric: number;
+                        rs: number;
+                        total_balance: number;
+                        daily_coins_earned: number;
+                    };
                     set({
                         id: typedProfile.id || null,
                         name: typedProfile.name || get().name,
                         xp: typedProfile.xp ?? get().xp,
+                        level: typedProfile.level ?? get().level,
                         coins: typedProfile.coins ?? get().coins,
                         streak: typedProfile.streak ?? get().streak,
                         currentStep: typedProfile.current_step ?? get().currentStep,
@@ -238,6 +310,16 @@ export const useUserStore = create<UserState>()(
                         unlockedAvatars: typedProfile.unlocked_avatars || get().unlockedAvatars,
                         goals: typedProfile.goals || get().goals,
                         dailyQuizCompletedAt: typedProfile.daily_quiz_completed_at,
+
+                        revenue: typedProfile.revenue ?? get().revenue,
+                        fixedCosts: typedProfile.fixed_costs ?? get().fixedCosts,
+                        ie: typedProfile.ie ?? get().ie,
+                        is: typedProfile.is ?? get().is,
+                        idMetric: typedProfile.id_metric ?? get().idMetric,
+                        rs: typedProfile.rs ?? get().rs,
+                        totalBalance: typedProfile.total_balance ?? get().totalBalance,
+                        dailyCoinsEarned: typedProfile.daily_coins_earned ?? get().dailyCoinsEarned,
+
                         hasOnboarded: typedProfile.name ? true : get().hasOnboarded
                     });
                 }
@@ -251,7 +333,7 @@ export const useUserStore = create<UserState>()(
 
                 if (txs) {
                     set({
-                        transactions: txs.map(t => ({
+                        transactions: txs.map((t: any) => ({
                             id: t.id,
                             amount: Number(t.amount),
                             category: t.category,
@@ -272,28 +354,29 @@ export const useUserStore = create<UserState>()(
                 if (missions) set({ missions });
                 if (userCompletions) {
                     set({
-                        userMissions: userCompletions.map(c => ({
-                            mission_id: c.mission_id,
-                            completed_at: c.completed_at,
+                        userMissions: userCompletions.map((c: any) => ({
+                            missionId: c.mission_id,
+                            completedAt: c.completed_at,
                             score: c.score
                         }))
                     });
                 }
             },
 
-            saveMissionCompletion: async (missionId, score, xpReward, coinsReward) => {
+            saveMissionCompletion: async (missionId: string, score: number, xpReward: number, coinsReward: number) => {
                 const { data: { session } } = await supabase.auth.getSession();
                 if (!session) return;
 
                 const userId = session.user.id;
 
-                // Update Local State
-                set(state => ({
-                    xp: state.xp + xpReward,
-                    coins: state.coins + coinsReward,
+                // Use internal actions to respect capping and level logic
+                get().addXp(xpReward);
+                get().addCoins(coinsReward);
+
+                set((state: UserState) => ({
                     userMissions: [
-                        ...state.userMissions.filter(m => m.mission_id !== missionId),
-                        { mission_id: missionId, completed_at: new Date().toISOString(), score }
+                        ...state.userMissions.filter((m: UserMissionCompletion) => m.missionId !== missionId),
+                        { missionId: missionId, completedAt: new Date().toISOString(), score }
                     ]
                 }));
 
@@ -341,7 +424,7 @@ if (typeof window !== 'undefined') {
     let syncTimeout: NodeJS.Timeout | null = null;
     let isInitialSync = true; // Prevent syncing back initial hydration
 
-    useUserStore.subscribe((state, prevState) => {
+    useUserStore.subscribe((state: UserState, prevState: UserState) => {
         if (isInitialSync) {
             isInitialSync = false;
             return;
@@ -364,25 +447,54 @@ if (typeof window !== 'undefined') {
                 if (data.session) {
                     const userId = data.session.user.id;
 
-                    // Logic for auto-advancing steps based on balance
+                    // 1. TRINDADE DE CATEGORIZAÇÃO (v2)
+                    const survivors = ["aluguel", "conta", "mercado", "remédio", "transporte trabalho", "escola"];
+                    const lifestyle = ["restaurante", "streaming", "academia", "lazer", "viagem", "educação"];
+                    const drains = ["juros", "multa", "tarifa", "assinatura esquecida", "aposta", "impulsiva", "rotativo"];
+
+                    const isSurvivor = (cat: string) => survivors.some(s => cat.toLowerCase().includes(s));
+                    const isLifestyle = (cat: string) => lifestyle.some(l => cat.toLowerCase().includes(l));
+                    const isDrain = (cat: string) => drains.some(d => cat.toLowerCase().includes(d));
+
                     const expenses = state.transactions.filter(t => t.type === 'expense');
                     const incomes = state.transactions.filter(t => t.type === 'income');
-                    const totalExp = expenses.reduce((a, b) => a + Number(b.amount), 0);
-                    const totalInc = incomes.reduce((a, b) => a + Number(b.amount), 0);
+
+                    const totalInc = incomes.reduce((acc: number, cur: Transaction) => acc + Number(cur.amount), 0);
+                    const totalExp = expenses.reduce((acc: number, cur: Transaction) => acc + Number(cur.amount), 0);
+
+                    const expSurvivor = expenses.filter(t => isSurvivor(t.category)).reduce((acc: number, cur: Transaction) => acc + Number(cur.amount), 0);
+                    const expLifestyle = expenses.filter(t => isLifestyle(t.category)).reduce((acc: number, cur: Transaction) => acc + Number(cur.amount), 0);
+                    const expDrain = expenses.filter(t => isDrain(t.category)).reduce((acc: number, cur: Transaction) => acc + Number(cur.amount), 0);
+
                     const balance = totalInc - totalExp;
+                    const revenue = state.revenue || totalInc || 1; // Avoid div by zero
 
+                    // Cálculos de Métricas
+                    const IE = (balance / revenue) * 100;
+                    const IS = (expSurvivor / revenue) * 100;
+                    const ID = (expDrain / revenue) * 100;
+                    const RS = state.fixedCosts > 0 ? balance / state.fixedCosts : 0;
+
+                    // 2. LÓGICA DE DEGRAU (Thresholds v2)
                     let calculatedStep = 1;
-                    if (balance > 10000) calculatedStep = 6;
-                    else if (expenses.some(t => t.category.toLowerCase().includes('invest'))) calculatedStep = 5;
-                    else if (balance > 3000) calculatedStep = 4;
-                    else if (balance > 500) calculatedStep = 3;
-                    else if (balance > 0) calculatedStep = 2;
 
-                    // If manually set higher in onboarding, don't downgrade
+                    // Degrau 2 - Organizando
+                    if (RS >= 0 && IE > 0 && ID <= 20 && IS <= 80) calculatedStep = 2;
+                    // Degrau 3 - Controlador
+                    if (RS >= 0.5 && IE > 5 && ID < 15 && IS <= 75) calculatedStep = 3;
+                    // Degrau 4 - Construtor
+                    if (RS >= 1 && IE > 10 && ID < 10 && IS <= 70) calculatedStep = 4;
+                    // Degrau 5 - Estrategista
+                    if (RS >= 3 && IE > 15 && ID < 7 && expenses.some(t => t.category.toLowerCase().includes('invest'))) calculatedStep = 5;
+                    // Degrau 6 - Mestre
+                    if (RS >= 6 && IE > 20 && ID < 5) calculatedStep = 6;
+
+                    // If manually set higher in onboarding or has checkpoint, respect
                     const finalStep = Math.max(state.currentStep, calculatedStep);
 
                     await supabase.from('profiles').update({
                         xp: state.xp,
+                        level: state.level,
                         coins: state.coins,
                         streak: state.streak,
                         goals: state.goals,
@@ -390,13 +502,24 @@ if (typeof window !== 'undefined') {
                         active_avatar: state.activeAvatar,
                         unlocked_avatars: state.unlockedAvatars,
                         current_step: finalStep,
+                        ie: IE,
+                        is: IS,
+                        id_metric: ID,
+                        rs: RS,
+                        total_balance: balance
                     }).eq('id', userId);
 
-                    if (finalStep !== state.currentStep) {
-                        useUserStore.setState({ currentStep: finalStep });
-                    }
+                    // Update Internal Calculated State
+                    useUserStore.setState({
+                        ie: IE,
+                        is: IS,
+                        idMetric: ID,
+                        rs: RS,
+                        totalBalance: balance,
+                        currentStep: finalStep
+                    });
                 }
-            }, 1500); // Debounce to prevent spamming the database
+            }, 1500);
         }
     });
 }

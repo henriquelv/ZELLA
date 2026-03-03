@@ -1,93 +1,125 @@
-import { NextResponse } from "next/server";
-import OpenAI from "openai";
-import * as pdfParse from "pdf-parse";
+import { NextRequest, NextResponse } from "next/server";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export async function POST(request: Request) {
-    try {
-        const formData = await request.formData();
-        const file = formData.get("file") as File;
+const apiKey = process.env.GEMINI_API_KEY;
+const genAI = new GoogleGenerativeAI(apiKey || "dummy-key");
 
-        if (!file) {
-            return NextResponse.json({ error: "Nenhum arquivo enviado" }, { status: 400 });
-        }
+const PROMPT = `
+Você é um assistente financeiro de elite do app Zella.
+Sua tarefa é ler um cupom fiscal, nota fiscal, ou print de aplicativo de banco e extrair as transações.
 
-        const openai = new OpenAI({
-            apiKey: process.env.OPENAI_API_KEY || "dummy",
-        });
+Regras Estritas de Categorização (Trindade Zella):
+A categoria DEVE ser estritamente UMA destas opções (exatamente como escrito):
+Para Despesas (type: "expense"):
+- "Alimentação": Mercado, padaria, feira, açougue (Sobrevivência).
+- "Lazer": Restaurante, bar, cinema, passeio, iFood/delivery (Estilo de Vida).
+- "Saúde": Farmácia, médico, dentista (Sobrevivência).
+- "Moradia": Aluguel, condomínio, luz, água, internet, gás (Sobrevivência).
+- "Transporte": Combustível, Uber, ônibus, pedágio, manutenção (Sobrevivência).
+- "Educação": Faculdade, curso, livros, escola (Sobrevivência/Estilo).
+- "Roupas": Vestuário, calçados, acessórios (Estilo de Vida).
+- "Tecnologia": Eletrônicos, software, jogos (Estilo de Vida).
+- "Assinaturas": Netflix, Spotify, Amazon Prime, academia (Estilo de Vida/Drenos).
+- "Festas": Balada, eventos noturnos, drinks caros (Drenos).
+- "Outros": Apenas se for impossível classificar nas acima.
 
-        const buffer = Buffer.from(await file.arrayBuffer());
-        let isImage = false;
-        let base64Image = "";
-        let textContent = "";
+Para Receitas (type: "income"):
+- "Salário", "Freelance", "Investimentos", "Venda", "Presente", "Outros".
 
-        if (file.type === "application/pdf") {
-            const data = await (pdfParse as any)(buffer);
-            textContent = data.text;
-        } else if (file.type.startsWith("image/")) {
-            isImage = true;
-            base64Image = buffer.toString("base64");
-        } else {
-            textContent = buffer.toString("utf-8");
-        }
-
-        const systemPrompt = `Você é o Zella Scanner, um assistente inteligente de finanças do app Zella. 
-Seu objetivo é analisar o documento (texto de PDF, arquivo de texto ou imagem de recibo/fatura) e extrair os lançamentos financeiros.
-Identifique CADA gasto ou entrada detalhadamente e categorize conforme as categorias do app.
-- Despesas: Alimentação, Moradia, Transporte, Saúde, Educação, Lazer, Roupas, Tecnologia, Assinaturas, Festas, Outros.
-- Receitas: Salário, Freelance, Investimentos, Presente, Venda, Outro.
-
-Ignore valores que não são transações válidas (como taxas de juros genéricas sem valor, códigos de barras, CNPJs ou troco se não for dinheiro recebido de volta liquidado).
-Responda ESTRITAMENTE em JSON com a seguinte estrutura e NADA MAIS:
+Regra Base:
+- Ignore descontos pequenos ou troco.
+- Foque apenas nos totais pagos ou no item principal.
+- Se for uma compra de mercado com vários itens, agrupe no total e classifique como "Alimentação".
+- Retorne um JSON válido contendo um array "transactions".
+Exemplo de retorno JSON (sem markdown, sem blocos de código):
 {
   "transactions": [
     {
+      "description": "Mercado Assaí",
       "amount": 150.50,
       "category": "Alimentação",
       "type": "expense",
-      "name": "Mercado Assaí"
+      "date": "2024-03-02"
     }
   ]
 }
-Se não encontrar nada, retorne { "transactions": [] }.`;
+`;
 
-        let messages: any[] = [
-            { role: "system", content: systemPrompt }
-        ];
-
-        if (isImage) {
-            messages.push({
-                role: "user",
-                content: [
-                    { type: "text", text: "Analise esta nota ou comprovante detalhadamente." },
+export async function POST(req: NextRequest) {
+    try {
+        if (!apiKey) {
+            // Se não tiver chave real configurada, simular um recebimento mágico para manter a UI funcional para testes
+            await new Promise((resolve) => setTimeout(resolve, 2500));
+            return NextResponse.json({
+                transactions: [
                     {
-                        type: "image_url",
-                        image_url: {
-                            url: `data:${file.type};base64,${base64Image}`,
-                            detail: "high"
-                        }
+                        description: "Mercado Zella Fake",
+                        amount: 145.90,
+                        category: "Alimentação",
+                        type: "expense",
+                        date: new Date().toISOString()
+                    },
+                    {
+                        description: "Crédito Dinâmico",
+                        amount: 50.00,
+                        category: "Outros",
+                        type: "income",
+                        date: new Date().toISOString()
                     }
                 ]
             });
-        } else {
-            messages.push({
-                role: "user",
-                content: `Aqui está o texto do extrato/nota:\n\n${textContent.substring(0, 8000)}`
-            });
         }
 
-        const response = await openai.chat.completions.create({
-            model: "gpt-4o-mini", // Model supports vision and text
-            response_format: { type: "json_object" },
-            messages: messages,
-            max_tokens: 1500, // Important for parsing long receipts
+        const formData = await req.formData();
+        const file = formData.get("file") as File;
+
+        if (!file) {
+            return NextResponse.json(
+                { error: "Nenhum arquivo enviado." },
+                { status: 400 }
+            );
+        }
+
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        const base64Data = buffer.toString("base64");
+
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const responseData = await model.generateContent({
+            contents: [
+                { role: "user", parts: [{ text: PROMPT }] },
+                {
+                    role: "user",
+                    parts: [
+                        {
+                            inlineData: {
+                                data: base64Data,
+                                mimeType: file.type || "image/jpeg",
+                            },
+                        },
+                    ],
+                },
+            ],
+            generationConfig: {
+                responseMimeType: "application/json",
+            },
         });
 
-        let jsonString = response.choices[0].message.content || '{"transactions": []}';
-        const parsed = JSON.parse(jsonString);
+        const response = await responseData.response;
+        const text = response.text();
+        if (!text) {
+            throw new Error("Resposta vazia da IA");
+        }
 
-        return NextResponse.json({ transactions: parsed.transactions || [] });
+        const data = JSON.parse(text);
+
+        return NextResponse.json(data);
+
     } catch (error: any) {
-        console.error("OpenAI Extraction Error:", error.response?.data || error);
-        return NextResponse.json({ error: error.message || "Failed to extract data" }, { status: 500 });
+        console.error("Erro no Scanner IA:", error);
+        return NextResponse.json(
+            { error: "Falha na leitura do documento.", details: error.message },
+            { status: 500 }
+        );
     }
 }

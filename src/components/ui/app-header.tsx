@@ -21,7 +21,7 @@ export function AppHeader() {
     const activeAvatarRecord = AVATARS.find(a => a.id === user?.activeAvatar) || AVATARS[0];
 
     return (
-        <header className="px-5 pt-14 pb-4 flex justify-between items-center sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-black/[0.04]">
+        <header className="px-5 pt-14 pb-4 flex justify-between items-center sticky top-0 z-40 bg-transparent">
             <div className="flex items-center gap-3">
                 <Link href="/dashboard" className="flex items-center hover:opacity-80 transition-opacity">
                     <ZellaLogo size="sm" showText={true} />

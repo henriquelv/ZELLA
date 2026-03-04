@@ -65,11 +65,12 @@ export default function DashboardPage() {
     const xpProgress = Math.min(100, Math.floor((user.xp / xpNeeded) * 100));
 
     return (
-        <div className="min-h-screen bg-[#f4f6fb] pb-24 relative overflow-x-hidden">
-            {/* Aurora ambient — enhanced for premium look */}
+        <div className="min-h-screen bg-[#f8fafc] pb-24 relative overflow-x-hidden">
+            {/* Massive Atmospheric Gradient from Mockup */}
             <div className="fixed inset-0 pointer-events-none z-0">
-                <div className="absolute top-[-10%] left-[-15%] w-[60%] h-[60%] bg-blue-500/[0.12] rounded-full blur-[120px]" />
-                <div className="absolute bottom-[5%] right-[-15%] w-[50%] h-[50%] bg-green-500/[0.1] rounded-full blur-[120px]" />
+                <div className="absolute top-0 left-0 right-0 h-[60vh] bg-gradient-to-br from-[#e0f2fe] via-[#f0fdfa] to-transparent opacity-100" />
+                <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-blue-400/[0.15] rounded-full blur-[120px]" />
+                <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-emerald-400/[0.12] rounded-full blur-[120px]" />
             </div>
 
             <AppHeader />
@@ -80,70 +81,69 @@ export default function DashboardPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                 >
-                    <Link href="/profile" className="block bg-white/70 backdrop-blur-sm border border-black/[0.05] rounded-3xl p-5 shadow-sm hover:border-[#2563eb]/30 transition-colors">
-                        <div className="flex items-center gap-4">
-                            {/* Level circle like mockup */}
-                            <div className="w-14 h-14 rounded-full border-[3px] border-[#2563eb] flex items-center justify-center shrink-0">
-                                <span className="text-lg font-bold text-[#2563eb]">{currentLevel}</span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between mb-0.5">
-                                    <div>
-                                        <h3 className="font-bold text-[15px] text-gray-900 leading-tight">
-                                            {currentStepData.title}
-                                        </h3>
-                                        <p className="text-[12px] text-gray-400 mt-0.5">
-                                            Level {currentLevel}, <span className="font-medium text-gray-500">{user.xp}/{xpNeeded} XP</span>
+                    <Link href="/profile" className="block group">
+                        <div className="bg-white rounded-[32px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 relative overflow-hidden transition-all group-hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/5 to-emerald-500/5 rounded-full blur-2xl -mr-10 -mt-10 transition-transform group-hover:scale-110 duration-700" />
+
+                            <div className="flex justify-between items-start mb-6 relative">
+                                <div className="flex gap-4">
+                                    <div className="w-14 h-14 rounded-full border-[3px] border-[#2563eb] flex items-center justify-center shrink-0">
+                                        <span className="text-lg font-bold text-[#2563eb]">{currentLevel}</span>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h2 className="font-bold text-[19px] text-gray-900 tracking-tight leading-tight">{currentStepData.title}</h2>
+                                        <p className="text-[13px] text-gray-500 font-medium mt-0.5">
+                                            Level {currentLevel}, <span className="font-bold text-gray-500">{user.xp}/{xpNeeded} XP</span>
                                         </p>
                                     </div>
-                                    <span className="text-[13px] font-bold text-[#2563eb]">{xpProgress}%</span>
                                 </div>
-                                {/* Progress bar */}
-                                <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden mt-2">
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${xpProgress}%` }}
-                                        transition={{ duration: 1, ease: "easeOut" }}
-                                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#2563eb] to-[#16a34a] rounded-full"
-                                    />
-                                </div>
-                                <div className="flex items-center justify-between mt-2">
-                                    <p className="text-[11px] text-gray-400">
-                                        Degrau Atual: <span className="font-semibold text-gray-600">{currentStepData.title}</span>
-                                    </p>
-                                    <span className="text-[10px] uppercase font-bold text-[#2563eb] bg-blue-50 px-2 py-0.5 rounded-full">Ver Perfil</span>
-                                </div>
+                                <span className="text-[13px] font-bold text-[#2563eb]">{xpProgress}%</span>
+                            </div>
+
+                            {/* Progress bar */}
+                            <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden mt-2">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${xpProgress}%` }}
+                                    transition={{ duration: 1, ease: "easeOut" }}
+                                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#2563eb] to-[#16a34a] rounded-full"
+                                />
+                            </div>
+                            <div className="flex items-center justify-between mt-2">
+                                <p className="text-[11px] text-gray-400">
+                                    Degrau Atual: <span className="font-semibold text-gray-600">{currentStepData.title}</span>
+                                </p>
+                                <span className="text-[10px] uppercase font-bold text-[#2563eb] bg-blue-50 px-2 py-0.5 rounded-full">Ver Perfil</span>
                             </div>
                         </div>
                     </Link>
                 </motion.div>
 
-                {/* 1.1 — STREAK + METRICS ROW */}
                 <motion.section
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.08 }}
                     className="grid grid-cols-4 gap-2.5"
                 >
-                    <div className="bg-white/70 backdrop-blur-sm border border-black/[0.05] rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm">
+                    <div className="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/60">
                         <Flame className="w-5 h-5 text-orange-500 mb-1.5" />
                         <span className="text-[15px] font-bold text-gray-900">{user.streak}d</span>
-                        <span className="text-[9px] text-gray-400 font-medium uppercase tracking-wide mt-0.5">Streak</span>
+                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide mt-0.5">Streak</span>
                     </div>
-                    <div className="bg-white/70 backdrop-blur-sm border border-black/[0.05] rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm">
+                    <div className="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/60">
                         <Zap className="w-5 h-5 text-[#2563eb] mb-1.5" />
                         <span className="text-[15px] font-bold text-gray-900">{user.ie || 0}%</span>
-                        <span className="text-[9px] text-gray-400 font-medium uppercase tracking-wide mt-0.5">Eficiência</span>
+                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide mt-0.5">Eficiência</span>
                     </div>
-                    <div className="bg-white/70 backdrop-blur-sm border border-black/[0.05] rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm">
+                    <div className="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/60">
                         <ShieldCheck className="w-5 h-5 text-[#16a34a] mb-1.5" />
                         <span className="text-[15px] font-bold text-gray-900">{user.is || 0}%</span>
-                        <span className="text-[9px] text-gray-400 font-medium uppercase tracking-wide mt-0.5">Sobreviv.</span>
+                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide mt-0.5">Sobreviv.</span>
                     </div>
-                    <div className="bg-white/70 backdrop-blur-sm border border-black/[0.05] rounded-2xl p-3.5 flex flex-col items-center text-center shadow-sm">
+                    <div className="bg-white rounded-2xl p-3.5 flex flex-col items-center text-center shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/60">
                         <TrendingUp className="w-5 h-5 text-red-500 rotate-180 mb-1.5" />
                         <span className="text-[15px] font-bold text-gray-900">{user.idMetric || 0}%</span>
-                        <span className="text-[9px] text-gray-400 font-medium uppercase tracking-wide mt-0.5">Drenos</span>
+                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide mt-0.5">Drenos</span>
                     </div>
                 </motion.section>
 
@@ -248,7 +248,7 @@ export default function DashboardPage() {
                             <button
                                 key={action.label}
                                 onClick={() => router.push(action.href)}
-                                className="group bg-white/80 backdrop-blur-xl border border-black/[0.08] flex items-center gap-3.5 p-4 rounded-2xl shadow-md hover:shadow-lg hover:bg-white transition-all text-left active:scale-[0.97]"
+                                className="group bg-white rounded-2xl p-4 flex items-center gap-3.5 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 transition-all text-left active:scale-[0.97]"
                             >
                                 <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", action.bg)}>
                                     <action.icon className={cn("w-5 h-5", action.color)} />

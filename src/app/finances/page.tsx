@@ -99,36 +99,37 @@ export default function FinancesPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#f4f6fb] text-gray-900 pb-24 relative overflow-x-hidden">
-            {/* Aurora ambient — enhanced for premium look */}
+        <div className="min-h-screen bg-[#f8fafc] text-gray-900 pb-24 relative overflow-x-hidden">
+            {/* Massive Atmospheric Gradient from Mockup */}
             <div className="fixed inset-0 pointer-events-none z-0">
-                <div className="absolute top-[-10%] left-[-15%] w-[60%] h-[60%] bg-blue-500/[0.12] rounded-full blur-[120px]" />
-                <div className="absolute bottom-[5%] right-[-15%] w-[50%] h-[50%] bg-green-500/[0.1] rounded-full blur-[120px]" />
+                <div className="absolute top-0 left-0 right-0 h-[60vh] bg-gradient-to-br from-[#e0f2fe] via-[#f0fdfa] to-transparent opacity-100" />
+                <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-blue-400/[0.15] rounded-full blur-[120px]" />
+                <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-emerald-400/[0.12] rounded-full blur-[120px]" />
             </div>
 
             <div className="relative z-10 max-w-lg mx-auto">
-                {/* Header */}
-                <header className="px-5 pt-14 pb-2">
-                    <div className="flex justify-between items-center mb-6">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                                <Wallet className="w-6 h-6 text-[#2563eb]" />
-                                Base Financeira
-                            </h1>
-                            <p className="text-[13px] text-gray-400 mt-1">Sincronização de campo</p>
-                        </div>
-                        <div className="flex items-center gap-1.5 bg-white/70 border border-black/[0.06] px-3.5 py-2 rounded-full shadow-sm">
-                            <Star className="w-3.5 h-3.5 text-[#2563eb]" />
-                            <span className="text-[12px] font-bold text-gray-700">{user.xp} XP</span>
-                        </div>
+                <header className="px-5 pt-14 pb-6 sticky top-0 z-40 bg-transparent flex justify-between items-center gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                            <Wallet className="w-6 h-6 text-[#2563eb]" />
+                            Base Financeira
+                        </h1>
+                        <p className="text-[13px] text-gray-400 mt-1">Sincronização de campo</p>
                     </div>
+                    <div className="flex items-center gap-1.5 bg-white border border-black/[0.06] px-3.5 py-2 rounded-full shadow-sm">
+                        <Star className="w-3.5 h-3.5 text-[#2563eb]" />
+                        <span className="text-[12px] font-bold text-gray-700">{user.xp} XP</span>
+                    </div>
+                </header>
 
+                <main className="px-5 mb-8">
                     {/* Balance Card */}
                     <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-white/70 backdrop-blur-sm border border-black/[0.05] p-6 rounded-3xl shadow-sm mb-5"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-white rounded-[32px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/60 relative overflow-hidden group mb-4"
                     >
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-[#2563eb]/5 to-[#16a34a]/5 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-110 duration-700" />
                         <p className="text-[12px] text-gray-400 font-medium mb-2">Saldo Atual</p>
                         <h2 className={cn("text-4xl font-bold tracking-tight", netBalance < 0 ? "text-red-500" : "text-gray-900")}>
                             <span className="text-xl text-gray-300 mr-1">R$</span>{netBalance.toFixed(2)}
@@ -151,7 +152,7 @@ export default function FinancesPage() {
                             </div>
                         </div>
                     </motion.div>
-                </header>
+                </main>
 
                 {/* Transaction History */}
                 <main className="px-5">
@@ -162,7 +163,7 @@ export default function FinancesPage() {
                     </div>
 
                     {user.transactions.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-16 text-center bg-white/70 backdrop-blur-sm border border-black/[0.05] rounded-3xl shadow-sm">
+                        <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-[24px] shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/60">
                             <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-5">
                                 <Wallet className="w-8 h-8 text-[#2563eb]" />
                             </div>
@@ -185,7 +186,7 @@ export default function FinancesPage() {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: idx * 0.03 }}
                                     key={t.id}
-                                    className="flex justify-between items-center p-4 bg-white/70 backdrop-blur-sm border border-black/[0.05] rounded-2xl shadow-sm active:scale-[0.99] transition-transform"
+                                    className="flex justify-between items-center p-4 bg-white rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white/60 active:scale-[0.99] transition-transform"
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className={cn(

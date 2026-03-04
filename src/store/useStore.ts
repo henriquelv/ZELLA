@@ -71,6 +71,7 @@ export interface Transaction {
     category: string
     type: 'expense' | 'income'
     date: string
+    description?: string
     isAiGenerated?: boolean
 }
 

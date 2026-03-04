@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { PageLoader } from "@/components/ui/page-loader";
 import { AddTransactionModal } from "@/components/ui/add-transaction-modal";
 import { AIFinancialChat } from "@/components/ui/ai-financial-chat";
+import { ExtractReviewModal, type ExtractedTransaction } from "@/components/ui/extract-review-modal";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
@@ -37,6 +38,7 @@ export default function FinancesPage() {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalAction, setModalAction] = useState<'select' | 'income' | 'expense' | 'scanner'>('select');
+    const [extractedData, setExtractedData] = useState<ExtractedTransaction[] | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -69,24 +71,16 @@ export default function FinancesPage() {
             if (!response.ok) throw new Error(data.error || "Erro na extração");
 
             if (data.transactions && data.transactions.length > 0) {
-                let xpGain = 0;
-                data.transactions.forEach((t: any) => {
-                    user.addTransaction({
-                        id: crypto.randomUUID(),
-                        amount: Number(t.amount),
-                        category: t.category,
-                        type: t.type === 'income' ? 'income' : 'expense',
-                        date: new Date().toISOString(),
-                        isAiGenerated: true
-                    });
-                    xpGain += 10;
-                });
-                user.addXp(xpGain + 25);
-                setAnalyzeSuccess(true);
-                setTimeout(() => {
-                    setAnalyzeSuccess(false);
-                    setIsModalOpen(false);
-                }, 3000);
+                // Ensure IDs exist for the UI list
+                const withIds = data.transactions.map((t: any) => ({
+                    ...t,
+                    id: crypto.randomUUID(),
+                    amount: Number(t.amount)
+                }));
+
+                setExtractedData(withIds);
+                setIsModalOpen(false); // Close the scanner options modal to show the review modal
+
             } else {
                 toast.error("Nenhum lançamento encontrado");
             }
@@ -96,6 +90,29 @@ export default function FinancesPage() {
             setIsAnalyzing(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
         }
+    };
+
+    const handleConfirmExtraction = (reviewedTransactions: ExtractedTransaction[]) => {
+        let xpGain = 0;
+        reviewedTransactions.forEach((t) => {
+            user.addTransaction({
+                id: t.id,
+                amount: t.amount,
+                category: t.category,
+                type: t.type,
+                date: t.date,
+                description: t.description,
+                isAiGenerated: true
+            });
+            xpGain += 10;
+        });
+
+        if (xpGain > 0) {
+            user.addXp(xpGain + 25);
+            toast.success(`${reviewedTransactions.length} lançamentos salvos! (+${xpGain + 25} XP)`);
+        }
+
+        setExtractedData(null);
     };
 
     return (
@@ -132,7 +149,7 @@ export default function FinancesPage() {
                         <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-[#2563eb]/5 to-[#16a34a]/5 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-110 duration-700" />
                         <p className="text-[12px] text-gray-400 font-medium mb-2">Saldo Atual</p>
                         <h2 className={cn("text-4xl font-bold tracking-tight", netBalance < 0 ? "text-red-500" : "text-gray-900")}>
-                            <span className="text-xl text-gray-300 mr-1">R$</span>{netBalance.toFixed(2)}
+                            {netBalance < 0 ? "-" : ""}<span className="text-xl text-gray-400 mr-1">R$</span>{Math.abs(netBalance).toFixed(2)}
                         </h2>
 
                         <div className="grid grid-cols-2 gap-3 mt-5">
@@ -197,12 +214,15 @@ export default function FinancesPage() {
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-1.5">
-                                                <p className="font-semibold text-[14px] text-gray-800 capitalize">{t.category}</p>
+                                                <p className="font-semibold text-[14px] text-gray-800 capitalize">{t.description || t.category}</p>
                                                 {t.isAiGenerated && (
                                                     <span className="text-[9px] font-bold text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded-full">✨ IA</span>
                                                 )}
                                             </div>
-                                            <p className="text-[11px] text-gray-400">{new Date(t.date).toLocaleDateString()}</p>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <span className="text-[10px] font-medium text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-md uppercase tracking-wider">{t.category}</span>
+                                                <p className="text-[11px] text-gray-400">{new Date(t.date).toLocaleDateString()}</p>
+                                            </div>
                                         </div>
                                     </div>
                                     <span className={cn(
@@ -355,6 +375,12 @@ export default function FinancesPage() {
                 </div>
             )}
 
+            <ExtractReviewModal
+                isOpen={extractedData !== null}
+                onClose={() => setExtractedData(null)}
+                initialTransactions={extractedData || []}
+                onConfirm={handleConfirmExtraction}
+            />
             <AIFinancialChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
             <BottomNav />
         </div>

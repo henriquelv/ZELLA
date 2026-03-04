@@ -1,0 +1,11 @@
+commit af386de3056c72b40114f186073e71fc6f0b1672
+Author: Henrique <henrique.vmoreno@gmail.com>
+Date:   Mon Feb 23 15:12:23 2026 -0300
+
+    docs: add development hours report and establish frequent commit policy
+
+commit 369c54f1a9250ca5f4959636b842e7fde1ed1c22
+Author: Henrique <henrique.vmoreno@gmail.com>
+Date:   Fri Feb 20 15:39:03 2026 -0300
+
+    feat: complete UI rebuild, games, goals and performance #deploy

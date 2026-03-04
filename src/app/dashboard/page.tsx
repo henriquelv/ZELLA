@@ -26,6 +26,7 @@ import { AppHeader } from "@/components/ui/app-header";
 import { PageLoader } from "@/components/ui/page-loader";
 import { InsightsWidget } from "@/components/ui/insights-widget";
 import { AVATARS } from "@/components/ui/avatar-selector";
+import Link from "next/link";
 
 const QUICK_ACTIONS = [
     { label: "Finanças", icon: PiggyBank, href: "/finances", color: "text-emerald-600", bg: "bg-emerald-50" },

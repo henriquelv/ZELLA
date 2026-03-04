@@ -22,8 +22,14 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
     const [missionTriggered, setMissionTriggered] = useState<{ category: string, amount: number } | null>(null);
 
     useEffect(() => {
-        if (isOpen) setMissionTriggered(null);
-    }, [isOpen]);
+        if (isOpen) {
+            setMissionTriggered(null);
+            setType(initialType);
+            setAmount("");
+            setCategory("");
+            setIsSubmitting(false);
+        }
+    }, [isOpen, initialType]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {

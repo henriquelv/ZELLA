@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Wallet, GamepadIcon, Users, User } from "lucide-react";
+import { Home, Wallet, GamepadIcon, Users, User, MapIcon, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function BottomNav() {
@@ -10,9 +10,10 @@ export function BottomNav() {
 
     const links = [
         { href: "/dashboard", label: "Home", icon: Home },
+        { href: "/journey", label: "Trilha", icon: MapIcon },
         { href: "/finances", label: "Base", icon: Wallet },
-        { href: "/missions", label: "Missões", icon: GamepadIcon },
-        { href: "/social", label: "Social", icon: Users },
+        { href: "/games", label: "Jogos", icon: GamepadIcon },
+        { href: "/missions", label: "Missões", icon: Target },
         { href: "/profile", label: "Perfil", icon: User },
     ];
 

@@ -100,10 +100,10 @@ export default function FinancesPage() {
 
     return (
         <div className="min-h-screen bg-[#f4f6fb] text-gray-900 pb-24 relative overflow-x-hidden">
-            {/* Aurora ambient */}
+            {/* Aurora ambient — enhanced for premium look */}
             <div className="fixed inset-0 pointer-events-none z-0">
-                <div className="absolute top-0 right-0 w-[50%] h-[40%] bg-blue-400/[0.04] rounded-full blur-[120px]" />
-                <div className="absolute bottom-1/4 left-0 w-[40%] h-[40%] bg-green-400/[0.03] rounded-full blur-[100px]" />
+                <div className="absolute top-[-10%] left-[-15%] w-[60%] h-[60%] bg-blue-500/[0.12] rounded-full blur-[120px]" />
+                <div className="absolute bottom-[5%] right-[-15%] w-[50%] h-[50%] bg-green-500/[0.1] rounded-full blur-[120px]" />
             </div>
 
             <div className="relative z-10 max-w-lg mx-auto">

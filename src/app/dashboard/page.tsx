@@ -66,10 +66,10 @@ export default function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-[#f4f6fb] pb-24 relative overflow-x-hidden">
-            {/* Aurora ambient — very subtle */}
+            {/* Aurora ambient — enhanced for premium look */}
             <div className="fixed inset-0 pointer-events-none z-0">
-                <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] bg-blue-400/[0.06] rounded-full blur-[100px]" />
-                <div className="absolute bottom-[10%] right-[-10%] w-[40%] h-[40%] bg-green-400/[0.04] rounded-full blur-[100px]" />
+                <div className="absolute top-[-10%] left-[-15%] w-[60%] h-[60%] bg-blue-500/[0.12] rounded-full blur-[120px]" />
+                <div className="absolute bottom-[5%] right-[-15%] w-[50%] h-[50%] bg-green-500/[0.1] rounded-full blur-[120px]" />
             </div>
 
             <AppHeader />
@@ -243,12 +243,12 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                 >
-                    <div className="grid grid-cols-2 gap-2.5">
+                    <div className="grid grid-cols-2 gap-3">
                         {QUICK_ACTIONS.map((action) => (
                             <button
                                 key={action.label}
                                 onClick={() => router.push(action.href)}
-                                className="group bg-white/70 backdrop-blur-sm border border-black/[0.05] flex items-center gap-3.5 p-4 rounded-2xl shadow-sm hover:shadow-md hover:bg-white/90 transition-all text-left active:scale-[0.97]"
+                                className="group bg-white/80 backdrop-blur-xl border border-black/[0.08] flex items-center gap-3.5 p-4 rounded-2xl shadow-md hover:shadow-lg hover:bg-white transition-all text-left active:scale-[0.97]"
                             >
                                 <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", action.bg)}>
                                     <action.icon className={cn("w-5 h-5", action.color)} />

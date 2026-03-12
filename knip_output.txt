@@ -1,0 +1,230 @@
+[93m[4mUnused files[24m[39m (203)
+old_nav.tsx                                                                                         
+.next/required-server-files.js                                                                      
+.next/build/postcss.js                                                                              
+.next/server/interception-route-rewrite-manifest.js                                                 
+.next/server/middleware-build-manifest.js                                                           
+.next/server/next-font-manifest.js                                                                  
+.next/server/server-reference-manifest.js                                                           
+.next/types/validator.ts                                                                            
+.next/build/chunks/[root-of-the-server]__51225daf._.js                                              
+.next/build/chunks/[root-of-the-server]__974941ed._.js                                              
+.next/build/chunks/[turbopack-node]_transforms_postcss_ts_6920245c._.js                             
+.next/build/chunks/[turbopack]_runtime.js                                                           
+.next/dev/build/postcss.js                                                                          
+.next/dev/server/interception-route-rewrite-manifest.js                                             
+.next/dev/server/middleware-build-manifest.js                                                       
+.next/dev/server/next-font-manifest.js                                                              
+.next/dev/server/server-reference-manifest.js                                                       
+src/data/missions.ts                                                                                
+.next/dev/types/validator.ts                                                                        
+.next/server/app/page.js                                                                            
+.next/server/app/page_client-reference-manifest.js                                                  
+.next/server/chunks/[externals]_next_dist_a6d89067._.js                                             
+.next/server/chunks/[root-of-the-server]__f408c708._.js                                             
+.next/server/chunks/[turbopack]_runtime.js                                                          
+.next/server/chunks/_next-internal_server_app_api_extract_route_actions_7dd325d5.js                 
+.next/server/chunks/_next-internal_server_app_api_generate-goals_route_actions_de3bfd4e.js          
+.next/server/chunks/_next-internal_server_app_favicon_ico_route_actions_353150a5.js                 
+.next/static/pQ-vMahTn1-1bSQFS8af-/_buildManifest.js                                                
+.next/static/pQ-vMahTn1-1bSQFS8af-/_ssgManifest.js                                                  
+.next/static/chunks/118543c1eea8a5af.js                                                             
+.next/static/chunks/3b3351ecef48102d.js                                                             
+.next/static/chunks/3c724acdb6e000ac.js                                                             
+.next/static/chunks/3e12f250a7b22b6a.js                                                             
+.next/static/chunks/44ac53d7aeb39fb1.js                                                             
+.next/static/chunks/475443859240aa8a.js                                                             
+.next/static/chunks/4bd268d8c35dfd9f.js                                                             
+.next/static/chunks/4c23274f5528953b.css                                                            
+.next/static/chunks/6156e9431b798cea.js                                                             
+.next/static/chunks/644efd2c2ffbe801.js                                                             
+.next/static/chunks/82abf2d65f5428ae.js                                                             
+.next/static/chunks/a6dad97d9634a72d.js                                                             
+.next/static/chunks/a9e52b719a01557f.js                                                             
+.next/static/chunks/aebde813141e91f2.js                                                             
+.next/static/chunks/bad2130088d364b2.js                                                             
+.next/static/chunks/cc5929d2d263c016.js                                                             
+.next/static/chunks/d2be314c3ece3fbe.js                                                             
+.next/static/chunks/d59f830a2b8e768c.js                                                             
+.next/static/chunks/d7c7e524fedad6b6.js                                                             
+.next/static/chunks/ea553279be12e63a.js                                                             
+.next/static/chunks/eac622f633357b83.js                                                             
+.next/static/chunks/f1bcc29f02d28114.js                                                             
+.next/static/chunks/f2822bd2b37c8ec2.js                                                             
+.next/static/chunks/f2f58a7e93290fbb.js                                                             
+.next/static/chunks/fee48a3927c41e9f.js                                                             
+.next/static/chunks/ff1a16fafef87110.js                                                             
+.next/static/chunks/turbopack-75c9f77ac1cbadad.js                                                   
+skills/playwright-skill/run.js                                                                      
+skills/systematic-debugging/condition-based-waiting-example.ts                                      
+skills/writing-skills/render-graphs.js                                                              
+.next/dev/build/chunks/[root-of-the-server]__51225daf._.js                                          
+.next/dev/build/chunks/[root-of-the-server]__974941ed._.js                                          
+.next/dev/build/chunks/[turbopack-node]_transforms_postcss_ts_6920245c._.js                         
+.next/dev/build/chunks/[turbopack]_runtime.js                                                       
+src/components/ui/card.tsx                                                                          
+src/components/ui/expense-distribution-chart.tsx                                                    
+src/components/ui/input.tsx                                                                         
+src/components/ui/progress.tsx                                                                      
+src/components/ui/sonner.tsx                                                                        
+src/components/ui/textarea.tsx                                                                      
+.next/dev/static/development/_buildManifest.js                                                      
+.next/dev/static/development/_ssgManifest.js                                                        
+.next/dev/static/chunks/src_62685bf8._.js                                                           
+.next/dev/static/chunks/src_835569e4._.js                                                           
+.next/dev/static/chunks/src_8498fc9d._.js                                                           
+.next/dev/static/chunks/src_app_dashboard_page_tsx_0797a99a._.js                                    
+.next/dev/static/chunks/src_app_favicon_ico_mjs_81d86e48._.js                                       
+.next/dev/static/chunks/src_app_globals_css_bad6b30c._.single.css                                   
+.next/dev/static/chunks/src_app_layout_tsx_1cf6b850._.js                                            
+.next/dev/static/chunks/src_app_onboarding_page_tsx_0797a99a._.js                                   
+.next/dev/static/chunks/src_components_ui_3d-scenes_tsx_17ace45a._.js                               
+.next/dev/static/chunks/src_components_ui_3d-scenes_tsx_2db8f7de._.js                               
+.next/dev/static/chunks/src_components_ui_3d-scenes_tsx_37d9a1c4._.js                               
+.next/dev/static/chunks/src_components_ui_3d-scenes_tsx_8afecf18._.js                               
+.next/dev/static/chunks/src_components_ui_3d-scenes_tsx_da094774._.js                               
+.next/dev/static/chunks/src_e9081927._.js                                                           
+.next/dev/static/chunks/src_fa59d985._.js                                                           
+.next/dev/static/chunks/turbopack-_23a915ee._.js                                                    
+.next/dev/static/chunks/[next]_internal_font_google_inter_5901b7c6_module_css_bad6b30c._.single.css 
+.next/dev/static/chunks/[next]_internal_font_google_outfit_8778cd42_module_css_bad6b30c._.single.css
+.next/dev/static/chunks/[root-of-the-server]__66014e33._.css                                        
+.next/dev/static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_956a0d3a._.js              
+.next/dev/static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_c7192189._.js              
+.next/dev/static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_c8c997ce._.js              
+.next/dev/static/chunks/_a0ff3932._.js                                                              
+.next/dev/static/chunks/_f7f112a7._.js                                                              
+.next/server/app/dashboard/page.js                                                                  
+.next/server/app/dashboard/page_client-reference-manifest.js                                        
+.next/server/app/finances/page.js                                                                   
+.next/server/app/finances/page_client-reference-manifest.js                                         
+.next/server/app/favicon.ico/route.js                                                               
+.next/server/app/games/page.js                                                                      
+.next/server/app/games/page_client-reference-manifest.js                                            
+.next/server/app/journey/page.js                                                                    
+.next/server/app/journey/page_client-reference-manifest.js                                          
+.next/server/app/missions/page.js                                                                   
+.next/server/app/missions/page_client-reference-manifest.js                                         
+.next/server/app/onboarding/page.js                                                                 
+.next/server/app/onboarding/page_client-reference-manifest.js                                       
+.next/server/app/_global-error/page.js                                                              
+.next/server/app/_global-error/page_client-reference-manifest.js                                    
+.next/server/app/_not-found/page.js                                                                 
+.next/server/app/_not-found/page_client-reference-manifest.js                                       
+.next/server/app/profile/page.js                                                                    
+.next/server/app/profile/page_client-reference-manifest.js                                          
+.next/server/chunks/ssr/src_app_5b2047f8._.js                                                       
+.next/server/chunks/ssr/src_app_dashboard_page_tsx_196c74b5._.js                                    
+.next/server/chunks/ssr/src_app_finances_page_tsx_03f29d9e._.js                                     
+.next/server/chunks/ssr/src_app_games_page_tsx_c21ac8c6._.js                                        
+.next/server/chunks/ssr/[root-of-the-server]__0092b3d0._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__1257d2b0._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__1382557e._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__15600e29._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__1bd47de4._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__1f660b2c._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__34b6d70c._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__4942669b._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__544cbe57._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__67e2aacb._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__692c5960._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__9499a071._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__9c51a6bb._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__a3bfdc3f._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__a457c799._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__a5d13d54._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__a64655ed._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__a983867c._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__aa466e7e._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__b2f54055._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__b9356576._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__c70abdad._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__f437da88._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__fbd47325._.js                                         
+.next/server/chunks/ssr/[root-of-the-server]__fe5d6ade._.js                                         
+.next/server/chunks/ssr/[turbopack]_runtime.js                                                      
+.next/server/chunks/ssr/_0efddc1b._.js                                                              
+.next/server/chunks/ssr/_18be911e._.js                                                              
+.next/server/chunks/ssr/_1c118c5e._.js                                                              
+.next/server/chunks/ssr/_25e6aab8._.js                                                              
+.next/server/chunks/ssr/_274465f9._.js                                                              
+.next/server/chunks/ssr/_448b7821._.js                                                              
+.next/server/chunks/ssr/_5916666f._.js                                                              
+.next/server/chunks/ssr/_5c78e710._.js                                                              
+.next/server/chunks/ssr/_80c1275f._.js                                                              
+.next/server/chunks/ssr/_87dee7a1._.js                                                              
+.next/server/chunks/ssr/_88e5f5bd._.js                                                              
+.next/server/chunks/ssr/_90253d6f._.js                                                              
+.next/server/chunks/ssr/_a7b53bca._.js                                                              
+.next/server/chunks/ssr/_b17f2fce._.js                                                              
+.next/server/chunks/ssr/_b7c938ca._.js                                                              
+.next/server/chunks/ssr/_bfea5b79._.js                                                              
+.next/server/chunks/ssr/_d669483e._.js                                                              
+.next/server/chunks/ssr/_ea6cdb08._.js                                                              
+.next/server/chunks/ssr/_f8df29da._.js                                                              
+.next/server/chunks/ssr/_fddfc8a4._.js                                                              
+.next/server/chunks/ssr/_next-internal_server_app_dashboard_page_actions_7f01ccec.js                
+.next/server/chunks/ssr/_next-internal_server_app_finances_page_actions_54f643fc.js                 
+.next/server/chunks/ssr/_next-internal_server_app_games_page_actions_b6709cc6.js                    
+.next/server/chunks/ssr/_next-internal_server_app_journey_page_actions_f27d07f6.js                  
+.next/server/chunks/ssr/_next-internal_server_app_missions_page_actions_828e49da.js                 
+.next/server/chunks/ssr/_next-internal_server_app_onboarding_page_actions_99465896.js               
+.next/server/chunks/ssr/_next-internal_server_app_page_actions_39d4fc33.js                          
+.next/server/chunks/ssr/_next-internal_server_app_profile_page_actions_a2e720cb.js                  
+.next/server/chunks/ssr/_next-internal_server_app__global-error_page_actions_75761787.js            
+.next/server/chunks/ssr/_next-internal_server_app__not-found_page_actions_554ec2bf.js               
+.next/dev/server/app/onboarding/page.js                                                             
+.next/dev/server/app/onboarding/page_client-reference-manifest.js                                   
+.next/dev/server/app/dashboard/page.js                                                              
+.next/dev/server/app/dashboard/page_client-reference-manifest.js                                    
+.next/dev/server/app/_not-found/page.js                                                             
+.next/dev/server/app/_not-found/page_client-reference-manifest.js                                   
+.next/server/app/api/generate-goals/route.js                                                        
+.next/server/app/api/generate-goals/route_client-reference-manifest.js                              
+.next/server/app/api/extract/route.js                                                               
+.next/server/app/api/extract/route_client-reference-manifest.js                                     
+.next/dev/server/chunks/ssr/src_app_5b2047f8._.js                                                   
+.next/dev/server/chunks/ssr/[externals]_next_dist_1aaf5479._.js                                     
+.next/dev/server/chunks/ssr/[externals]_next_dist_c80f7c8f._.js                                     
+.next/dev/server/chunks/ssr/[externals]__e8a2741f._.js                                              
+.next/dev/server/chunks/ssr/[root-of-the-server]__05a24e34._.js                                     
+.next/dev/server/chunks/ssr/[root-of-the-server]__0b14cfb4._.js                                     
+.next/dev/server/chunks/ssr/[root-of-the-server]__23b9afe8._.js                                     
+.next/dev/server/chunks/ssr/[root-of-the-server]__6b48513c._.js                                     
+.next/dev/server/chunks/ssr/[root-of-the-server]__7673f2a6._.js                                     
+.next/dev/server/chunks/ssr/[root-of-the-server]__7b6ed9a3._.js                                     
+.next/dev/server/chunks/ssr/[root-of-the-server]__9e4f8c7b._.js                                     
+.next/dev/server/chunks/ssr/[root-of-the-server]__a8ab9a0d._.js                                     
+.next/dev/server/chunks/ssr/[root-of-the-server]__ab83b60d._.js                                     
+.next/dev/server/chunks/ssr/[root-of-the-server]__c6d5a378._.js                                     
+.next/dev/server/chunks/ssr/[root-of-the-server]__e336abe7._.js                                     
+.next/dev/server/chunks/ssr/[turbopack]_runtime.js                                                  
+.next/dev/server/chunks/ssr/_next-internal_server_app_dashboard_page_actions_7f01ccec.js            
+.next/dev/server/chunks/ssr/_next-internal_server_app_onboarding_page_actions_99465896.js           
+.next/dev/server/chunks/ssr/_next-internal_server_app__not-found_page_actions_554ec2bf.js           
+[93m[4mUnused dependencies[24m[39m (6)
+@google/genai  package.json:12:6
+@supabase/ssr  package.json:16:6
+antigravity    package.json:18:6
+pdf-parse      package.json:27:6
+radix-ui       package.json:28:6
+recharts       package.json:31:6
+[93m[4mUnused devDependencies[24m[39m (1)
+@types/pdf-parse  package.json:40:6
+[93m[4mUnlisted dependencies[24m[39m (1)
+postcss  postcss.config.mjs
+[93m[4mUnused exports[24m[39m (6)
+useIsHydrated   function  src/store/useStore.ts:559:17          
+CoinScene       function  src/components/ui/3d-scenes.tsx:168:17
+TrophyScene     function  src/components/ui/3d-scenes.tsx:184:17
+XPOrbScene      function  src/components/ui/3d-scenes.tsx:200:17
+buttonVariants            src/components/ui/button.tsx:56:18    
+badgeVariants             src/components/ui/badge.tsx:37:17     
+[93m[4mUnused exported types[24m[39m (6)
+UserState              interface  src/store/useStore.ts:7:18        
+Goal                   interface  src/store/useStore.ts:79:18       
+Mission                interface  src/store/useStore.ts:89:18       
+UserMissionCompletion  interface  src/store/useStore.ts:99:18       
+ButtonProps            interface  src/components/ui/button.tsx:36:18
+BadgeProps             interface  src/components/ui/badge.tsx:25:18 
+[33m[4mConfiguration hints[24m (1)[39m

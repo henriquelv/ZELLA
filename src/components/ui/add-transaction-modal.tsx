@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, PlusCircle, MinusCircle, Loader2, AlertTriangle } from "lucide-react";
+import { X, PlusCircle, MinusCircle, Loader2, AlertTriangle, ScanLine, FileText } from "lucide-react";
 import { Button } from "./button";
 import { cn } from "@/lib/utils";
 import { useUserStoreHydrated } from "@/store/useStore";
 import { useGameSound } from "@/hooks/use-game-sound";
+import { toast } from "sonner";
 
 interface AddTransactionModalProps {
     isOpen: boolean;
@@ -19,6 +20,7 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
     const [amount, setAmount] = useState("");
     const [category, setCategory] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isScanning, setIsScanning] = useState(false);
     const [missionTriggered, setMissionTriggered] = useState<{ category: string, amount: number } | null>(null);
 
     useEffect(() => {
@@ -139,9 +141,61 @@ export function AddTransactionModal({ isOpen, onClose, initialType = 'expense' }
                     </AnimatePresence>
 
                     <div className={missionTriggered ? "opacity-0 pointer-events-none scale-95" : "opacity-100 transition-all duration-500"}>
-                        <div className="mb-8">
-                            <h2 className="text-2xl font-bold text-gray-900">Nova Transação</h2>
-                            <p className="text-[13px] text-gray-400 mt-1">Adicione sua receita ou despesa</p>
+                        <div className="mb-8 flex justify-between items-start">
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900">Nova Transação</h2>
+                                <p className="text-[13px] text-gray-400 mt-1">Adicione sua receita ou despesa</p>
+                            </div>
+                            <label className="relative flex flex-col items-center justify-center p-3 rounded-2xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors cursor-pointer group shadow-sm border border-indigo-100">
+                                {isScanning ? (
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                ) : (
+                                    <ScanLine className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                )}
+                                <span className="text-[10px] font-bold mt-1 uppercase tracking-wider">Scanner</span>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    capture="environment"
+                                    className="hidden"
+                                    disabled={isScanning || isSubmitting}
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+
+                                        setIsScanning(true);
+                                        toast.loading("Zella IA está lendo o documento...", { id: "scan" });
+                                        try {
+                                            const formData = new FormData();
+                                            formData.append("file", file);
+
+                                            const res = await fetch("/api/extract", {
+                                                method: "POST",
+                                                body: formData
+                                            });
+
+                                            if (!res.ok) throw new Error("Erro na IA do Scanner");
+
+                                            const data = await res.json();
+                                            if (data.transactions && data.transactions.length > 0) {
+                                                const firstTx = data.transactions[0];
+                                                setAmount(firstTx.amount.toString());
+                                                setCategory(firstTx.category || "Outros");
+                                                setType(firstTx.type === "income" ? "income" : "expense");
+                                                toast.success("Dados preenchidos pela IA!", { id: "scan" });
+                                                playSound("coin");
+                                            } else {
+                                                throw new Error("Não achou nada válido");
+                                            }
+                                        } catch (err: any) {
+                                            toast.error(err.message || "Erro ao ler extrato.", { id: "scan" });
+                                        } finally {
+                                            setIsScanning(false);
+                                            e.target.value = ""; // reset input
+                                        }
+                                    }}
+                                />
+                            </label>
                         </div>
 
                         <div className="flex bg-gray-100 p-1.5 rounded-2xl mb-8">

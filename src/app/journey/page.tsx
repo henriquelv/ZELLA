@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import { steps } from "@/data/steps";
 import { Check, Lock, Star, Trophy } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { DailyQuiz } from "@/components/ui/daily-quiz";
 
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -75,7 +74,7 @@ export default function JourneyPage() {
 
                             <h4 className="font-bold font-heading text-2xl mb-2">Degrau Trancado!</h4>
                             <p className="text-sm text-foreground/80 font-medium mb-6">
-                                Você precisa de mais <strong className="text-yellow-500">XP</strong> para acessar o módulo <strong>"{lockedStep.title}"</strong>.
+                                Você precisa de mais <strong className="text-yellow-500">XP</strong> para acessar o módulo <strong>&quot;{lockedStep.title}&quot;</strong>.
                             </p>
 
                             <div className="bg-muted/50 rounded-2xl p-4 mb-6 text-left border border-border/50">
@@ -101,11 +100,6 @@ export default function JourneyPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-
-            {/* Daily Quiz Section */}
-            <div className="px-6 mt-6 mb-2">
-                <DailyQuiz />
-            </div>
 
             {/* Map Container */}
             <main className="flex-1 relative w-full max-w-md mx-auto py-10 px-4">

@@ -1,0 +1,225 @@
+
+C:\Users\henri\Desktop\ZELLA\old_nav.tsx
+  5:16  warning  'Map' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\henri\Desktop\ZELLA\skills\playwright-skill\run.js
+   13:12  error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   14:14  error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   15:22  error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+   27:12  warning  'e' is defined but never used            @typescript-eslint/no-unused-vars
+   96:18  warning  'e' is defined but never used            @typescript-eslint/no-unused-vars
+  101:12  warning  'e' is defined but never used            @typescript-eslint/no-unused-vars
+  209:5   error    A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\henri\Desktop\ZELLA\skills\writing-skills\render-graphs.js
+  16:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  17:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  18:22  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\Users\henri\Desktop\ZELLA\src\app\api\extract\route.ts
+  121:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\henri\Desktop\ZELLA\src\app\api\generate-goals\route.ts
+  56:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\henri\Desktop\ZELLA\src\app\dashboard\page.tsx
+  28:10  warning  'AVATARS' is defined but never used                @typescript-eslint/no-unused-vars
+  64:11  warning  'nextStepData' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\henri\Desktop\ZELLA\src\app\finances\page.tsx
+  29:10  warning  'Badge' is defined but never used         @typescript-eslint/no-unused-vars
+  75:59  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  87:25  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\henri\Desktop\ZELLA\src\app\games\page.tsx
+   5:21  warning  'Gamepad2' is defined but never used  @typescript-eslint/no-unused-vars
+  10:10  warning  'cn' is defined but never used        @typescript-eslint/no-unused-vars
+
+C:\Users\henri\Desktop\ZELLA\src\app\journey\page.tsx
+  77:132  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  77:151  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\henri\Desktop\ZELLA\src\app\missions\page.tsx
+  5:64  warning  'Plus' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\henri\Desktop\ZELLA\src\app\page.tsx
+  20:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:98  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\henri\Desktop\ZELLA\src\app\profile\page.tsx
+  5:29  warning  'TrendingUp' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\3d-scenes.tsx
+  84:59  warning  '_' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  84:62  warning  'i' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  85:13  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\3d-scenes.tsx:85:13
+  83 | function XPOrbs() {
+  84 |     const orbs = useMemo(() => Array.from({ length: 6 }, (_, i) => ({
+> 85 |         x: (Math.random() - 0.5) * 3,
+     |             ^^^^^^^^^^^^^ Cannot call impure function
+  86 |         y: (Math.random() - 0.5) * 2,
+  87 |         z: (Math.random() - 0.5) * 1,
+  88 |         size: 0.08 + Math.random() * 0.1,                      react-hooks/purity
+  86:13  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\3d-scenes.tsx:86:13
+  84 |     const orbs = useMemo(() => Array.from({ length: 6 }, (_, i) => ({
+  85 |         x: (Math.random() - 0.5) * 3,
+> 86 |         y: (Math.random() - 0.5) * 2,
+     |             ^^^^^^^^^^^^^ Cannot call impure function
+  87 |         z: (Math.random() - 0.5) * 1,
+  88 |         size: 0.08 + Math.random() * 0.1,
+  89 |         speed: 0.5 + Math.random() * 1,  react-hooks/purity
+  87:13  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\3d-scenes.tsx:87:13
+  85 |         x: (Math.random() - 0.5) * 3,
+  86 |         y: (Math.random() - 0.5) * 2,
+> 87 |         z: (Math.random() - 0.5) * 1,
+     |             ^^^^^^^^^^^^^ Cannot call impure function
+  88 |         size: 0.08 + Math.random() * 0.1,
+  89 |         speed: 0.5 + Math.random() * 1,
+  90 |         offset: Math.random() * Math.PI * 2,                           react-hooks/purity
+  88:22  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\3d-scenes.tsx:88:22
+  86 |         y: (Math.random() - 0.5) * 2,
+  87 |         z: (Math.random() - 0.5) * 1,
+> 88 |         size: 0.08 + Math.random() * 0.1,
+     |                      ^^^^^^^^^^^^^ Cannot call impure function
+  89 |         speed: 0.5 + Math.random() * 1,
+  90 |         offset: Math.random() * Math.PI * 2,
+  91 |     })), []);                                          react-hooks/purity
+  89:22  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\3d-scenes.tsx:89:22
+  87 |         z: (Math.random() - 0.5) * 1,
+  88 |         size: 0.08 + Math.random() * 0.1,
+> 89 |         speed: 0.5 + Math.random() * 1,
+     |                      ^^^^^^^^^^^^^ Cannot call impure function
+  90 |         offset: Math.random() * Math.PI * 2,
+  91 |     })), []);
+  92 |                                                                                react-hooks/purity
+  90:17  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\3d-scenes.tsx:90:17
+  88 |         size: 0.08 + Math.random() * 0.1,
+  89 |         speed: 0.5 + Math.random() * 1,
+> 90 |         offset: Math.random() * Math.PI * 2,
+     |                 ^^^^^^^^^^^^^ Cannot call impure function
+  91 |     })), []);
+  92 |
+  93 |     return (                                                                                                              react-hooks/purity
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\add-transaction-modal.tsx
+  26:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\add-transaction-modal.tsx:26:13
+  24 |     useEffect(() => {
+  25 |         if (isOpen) {
+> 26 |             setMissionTriggered(null);
+     |             ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  27 |             setType(initialType);
+  28 |             setAmount("");
+  29 |             setCategory("");  react-hooks/set-state-in-effect
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\app-header.tsx
+  5:10  warning  'Bell' is defined but never used    @typescript-eslint/no-unused-vars
+  7:10  warning  'Button' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\bottom-nav.tsx
+  5:37  warning  'Users' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\button.tsx
+  43:34  warning  'asChild' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\expense-distribution-chart.tsx
+  26:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\expense-distribution-chart.tsx:26:9
+  24 |
+  25 |     useEffect(() => {
+> 26 |         setMounted(true);
+     |         ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  27 |     }, []);
+  28 |
+  29 |     const expenses = transactions.filter(t => t.type === 'expense');  react-hooks/set-state-in-effect
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\input.tsx
+  5:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\insights-widget.tsx
+   6:10  warning  'cn' is defined but never used                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  69:22  warning  'error' is defined but never used                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  81:8   warning  React Hook useEffect has missing dependencies: 'currentStep', 'metrics', and 'transactions'. Either include them or remove the dependency array. If 'setInsight' needs the current value of 'currentStep', you can also switch to useReducer instead of useState and read 'currentStep' in the reducer  react-hooks/exhaustive-deps
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\swipe-card-game.tsx
+  3:20  warning  'useRef' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\henri\Desktop\ZELLA\src\components\ui\textarea.tsx
+  4:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+C:\Users\henri\Desktop\ZELLA\src\data\missions.ts
+   1:10  warning  'Zap' is defined but never used           @typescript-eslint/no-unused-vars
+  12:11  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\henri\Desktop\ZELLA\src\data\steps.ts
+  1:40  warning  'Brain' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\henri\Desktop\ZELLA\src\hooks\use-game-sound.ts
+  12:73  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\henri\Desktop\ZELLA\src\store\useStore.ts
+  144:25  error    'currentLevel' is never reassigned. Use 'const' instead                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            prefer-const
+  239:25  warning  'incoming' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  434:32  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+  480:51  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+  501:63  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-explicit-any
+  561:23  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\henri\Desktop\ZELLA\src\store\useStore.ts:561:23
+  559 | export function useIsHydrated(): boolean {
+  560 |     const [hydrated, setHydrated] = useState(false);
+> 561 |     useEffect(() => { setHydrated(true); }, []);
+      |                       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  562 |     return hydrated;
+  563 | }
+  564 |  react-hooks/set-state-in-effect
+  610:27  warning  'expLifestyle' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+
+Ô£û 58 problems (33 errors, 25 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

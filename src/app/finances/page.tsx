@@ -352,6 +352,7 @@ export default function FinancesPage() {
 
             {/* Manual Transaction Modal */}
             <AddTransactionModal
+                key={modalAction}
                 isOpen={(modalAction === 'income' || modalAction === 'expense') && isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 initialType={modalAction === 'income' ? 'income' : 'expense'}

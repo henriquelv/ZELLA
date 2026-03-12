@@ -28,15 +28,15 @@ export function AppHeader() {
                 </Link>
             </div>
             <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 bg-white/70 backdrop-blur-sm border border-black/[0.06] px-3.5 py-2 rounded-full shadow-sm">
-                    <Trophy className="w-3.5 h-3.5 text-[#2563eb]" />
-                    <span className="text-[12px] font-bold text-gray-700">{user?.xp || 0} XP</span>
+                <div className="flex items-center gap-1.5 bg-yellow-400 border-2 border-b-4 border-yellow-600 px-3 py-1.5 rounded-xl shadow-inner">
+                    <Trophy className="w-4 h-4 text-yellow-900 drop-shadow-sm" />
+                    <span className="text-[14px] font-black text-yellow-900 drop-shadow-sm">{user?.xp || 0} XP</span>
                 </div>
                 <button
                     onClick={() => setIsAvatarOpen(true)}
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-xl transition-all hover:scale-105 active:scale-95 outline-none p-[2px] bg-gradient-to-br from-[#2563eb] to-[#16a34a] shadow-sm ml-1"
+                    className="w-11 h-11 rounded-xl flex items-center justify-center text-xl transition-all hover:scale-105 active:scale-95 active:translate-y-[2px] active:border-b-2 outline-none p-0.5 bg-white border-2 border-b-4 border-gray-300 shadow-sm ml-1 overflow-hidden"
                 >
-                    <div className={cn("w-full h-full rounded-full flex items-center justify-center bg-white", activeAvatarRecord.color)}>
+                    <div className={cn("w-full h-full rounded-lg flex items-center justify-center bg-gray-100", activeAvatarRecord.color)}>
                         {activeAvatarRecord.icon}
                     </div>
                 </button>

@@ -6,7 +6,8 @@ import { supabase } from '@/lib/supabase'
 
 export interface UserState {
     hasOnboarded: boolean
-    currentStep: number // Corresponde ao "Degrau" (1 a 6)
+    currentStep: number // Corresponde ao "Degrau" (1 a 5)
+    currentPhase: number // Fases dentro do Degrau (1 a 3)
     level: number
     xp: number
     coins: number
@@ -31,15 +32,20 @@ export interface UserState {
     activeAvatar: string
     dailyQuizCompletedAt: string | null
     dailyCoinsEarned: number // Reset diário para capping
+    inventory: {
+        freezeStreak: number
+        xpMultiplier: number
+    }
 
     transactions: Transaction[]
     missions: Mission[]
     userMissions: UserMissionCompletion[]
 
     // Actions
-    completeOnboarding: (step: number, name: string, initialRevenue?: number) => void
+    completeOnboarding: (step: number, name: string, initialRevenue?: number, initialFixedCosts?: number) => void
     addXp: (amount: number) => void
     addCoins: (amount: number) => void
+    spendCoins: (amount: number, itemType: "freezeStreak" | "xpMultiplier" | "avatar") => boolean
     incrementStreak: () => void
     addTransaction: (transaction: Transaction) => void
     setFinancialData: (revenue: number, fixedCosts: number) => void
@@ -62,7 +68,7 @@ export interface UserState {
     saveMissionCompletion: (missionId: string, score: number, xpReward: number, coinsReward: number) => Promise<void>
 
     calculateMetricsFromTransactions: () => void
-    generateContextualGoals: () => void
+    generateContextualGoals: () => Promise<void>
 }
 
 export interface Transaction {
@@ -106,6 +112,7 @@ export const useUserStore = create<UserState>()(
         (set, get) => ({
             hasOnboarded: false as boolean,
             currentStep: 1,
+            currentPhase: 1,
             level: 1,
             xp: 0,
             coins: 0,
@@ -126,20 +133,24 @@ export const useUserStore = create<UserState>()(
             activeAvatar: 'default',
             dailyQuizCompletedAt: null,
             dailyCoinsEarned: 0,
+            inventory: {
+                freezeStreak: 0,
+                xpMultiplier: 0
+            },
 
             transactions: [],
             goals: [],
             missions: [],
             userMissions: [],
 
-            completeOnboarding: (step: number, name: string, initialRevenue?: number) =>
-                set({ hasOnboarded: true, currentStep: step, name, revenue: initialRevenue || 0 }),
+            completeOnboarding: (step: number, name: string, initialRevenue?: number, initialFixedCosts?: number) =>
+                set({ hasOnboarded: true, currentStep: step, currentPhase: 1, name, revenue: initialRevenue || 0, fixedCosts: initialFixedCosts || 0 }),
 
             addXp: (amount: number) => {
                 set((state: UserState) => {
                     const newXp = state.xp + amount;
                     // xp(n) = 100 * (n^1.2)
-                    let currentLevel = state.level;
+                    const currentLevel = state.level;
                     let xpNeeded = Math.floor(100 * Math.pow(currentLevel, 1.2));
 
                     let tempXp = newXp;
@@ -162,6 +173,25 @@ export const useUserStore = create<UserState>()(
                     dailyCoinsEarned: state.dailyCoinsEarned + actualGain
                 };
             }),
+            spendCoins: (amount: number, itemType: "freezeStreak" | "xpMultiplier" | "avatar") => {
+                let success = false;
+                set((state: UserState) => {
+                    if (state.coins >= amount) {
+                        success = true;
+                        
+                        const newInventory = { ...state.inventory };
+                        if (itemType === "freezeStreak") newInventory.freezeStreak += 1;
+                        if (itemType === "xpMultiplier") newInventory.xpMultiplier += 1;
+
+                        return {
+                            coins: state.coins - amount,
+                            inventory: newInventory
+                        };
+                    }
+                    return state;
+                });
+                return success;
+            },
             incrementStreak: () => set((state: UserState) => ({ streak: state.streak + 1 })),
             setFinancialData: (revenue: number, fixedCosts: number) => set({ revenue, fixedCosts }),
             addTransaction: (t: Transaction) => {
@@ -217,12 +247,51 @@ export const useUserStore = create<UserState>()(
                 get().calculateMetricsFromTransactions();
             },
             resetProgress: () => set({
-                hasOnboarded: false, currentStep: 1, level: 1, xp: 0, coins: 0, streak: 0, name: "",
+                hasOnboarded: false, currentStep: 1, currentPhase: 1, level: 1, xp: 0, coins: 0, streak: 0, name: "",
                 revenue: 0, fixedCosts: 0, totalBalance: 0, ie: 0, is: 0, idMetric: 0, rs: 0,
                 transactions: [], goals: [], lastLoginDate: null, unlockedAvatars: ['default'],
                 activeAvatar: 'default', dailyQuizCompletedAt: null, dailyCoinsEarned: 0,
                 missions: [], userMissions: []
             }),
+
+            generateContextualGoals: async () => {
+                const state = get();
+                if (state.transactions.length < 5) return; // Precisa ter histórico mínimo
+
+                // Evitar spam de goals: Só gera se não tiver goals 'habit' ativos
+                const hasActiveHabitGoal = state.goals.some(g => !g.completed && g.category === 'habit');
+                if (hasActiveHabitGoal) return;
+
+                try {
+                    const res = await fetch('/api/generate-goals', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            transactions: state.transactions.slice(0, 30), // Mandar só as 30 mais recentes
+                            revenue: state.revenue,
+                            fixedCosts: state.fixedCosts
+                        })
+                    });
+
+                    if (!res.ok) throw new Error("Falha ao gerar metas.");
+                    
+                    const goalData = await res.json();
+                    
+                    if (goalData && goalData.title) {
+                        get().addGoal({
+                            id: crypto.randomUUID(),
+                            title: goalData.title,
+                            description: goalData.description,
+                            category: goalData.category || 'habit',
+                            xpReward: goalData.xpReward || 150,
+                            completed: false,
+                            createdAt: new Date().toISOString()
+                        });
+                    }
+                } catch (error) {
+                    console.error("Erro no generateContextualGoals:", error);
+                }
+            },
 
             calculateMetricsFromTransactions: () => {
                 set((state: UserState) => {
@@ -268,72 +337,55 @@ export const useUserStore = create<UserState>()(
                     const rs = state.fixedCosts > 0 ? (state.totalBalance / state.fixedCosts) : 0;
 
                     let newStep = 1;
+                    let newPhase = 1;
 
-                    if (rs >= 6 && ie > 20 && idMetric < 5) newStep = 6;
-                    else if (rs >= 3 && ie > 15 && idMetric < 7) newStep = 5;
-                    else if (rs >= 1 && ie > 10 && idMetric < 10 && is <= 70) newStep = 4;
-                    else if (rs >= 0.5 && ie > 5 && idMetric < 15 && is <= 75) newStep = 3;
-                    else if (ie > 0 && idMetric <= 20 && is <= 80) newStep = 2;
-                    else newStep = 1;
+                    if (rs >= 3 && ie > 15 && idMetric < 7) {
+                        newStep = 5;
+                        if (rs >= 6 && ie >= 20 && idMetric < 5) newPhase = 3;
+                        else if (rs >= 4 && ie >= 18) newPhase = 2;
+                        else newPhase = 1;
+                    } else if (rs >= 1 && ie > 10 && idMetric < 10 && is <= 70) {
+                        newStep = 4;
+                        if (rs >= 2.5 && ie > 14) newPhase = 3;
+                        else if (rs >= 2 && ie > 12) newPhase = 2;
+                        else newPhase = 1;
+                    } else if (rs >= 0.5 && ie > 5 && idMetric < 15 && is <= 75) {
+                        newStep = 3;
+                        if (rs >= 0.9 && ie > 9) newPhase = 3;
+                        else if (rs >= 0.7 && ie > 7) newPhase = 2;
+                        else newPhase = 1;
+                    } else if (ie > 0 && idMetric <= 20 && is <= 80) {
+                        newStep = 2;
+                        if (ie > 4 && is <= 76) newPhase = 3;
+                        else if (ie > 2 && is <= 78) newPhase = 2;
+                        else newPhase = 1;
+                    } else {
+                        newStep = 1;
+                        if (idMetric <= 25 && is <= 85) newPhase = 3;
+                        else if (idMetric <= 30 && is <= 90) newPhase = 2;
+                        else newPhase = 1;
+                    }
 
-                    // Fallback to highest previously unlocked if fallback rules apply, but here we just assign to keep strict LogicaBack.
-                    // Ideally we only update if better.
-                    return { ie, is, idMetric, rs, currentStep: newStep };
+                    // Behavioral Checkpoints (LogicaBack)
+                    // Progression is locked if habits are not formed.
+                    if (newStep > state.currentStep) {
+                        const requiredStreak = [0, 7, 14, 21, 30][state.currentStep - 1] || 0;
+                        if (state.streak < requiredStreak) {
+                            newStep = state.currentStep;
+                            newPhase = 3; // Maxed out phase in current step waiting for streak
+                        }
+                    }
+
+                    // Strict no-downgrade logic unless things go extremely bad? 
+                    // LogicaBack states users CAN be downgraded if they lose their financial health. 
+                    // However, we shouldn't immediately downgrade if it's just a week of bad spending.
+                    // For now, we trust the 30-day moving average.
+                    
+                    return { ie, is, idMetric, rs, currentStep: newStep, currentPhase: newPhase };
                 });
                 get().generateContextualGoals();
             },
-
-            generateContextualGoals: () => {
-                set((state: UserState) => {
-                    const now = new Date();
-                    const fourteenDaysAgo = new Date();
-                    fourteenDaysAgo.setDate(now.getDate() - 14);
-
-                    const recentTransactions = state.transactions.filter(t => new Date(t.date) >= fourteenDaysAgo && t.type === 'expense');
-
-                    if (recentTransactions.length === 0) return state;
-
-                    // Group by category
-                    const spendingByCategory: Record<string, number> = {};
-                    recentTransactions.forEach(t => {
-                        spendingByCategory[t.category] = (spendingByCategory[t.category] || 0) + t.amount;
-                    });
-
-                    // Target Drenos (Assinaturas, Festas) and Estilo de Vida (Lazer, Roupas)
-                    const targetCategories = ['Assinaturas', 'Festas', 'Lazer', 'Roupas', 'Tecnologia'];
-                    let highestTargetCat = '';
-                    let highestTargetAmount = 0;
-
-                    for (const cat of targetCategories) {
-                        if (spendingByCategory[cat] > highestTargetAmount) {
-                            highestTargetAmount = spendingByCategory[cat];
-                            highestTargetCat = cat;
-                        }
-                    }
-
-                    // Se gastou mais de R$ 100 numa categoria "ruim/superflua" em 14 dias
-                    if (highestTargetAmount > 100 && highestTargetCat !== '') {
-                        // Verifica se já não tem uma meta ativa para essa categoria
-                        const hasActiveGoalForCat = state.goals.some(g => !g.completed && g.category === 'spending' && g.title.includes(highestTargetCat));
-
-                        if (!hasActiveGoalForCat) {
-                            const newGoal: Goal = {
-                                id: crypto.randomUUID(),
-                                title: `Freiar gastos com ${highestTargetCat}`,
-                                description: `Você gastou R$ ${highestTargetAmount.toFixed(2)} com ${highestTargetCat} recentemente. Tente evitar esse gasto nos próximos dias para melhorar seu Índice de Drenos.`,
-                                category: 'spending',
-                                xpReward: 150,
-                                completed: false,
-                                createdAt: new Date().toISOString()
-                            };
-                            return { goals: [newGoal, ...state.goals] };
-                        }
-                    }
-
-                    return state;
-                });
-            },
-
+            // A nova versão de `generateContextualGoals` já está definida acima.
             checkAndApplyStreak: () => {
                 const today = format(new Date(), 'yyyy-MM-dd');
                 const lastLogin = get().lastLoginDate;

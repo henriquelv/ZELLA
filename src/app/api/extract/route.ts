@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 
-const apiKey = process.env.GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(apiKey || "dummy-key");
+const apiKey = process.env.OPENAI_API_KEY;
+const openai = new OpenAI({ apiKey: apiKey || "dummy-key" });
 
 const PROMPT = `
 Você é um assistente financeiro de elite do app Zella.
@@ -51,7 +51,7 @@ Exemplo de retorno JSON:
 export async function POST(req: NextRequest) {
     try {
         if (!apiKey) {
-            // Se não tiver chave real configurada, simular um recebimento mágico para manter a UI funcional para testes
+            // Fallback de teste quando não há chave configurada
             await new Promise((resolve) => setTimeout(resolve, 2500));
             return NextResponse.json({
                 transactions: [
@@ -86,36 +86,33 @@ export async function POST(req: NextRequest) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
         const base64Data = buffer.toString("base64");
+        const mimeType = (file.type || "image/jpeg") as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const responseData = await model.generateContent({
-            contents: [
-                { role: "user", parts: [{ text: PROMPT }] },
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
                 {
                     role: "user",
-                    parts: [
+                    content: [
+                        { type: "text", text: PROMPT },
                         {
-                            inlineData: {
-                                data: base64Data,
-                                mimeType: file.type || "image/jpeg",
-                            },
-                        },
-                    ],
-                },
+                            type: "image_url",
+                            image_url: {
+                                url: `data:${mimeType};base64,${base64Data}`,
+                                detail: "high"
+                            }
+                        }
+                    ]
+                }
             ],
-            generationConfig: {
-                responseMimeType: "application/json",
-            },
+            response_format: { type: "json_object" },
+            max_tokens: 4096,
         });
 
-        const response = await responseData.response;
-        const text = response.text();
-        if (!text) {
-            throw new Error("Resposta vazia da IA");
-        }
+        const text = response.choices[0].message.content;
+        if (!text) throw new Error("Resposta vazia da IA");
 
         const data = JSON.parse(text);
-
         return NextResponse.json(data);
 
     } catch (error: any) {

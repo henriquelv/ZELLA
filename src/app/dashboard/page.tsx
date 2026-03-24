@@ -66,32 +66,63 @@ export default function DashboardPage() {
     const xpNeeded = Math.floor(100 * Math.pow(currentLevel, 1.2));
     const xpProgress = Math.min(100, Math.floor((user.xp / xpNeeded) * 100));
 
-    const getArenaTheme = (step: number) => {
-        switch (step) {
-            case 1: // Sobrevivente (Floresta Escura/Pedra)
-                return "from-stone-900 via-stone-800 to-emerald-950";
-            case 2: // Organizando (Mecânica/Ferro)
-                return "from-slate-900 via-slate-800 to-blue-900";
-            case 3: // Controlador (Céu/Prata)
-                return "from-sky-500 via-blue-400 to-slate-200";
-            case 4: // Construtor (Royale/Castelo)
-                return "from-blue-700 via-blue-600 to-yellow-500";
-            case 5: // Mestre (Cosmos)
-                return "from-indigo-950 via-purple-900 to-fuchsia-900";
-            default:
-                return "from-[#e0f2fe] via-[#f0fdfa] to-blue-100";
+    const ARENA_THEMES: Record<number, any> = {
+        1: {
+            bg: "from-red-50 via-[#fcf5f5] to-orange-50",
+            glow1: "bg-red-400/[0.06]", glow2: "bg-orange-400/[0.05]", glow3: "bg-rose-300/[0.04]",
+            heroNumberBg: "from-red-500 to-red-600 shadow-[0_8px_16px_-6px_rgba(239,68,68,0.4)]",
+            heroText: "text-red-600",
+            ctaBg: "from-red-600 to-red-800 shadow-[0_8px_30px_rgba(220,38,38,0.3)]",
+        },
+        2: {
+            bg: "from-orange-50 via-[#fcfaf7] to-amber-50",
+            glow1: "bg-orange-400/[0.06]", glow2: "bg-amber-400/[0.05]", glow3: "bg-yellow-300/[0.04]",
+            heroNumberBg: "from-orange-500 to-orange-600 shadow-[0_8px_16px_-6px_rgba(249,115,22,0.4)]",
+            heroText: "text-orange-600",
+            ctaBg: "from-orange-500 to-orange-700 shadow-[0_8px_30px_rgba(234,88,12,0.3)]",
+        },
+        3: {
+            bg: "from-blue-50 via-[#f6f9fc] to-sky-50",
+            glow1: "bg-blue-400/[0.06]", glow2: "bg-sky-400/[0.05]", glow3: "bg-cyan-300/[0.04]",
+            heroNumberBg: "from-blue-500 to-blue-600 shadow-[0_8px_16px_-6px_rgba(59,130,246,0.4)]",
+            heroText: "text-blue-600",
+            ctaBg: "from-blue-600 to-blue-800 shadow-[0_8px_30px_rgba(37,99,235,0.3)]",
+        },
+        4: {
+            bg: "from-purple-50 via-[#faf5fc] to-fuchsia-50",
+            glow1: "bg-purple-400/[0.06]", glow2: "bg-fuchsia-400/[0.05]", glow3: "bg-violet-300/[0.04]",
+            heroNumberBg: "from-purple-500 to-purple-600 shadow-[0_8px_16px_-6px_rgba(168,85,247,0.4)]",
+            heroText: "text-purple-600",
+            ctaBg: "from-purple-600 to-purple-800 shadow-[0_8px_30px_rgba(147,51,234,0.3)]",
+        },
+        5: {
+            bg: "from-amber-50 via-[#fcfbf5] to-yellow-50",
+            glow1: "bg-amber-400/[0.08]", glow2: "bg-yellow-400/[0.06]", glow3: "bg-orange-300/[0.05]",
+            heroNumberBg: "from-amber-400 to-amber-600 shadow-[0_8px_16px_-6px_rgba(245,158,11,0.5)]",
+            heroText: "text-amber-600",
+            ctaBg: "from-amber-500 to-amber-700 shadow-[0_8px_30px_rgba(217,119,6,0.4)]",
+        },
+        6: {
+            bg: "from-emerald-50 via-[#f5fcf8] to-teal-50",
+            glow1: "bg-emerald-400/[0.08]", glow2: "bg-teal-400/[0.06]", glow3: "bg-green-300/[0.05]",
+            heroNumberBg: "from-emerald-500 to-emerald-600 shadow-[0_8px_16px_-6px_rgba(16,185,129,0.5)]",
+            heroText: "text-emerald-600",
+            ctaBg: "from-emerald-600 to-emerald-800 shadow-[0_8px_30px_rgba(5,150,105,0.4)]",
         }
     };
 
-    const isDarkArena = displayStep === 1 || displayStep === 2 || displayStep === 5;
+    const currentTheme = ARENA_THEMES[displayStep] || ARENA_THEMES[1];
 
     return (
-        <div className="min-h-screen pb-24 relative overflow-x-hidden font-sans selection:bg-blue-500/30">
-            {/* Dynamic Arena Background */}
+        <div className="min-h-screen pb-24 relative overflow-x-hidden font-sans selection:bg-blue-500/30 bg-[#f4f6fb] transition-colors duration-1000">
+            {/* Dynamic Arena Background - Premium Light */}
             <div className="fixed inset-0 pointer-events-none z-0">
-                <div className={cn("absolute inset-0 bg-gradient-to-br opacity-100 transition-colors duration-1000", getArenaTheme(displayStep))} />
-                <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-black/[0.1] rounded-full blur-[120px]" />
-                <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-white/[0.05] rounded-full blur-[120px]" />
+                <div className={cn("absolute inset-0 bg-gradient-to-br transition-colors duration-1000 opacity-80", currentTheme.bg)} />
+                
+                {/* Subtle Ambient Glows - dynamically themed */}
+                <div className={cn("absolute top-[-10%] left-[-10%] w-[60%] h-[50%] rounded-full blur-[120px] transition-colors duration-1000", currentTheme.glow1)} />
+                <div className={cn("absolute top-[20%] right-[-20%] w-[50%] h-[50%] rounded-full blur-[100px] transition-colors duration-1000", currentTheme.glow2)} />
+                <div className={cn("absolute bottom-[10%] left-[10%] w-[40%] h-[40%] rounded-full blur-[120px] transition-colors duration-1000", currentTheme.glow3)} />
             </div>
 
             <AppHeader />
@@ -103,44 +134,48 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0 }}
                 >
                     <Link href="/profile" className="block group active:scale-95 transition-transform">
-                        <div className="bg-white border-2 border-b-4 border-gray-300 rounded-3xl p-5 shadow-lg relative overflow-hidden">
-                            <div className="flex justify-between items-start mb-5 relative">
+                        <div className="bg-white/80 backdrop-blur-md rounded-[2rem] p-5 shadow-xl shadow-blue-900/5 relative overflow-hidden border border-white/50 ring-1 ring-black/[0.02]">
+                            {/* Subtle internal gradient */}
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/40 to-green-100/20 blur-2xl rounded-full" />
+                            
+                            <div className="flex justify-between items-start mb-5 relative z-10">
                                 <div className="flex gap-4 items-center">
-                                    <div className="w-16 h-16 rounded-2xl border-2 border-b-4 border-[#1e3a8a] bg-[#2563eb] shadow-inner flex items-center justify-center shrink-0">
-                                        <span className="text-2xl font-black text-white drop-shadow-md">{displayStep}</span>
+                                    <div className={cn("w-16 h-16 rounded-[1.25rem] bg-gradient-to-br flex items-center justify-center shrink-0 border border-white/20 transition-all duration-700", currentTheme.heroNumberBg)}>
+                                        <span className="text-2xl font-black text-white drop-shadow-sm">{displayStep}</span>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h2 className="font-black text-[22px] text-gray-900 tracking-tight leading-tight uppercase relative">
+                                        <h2 className="font-extrabold text-[22px] text-gray-900 tracking-tight leading-tight uppercase transition-colors duration-700">
                                             {currentStepData.title}
-                                            <span className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 to-transparent rounded-full opacity-50"></span>
                                         </h2>
-                                        <p className="text-[13px] text-gray-500 font-bold mt-1 uppercase tracking-wider">
-                                            Arena {displayStep} <span className="mx-1 text-gray-300">•</span> Fase {displayPhase}
+                                        <p className="text-[13px] text-gray-400 font-bold mt-0.5 tracking-wider uppercase flex items-center gap-1.5 transition-colors duration-700">
+                                            <span className={currentTheme.heroText}>Arena {displayStep}</span> 
+                                            <span>•</span> 
+                                            <span className="text-emerald-500">Fase {displayPhase}</span>
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Secondary Gamification bar */}
-                            <div className="bg-gray-100 rounded-2xl p-3 border-2 border-gray-200 border-b-4 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <div className="bg-yellow-400 p-1.5 rounded-lg border-2 border-yellow-600 border-b-4">
-                                        <Trophy className="w-4 h-4 text-yellow-900" />
+                            <div className="bg-gray-50/50 rounded-2xl p-4 flex items-center justify-between relative z-10 border border-gray-100">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-orange-50 p-2 rounded-xl border border-orange-100/50">
+                                        <Trophy className="w-5 h-5 text-orange-500 drop-shadow-sm" />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-wider">Jogador</p>
-                                        <p className="text-[14px] font-black text-gray-900">Nível {currentLevel}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Jogador</p>
+                                        <p className="text-[15px] font-black text-gray-800 leading-none">Nível {currentLevel}</p>
                                     </div>
                                 </div>
-                                <div className="w-28 h-4 bg-gray-300 rounded-full border-2 border-gray-400 overflow-hidden relative shadow-inner">
+                                <div className="w-32 h-2.5 bg-gray-200/50 rounded-full overflow-hidden relative shadow-inner">
                                     <motion.div
                                         initial={{ width: 0 }}
                                         animate={{ width: `${xpProgress}%` }}
                                         transition={{ duration: 1, ease: "easeOut" }}
-                                        className="absolute top-0 left-0 h-full bg-blue-500 border-t border-white/40"
+                                        className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full"
                                     />
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <span className="text-[9px] font-black text-white drop-shadow-md z-10">{xpProgress}%</span>
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                        <span className="text-[8px] font-bold text-gray-700">{xpProgress}%</span>
                                     </div>
                                 </div>
                             </div>
@@ -148,32 +183,40 @@ export default function DashboardPage() {
                     </Link>
                 </motion.div>
 
-                {/* KPI SQUARES (Clash Royale Stats) */}
+                {/* KPI SQUARES (Métricas) */}
                 <motion.section
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="grid grid-cols-4 gap-2"
+                    className="grid grid-cols-4 gap-3 z-10 relative"
                 >
-                    <div className="bg-white rounded-2xl p-3 flex flex-col items-center text-center border-2 border-b-4 border-gray-200 shadow-md">
-                        <Flame className="w-6 h-6 text-orange-500 mb-1 drop-shadow-sm" />
-                        <span className="text-[16px] font-black text-gray-900">{user.streak}d</span>
-                        <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wide mt-0.5">Streak</span>
+                    <div className="bg-white/80 backdrop-blur-md rounded-[1.25rem] p-3.5 flex flex-col items-center justify-center text-center shadow-lg shadow-blue-900/5 ring-1 ring-black/[0.02]">
+                        <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center mb-2">
+                            <Flame className="w-5 h-5 text-orange-500 drop-shadow-sm" />
+                        </div>
+                        <span className="text-[17px] font-black text-gray-800 leading-none">{user.streak}d</span>
+                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide mt-1">Streak</span>
                     </div>
-                    <div className="bg-white rounded-2xl p-3 flex flex-col items-center text-center border-2 border-b-4 border-gray-200 shadow-md">
-                        <Zap className="w-6 h-6 text-blue-500 mb-1 drop-shadow-sm" />
-                        <span className="text-[16px] font-black text-gray-900">{user.ie || 0}%</span>
-                        <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wide mt-0.5">Eficien.</span>
+                    <div className="bg-white/80 backdrop-blur-md rounded-[1.25rem] p-3.5 flex flex-col items-center justify-center text-center shadow-lg shadow-blue-900/5 ring-1 ring-black/[0.02]">
+                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center mb-2">
+                            <Zap className="w-5 h-5 text-blue-500 drop-shadow-sm" />
+                        </div>
+                        <span className="text-[17px] font-black text-gray-800 leading-none">{user.ie || 0}%</span>
+                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide mt-1">Eficien.</span>
                     </div>
-                    <div className="bg-white rounded-2xl p-3 flex flex-col items-center text-center border-2 border-b-4 border-gray-200 shadow-md">
-                        <ShieldCheck className="w-6 h-6 text-green-500 mb-1 drop-shadow-sm" />
-                        <span className="text-[16px] font-black text-gray-900">{user.is || 0}%</span>
-                        <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wide mt-0.5">Sobrev.</span>
+                    <div className="bg-white/80 backdrop-blur-md rounded-[1.25rem] p-3.5 flex flex-col items-center justify-center text-center shadow-lg shadow-blue-900/5 ring-1 ring-black/[0.02]">
+                        <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center mb-2">
+                            <ShieldCheck className="w-5 h-5 text-emerald-500 drop-shadow-sm" />
+                        </div>
+                        <span className="text-[17px] font-black text-gray-800 leading-none">{user.is || 0}%</span>
+                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide mt-1">Sobrev.</span>
                     </div>
-                    <div className="bg-white rounded-2xl p-3 flex flex-col items-center text-center border-2 border-b-4 border-gray-200 shadow-md">
-                        <TrendingUp className="w-6 h-6 text-red-500 rotate-180 mb-1 drop-shadow-sm" />
-                        <span className="text-[16px] font-black text-gray-900">{user.idMetric || 0}%</span>
-                        <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wide mt-0.5">Drenos</span>
+                    <div className="bg-white/80 backdrop-blur-md rounded-[1.25rem] p-3.5 flex flex-col items-center justify-center text-center shadow-lg shadow-blue-900/5 ring-1 ring-black/[0.02]">
+                        <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center mb-2">
+                            <TrendingUp className="w-5 h-5 text-red-500 rotate-180 drop-shadow-sm" />
+                        </div>
+                        <span className="text-[17px] font-black text-gray-800 leading-none">{user.idMetric || 0}%</span>
+                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide mt-1">Drenos</span>
                     </div>
                 </motion.section>
 
@@ -200,28 +243,30 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <div className="bg-white border-2 border-b-4 border-gray-300 rounded-3xl p-5 shadow-lg relative overflow-hidden">
+                    <div className="bg-white/80 backdrop-blur-md rounded-[2rem] p-5 shadow-xl shadow-blue-900/5 ring-1 ring-black/[0.02]">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-black text-[16px] text-gray-900 uppercase">Jornada da Arena</h3>
+                            <h3 className="font-extrabold text-[16px] text-gray-800 uppercase tracking-tight">Jornada da Arena</h3>
                             <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => router.push('/journey')}
-                                className="text-[12px] font-black uppercase text-blue-700 border-2 border-b-4 border-blue-200 rounded-xl hover:bg-blue-50 h-8"
+                                className="text-[12px] font-bold uppercase text-blue-600 hover:bg-blue-50 h-8 rounded-xl px-4"
                             >
                                 Ver Mapa
                             </Button>
                         </div>
 
-                        <div className="flex items-center gap-4 mb-4 p-4 bg-blue-50 rounded-2xl border-2 border-b-4 border-blue-200 shadow-inner">
-                            <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center border-2 border-b-4 border-black/20", currentStepData.color)}>
-                                <currentStepData.icon className="w-6 h-6 text-white drop-shadow-md" />
+                        <div className="flex items-center gap-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
+                            <div className={cn("w-12 h-12 rounded-[1rem] flex items-center justify-center bg-white shadow-sm ring-1 ring-black/5", currentStepData.color)}>
+                                <currentStepData.icon className="w-6 h-6 drop-shadow-sm" />
                             </div>
                             <div className="flex-1">
-                                <p className="font-black text-[15px] text-gray-900 uppercase">Degrau {displayStep}</p>
-                                <p className="text-[12px] text-gray-600 font-bold mt-0.5 uppercase">Fase {displayPhase}</p>
+                                <p className="font-black text-[15px] text-gray-800 uppercase">Degrau {displayStep}</p>
+                                <p className="text-[13px] text-gray-400 font-bold mt-0.5 uppercase tracking-wide">Fase {displayPhase}</p>
                             </div>
-                            <ArrowRight className="w-5 h-5 text-gray-400" />
+                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
+                                <ArrowRight className="w-4 h-4 text-gray-400" />
+                            </div>
                         </div>
                     </div>
                 </motion.section>
@@ -234,25 +279,27 @@ export default function DashboardPage() {
                 >
                     <div
                         onClick={() => router.push("/finances")}
-                        className="group relative bg-[#16a34a] border-2 border-[#14532d] border-b-8 rounded-3xl p-6 overflow-hidden cursor-pointer shadow-xl active:translate-y-[4px] active:border-b-4 transition-all"
+                        className={cn("group relative bg-gradient-to-br rounded-[2rem] p-6 overflow-hidden cursor-pointer active:scale-[0.98] transition-all duration-700", currentTheme.ctaBg)}
                     >
-                        <div className="absolute inset-0 bg-white/10 shadow-[inset_0_4px_10px_rgba(255,255,255,0.4)] pointer-events-none" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-10 -translate-y-10" />
 
                         <div className="flex items-center gap-5 relative z-10">
-                            <div className="w-16 h-16 bg-white/20 rounded-2xl border-2 border-white/40 border-b-4 shadow-inner flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <Sparkles className="w-8 h-8 text-white drop-shadow-md" />
+                            <div className="w-14 h-14 bg-white/10 backdrop-blur-sm rounded-[1.25rem] flex items-center justify-center border border-white/20 group-hover:scale-105 transition-transform">
+                                <Sparkles className="w-7 h-7 text-white drop-shadow-sm" />
                             </div>
 
                             <div className="flex-1 min-w-0">
-                                <h3 className="text-[18px] font-black text-white leading-snug mb-1 drop-shadow-md uppercase">
+                                <h3 className="text-[19px] font-black text-white leading-tight mb-1 tracking-tight">
                                     Adicionar Recibo
                                 </h3>
-                                <p className="text-[13px] text-green-100 font-bold leading-snug">
-                                    Escaneie e ganhe <span className="text-white font-black drop-shadow-md">+50 XP</span>
+                                <p className="text-[13px] text-blue-100 font-medium">
+                                    Escaneie via IA e ganhe <span className="font-bold text-white bg-blue-500/30 px-2 py-0.5 rounded-md ml-1">+50 XP</span>
                                 </p>
                             </div>
 
-                            <ChevronRight className="w-6 h-6 text-white/80 group-hover:translate-x-1 transition-transform stroke-[3px]" />
+                            <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/10 group-hover:bg-white/20 transition-colors">
+                                <ChevronRight className="w-5 h-5 text-white" />
+                            </div>
                         </div>
                     </div>
                 </motion.section>
@@ -263,17 +310,17 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                 >
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-3 z-10 relative">
                         {QUICK_ACTIONS.map((action) => (
                             <button
                                 key={action.label}
                                 onClick={() => router.push(action.href)}
-                                className="group bg-white rounded-2xl p-4 flex items-center gap-3.5 border-2 border-b-4 border-gray-200 shadow-md active:border-b-2 active:translate-y-[2px] transition-all text-left"
+                                className="group bg-white/80 backdrop-blur-md rounded-[1.5rem] p-4 flex items-center gap-3.5 shadow-lg shadow-blue-900/5 ring-1 ring-black/[0.02] active:scale-[0.97] transition-all text-left"
                             >
-                                <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center border-2 border-b-4 border-black/10 shadow-inner", action.bg)}>
-                                    <action.icon className={cn("w-6 h-6 drop-shadow-xs", action.color)} />
+                                <div className={cn("w-12 h-12 rounded-[1rem] flex items-center justify-center bg-opacity-50", action.bg)}>
+                                    <action.icon className={cn("w-6 h-6", action.color)} />
                                 </div>
-                                <span className="text-[15px] font-black text-gray-800 uppercase tracking-wide">
+                                <span className="text-[15px] font-bold text-gray-700 uppercase tracking-wide">
                                     {action.label}
                                 </span>
                             </button>

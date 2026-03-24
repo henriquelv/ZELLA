@@ -35,16 +35,20 @@ export default function JourneyPage() {
     };
 
     return (
-        <div className="min-h-screen bg-background pb-24 relative overflow-hidden flex flex-col">
-            {/* Background */}
-            <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-background to-background -z-10" />
+        <div className="min-h-screen bg-[#f4f6fb] pb-24 relative overflow-hidden flex flex-col font-sans selection:bg-blue-500/30">
+            {/* Ambient Background Lights */}
+            <div className="fixed inset-0 pointer-events-none z-0">
+                <div className="absolute top-[10%] left-[-10%] w-[60%] h-[50%] bg-blue-400/[0.04] rounded-full blur-[120px]" />
+                <div className="absolute top-[40%] right-[-10%] w-[50%] h-[40%] bg-emerald-400/[0.03] rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-10%] left-[20%] w-[60%] h-[30%] bg-purple-400/[0.03] rounded-full blur-[120px]" />
+            </div>
 
             {/* Header */}
-            <header className="px-6 pt-12 pb-2 text-center relative z-10 sticky top-0 bg-background/80 backdrop-blur-md border-b border-border/50">
-                <h1 className="text-xl font-bold font-heading">Sua Jornada</h1>
-                <div className="flex justify-center items-center gap-2 text-xs text-muted-foreground mt-1">
-                    <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                    <span>{user.xp} XP acumulado</span>
+            <header className="px-6 pt-14 pb-4 text-center relative z-10 sticky top-0 bg-white/60 backdrop-blur-lg border-b border-white/40 ring-1 ring-black/[0.01]">
+                <h1 className="text-xl font-extrabold text-gray-800 uppercase tracking-tight">Sua Caminhada para a Liberdade</h1>
+                <div className="flex justify-center items-center gap-1.5 text-xs text-gray-500 font-bold mt-1.5 uppercase tracking-wider">
+                    <Star className="w-3.5 h-3.5 text-amber-500 drop-shadow-sm" />
+                    <span>{user.xp} XP Acumulado</span>
                 </div>
             </header>
 
@@ -62,37 +66,37 @@ export default function JourneyPage() {
                             animate={{ y: 0 }}
                             exit={{ y: "100%" }}
                             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            className="w-full max-w-sm bg-card border border-border/50 shadow-2xl rounded-t-3xl sm:rounded-3xl p-6 relative text-center"
+                            className="w-full max-w-sm bg-white/90 backdrop-blur-xl border border-white/50 shadow-2xl rounded-t-3xl sm:rounded-3xl p-6 relative text-center ring-1 ring-black/[0.02]"
                         >
-                            <button onClick={() => setLockedStep(null)} className="absolute top-4 right-4 p-2 text-muted-foreground hover:bg-muted rounded-full transition-colors">
+                            <button onClick={() => setLockedStep(null)} className="absolute top-4 right-4 p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
 
-                            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
-                                <Lock className="w-8 h-8" />
+                            <div className="w-16 h-16 bg-blue-50/80 ring-1 ring-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-500 shadow-sm">
+                                <Lock className="w-8 h-8 drop-shadow-sm" />
                             </div>
 
-                            <h4 className="font-bold font-heading text-2xl mb-2">Degrau Trancado!</h4>
-                            <p className="text-sm text-foreground/80 font-medium mb-6">
-                                Você precisa de mais <strong className="text-yellow-500">XP</strong> para acessar o módulo <strong>&quot;{lockedStep.title}&quot;</strong>.
+                            <h4 className="font-extrabold text-2xl mb-2 text-gray-800">Calma lá, passo a passo!</h4>
+                            <p className="text-[13px] text-gray-500 font-medium mb-6 leading-relaxed">
+                                Falta só um pouquinho de <strong className="text-amber-500 font-black">XP</strong> para você descobrir o que te aguarda em <strong className="text-gray-800">&quot;{lockedStep.title}&quot;</strong>.
                             </p>
 
-                            <div className="bg-muted/50 rounded-2xl p-4 mb-6 text-left border border-border/50">
-                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Como ganhar XP?</p>
-                                <ul className="text-sm font-medium space-y-2">
-                                    <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Registrar gastos em Finanças (-20 XP)</li>
-                                    <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-violet-500" /> Jogar minigames (+80 XP)</li>
-                                    <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-orange-500" /> Completar Metas (até +200 XP)</li>
+                            <div className="bg-gray-50 rounded-2xl p-4 mb-6 text-left border border-gray-100/50 shadow-inner">
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Como acelerar sua jornada?</p>
+                                <ul className="text-[13px] font-bold text-gray-700 space-y-3">
+                                    <li className="flex items-center gap-3"><div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm" /> Registrar gastos em Finanças (-20 XP)</li>
+                                    <li className="flex items-center gap-3"><div className="w-2 h-2 rounded-full bg-violet-500 shadow-sm" /> Jogar minigames (+80 XP)</li>
+                                    <li className="flex items-center gap-3"><div className="w-2 h-2 rounded-full bg-orange-500 shadow-sm" /> Completar Metas (até +200 XP)</li>
                                 </ul>
                             </div>
 
                             <div className="flex flex-col gap-3">
-                                <Button asChild className="h-12 w-full rounded-xl font-bold text-base shadow-lg">
+                                <Button asChild className="h-12 w-full bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 rounded-xl font-extrabold text-[13px] shadow-sm uppercase tracking-wider">
                                     <Link href="/missions">
-                                        Ir para Missões
+                                        Ver minhas Missões
                                     </Link>
                                 </Button>
-                                <Button variant="ghost" className="h-12 w-full font-bold" onClick={() => setLockedStep(null)}>
+                                <Button variant="ghost" className="h-12 w-full font-bold text-gray-500 hover:text-gray-700" onClick={() => setLockedStep(null)}>
                                     Entendi
                                 </Button>
                             </div>
@@ -105,9 +109,9 @@ export default function JourneyPage() {
             <main className="flex-1 relative w-full max-w-md mx-auto py-10 px-4">
 
                 {/* Vertical Path Line (Dashed) */}
-                <div className="absolute left-1/2 top-10 bottom-10 w-0.5 border-l-2 border-dashed border-border/50 -translate-x-1/2 z-0" />
+                <div className="absolute left-1/2 top-10 bottom-10 w-[3px] border-l-[3px] border-dashed border-gray-300/50 -translate-x-1/2 z-0" />
 
-                <div className="space-y-16 relative z-10">
+                <div className="space-y-[4.5rem] relative z-10">
                     {steps.map((step, index) => {
                         const isLocked = step.id > user.currentStep;
                         const isCompleted = step.id < user.currentStep;
@@ -117,7 +121,7 @@ export default function JourneyPage() {
                         return (
                             <motion.div
                                 key={step.id}
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true, margin: "-50px" }}
                                 className={cn(
@@ -131,24 +135,24 @@ export default function JourneyPage() {
                                     transition={{ duration: 0.4 }}
                                     onClick={() => handleStepClick(step.id)}
                                     className={cn(
-                                        "relative w-24 h-24 flex-shrink-0 flex flex-col items-center justify-center rounded-full border-4 shadow-2xl transition-all cursor-pointer z-20 mx-auto bg-background",
-                                        isCompleted ? "border-primary text-primary" :
-                                            isCurrent ? `${step.color} border-white ring-4 ring-primary/20 scale-110` :
-                                                "border-muted-foreground/20 bg-muted text-muted-foreground grayscale"
+                                        "relative w-[5.5rem] h-[5.5rem] flex-shrink-0 flex flex-col items-center justify-center rounded-full border-2 transition-all cursor-pointer z-20 mx-auto shadow-xl ring-1 ring-black/[0.02] backdrop-blur-md",
+                                        isCompleted ? "border-white bg-[#2563eb] text-white shadow-blue-900/20" :
+                                            isCurrent ? `${step.color} border-white ring-4 ring-blue-500/20 shadow-blue-900/10 scale-110 drop-shadow-xl` :
+                                                "border-white/50 bg-gray-50 text-gray-400 grayscale shadow-sm"
                                     )}
                                 >
                                     {isCompleted ? (
-                                        <Check className="w-10 h-10 stroke-[3]" />
+                                        <Check className="w-10 h-10 stroke-[3] drop-shadow-sm" />
                                     ) : isLocked ? (
-                                        <Lock className="w-8 h-8 opacity-50" />
+                                        <Lock className="w-8 h-8 opacity-40 drop-shadow-sm" />
                                     ) : (
-                                        <step.icon className="w-10 h-10 text-white fill-white/20" />
+                                        <step.icon className="w-10 h-10 text-white fill-white/20 drop-shadow-md" />
                                     )}
 
                                     {/* Level Badge */}
                                     <div className={cn(
-                                        "absolute -bottom-3 bg-card border px-2 py-0.5 rounded-full text-[10px] font-bold shadow-sm whitespace-nowrap",
-                                        isLocked && "text-muted-foreground bg-muted"
+                                        "absolute -bottom-2 bg-white border border-white/50 ring-1 ring-black/[0.02] px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm whitespace-nowrap",
+                                        isLocked ? "text-gray-400 bg-gray-50" : "text-[#2563eb]"
                                     )}>
                                         Nível {step.id}
                                     </div>
@@ -156,8 +160,8 @@ export default function JourneyPage() {
 
                                 {/* Connection Line to Text */}
                                 <div className={cn(
-                                    "absolute top-1/2 h-0.5 w-[30%] bg-border/50 -z-10",
-                                    isRight ? "right-[50%] mr-12" : "left-[50%] ml-12"
+                                    "absolute top-1/2 h-[3px] w-[25%] bg-gray-300/50 -z-10 rounded-full",
+                                    isRight ? "right-[50%] mr-11" : "left-[50%] ml-11"
                                 )} />
 
                                 {/* Text Card */}
@@ -166,26 +170,26 @@ export default function JourneyPage() {
                                     isRight ? "left-0 text-right pr-2" : "right-0 text-left pl-2"
                                 )}>
                                     <h3 className={cn(
-                                        "font-bold text-sm leading-tight mb-1",
-                                        isLocked && "text-muted-foreground"
+                                        "font-extrabold text-[15px] leading-tight mb-1",
+                                        isLocked ? "text-gray-400" : "text-gray-800"
                                     )}>{step.title}</h3>
 
                                     {isCurrent && (
-                                        <Badge variant="secondary" className="text-[10px] h-5 px-1.5 bg-primary/10 text-primary border-primary/20">
-                                            Em progresso
+                                        <Badge variant="secondary" className="text-[9px] h-5 px-2 bg-blue-50 border-blue-100 text-[#2563eb] shadow-sm uppercase tracking-widest font-black inline-flex">
+                                            Conquistando agora
                                         </Badge>
                                     )}
 
                                     {!isLocked && !isCurrent && !isCompleted && (
-                                        <span className="text-[10px] text-muted-foreground block">
+                                        <span className="text-[11px] text-gray-500 font-medium block">
                                             {step.description}
                                         </span>
                                     )}
 
                                     {isCompleted && (
-                                        <div className="flex justify-start gap-0.5 mt-1">
+                                        <div className="flex justify-start gap-1 mt-1.5 opacity-60">
                                             {[1, 2, 3].map(i => (
-                                                <div key={i} className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                                <div key={i} className="w-1.5 h-1.5 rounded-full bg-[#2563eb] shadow-sm" />
                                             ))}
                                         </div>
                                     )}
@@ -197,10 +201,12 @@ export default function JourneyPage() {
 
                     {/* Final Trophy */}
                     <div className="flex flex-col items-center justify-center pt-8 pb-12 relative z-20">
-                        <div className="w-20 h-20 bg-gradient-to-t from-yellow-400 to-yellow-200 rounded-full flex items-center justify-center shadow-xl shadow-yellow-500/20 animate-pulse">
-                            <Trophy className="w-10 h-10 text-yellow-700" />
+                        <div className="w-24 h-24 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl border border-white ring-1 ring-black/[0.02] relative group">
+                            <div className="absolute inset-2 bg-gradient-to-t from-yellow-100 to-amber-50 rounded-full flex items-center justify-center border border-yellow-200">
+                                <Trophy className="w-10 h-10 text-amber-500 drop-shadow-sm group-hover:scale-110 transition-transform duration-500" />
+                            </div>
                         </div>
-                        <p className="mt-4 font-bold text-yellow-500 font-heading text-lg">Liberdade!</p>
+                        <p className="mt-4 font-black text-amber-500 text-lg uppercase tracking-tight drop-shadow-sm">Liberdade!</p>
                     </div>
                 </div>
 

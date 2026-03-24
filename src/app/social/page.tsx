@@ -61,45 +61,45 @@ export default function SocialPage() {
             className="space-y-6"
         >
             <section>
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-4">
                     <Zap className="w-5 h-5 text-yellow-500" />
-                    <h3 className="text-[18px] font-black text-gray-900 uppercase">Power-Ups</h3>
+                    <h3 className="text-[18px] font-extrabold text-gray-800 uppercase tracking-tight">Power-Ups</h3>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-white rounded-2xl p-4 border-2 border-b-4 border-gray-200 shadow-sm flex flex-col items-center text-center group cursor-pointer active:border-b-2 active:translate-y-[2px] transition-all"
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-white/80 backdrop-blur-md rounded-[1.5rem] p-5 ring-1 ring-black/[0.02] shadow-lg shadow-blue-900/5 flex flex-col items-center text-center group cursor-pointer active:scale-95 transition-all"
                          onClick={() => handlePurchase(40, "freezeStreak", "Freeze Streak")}
                     >
-                        <div className="w-12 h-12 bg-blue-100 rounded-xl border-2 border-b-4 border-blue-200 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                            <Snowflake className="w-6 h-6 text-blue-500 drop-shadow-sm" />
+                        <div className="w-14 h-14 bg-blue-50/80 rounded-[1.25rem] flex items-center justify-center mb-4 group-hover:bg-blue-100/50 transition-colors">
+                            <Snowflake className="w-7 h-7 text-blue-500 drop-shadow-sm group-hover:scale-110 transition-transform" />
                         </div>
-                        <h4 className="font-bold text-[13px] text-gray-900 leading-tight">Congelar Streak</h4>
-                        <p className="text-[10px] text-gray-500 mb-2 mt-1 px-1">Salva sua ofensiva por 1 dia.</p>
-                        <div className="mt-auto bg-yellow-100 px-3 py-1 rounded-full border border-yellow-300 flex items-center gap-1">
-                            <Coins className="w-3.5 h-3.5 text-yellow-600" />
-                            <span className="text-[12px] font-black text-yellow-700">40</span>
+                        <h4 className="font-extrabold text-[14px] text-gray-800 leading-tight">Congelar Streak</h4>
+                        <p className="text-[11px] text-gray-400 font-medium mb-3 mt-1.5 px-1">Salva sua ofensiva por 1 dia.</p>
+                        <div className="mt-auto bg-amber-50 px-3.5 py-1.5 rounded-full border border-amber-100 flex items-center gap-1.5">
+                            <Coins className="w-4 h-4 text-amber-500" />
+                            <span className="text-[13px] font-black text-amber-600">40</span>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl p-4 border-2 border-b-4 border-gray-200 shadow-sm flex flex-col items-center text-center group cursor-pointer active:border-b-2 active:translate-y-[2px] transition-all"
+                    <div className="bg-white/80 backdrop-blur-md rounded-[1.5rem] p-5 ring-1 ring-black/[0.02] shadow-lg shadow-blue-900/5 flex flex-col items-center text-center group cursor-pointer active:scale-95 transition-all"
                          onClick={() => handlePurchase(30, "xpMultiplier", "Multiplicador XP")}
                     >
-                        <div className="w-12 h-12 bg-purple-100 rounded-xl border-2 border-b-4 border-purple-200 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                            <TrendingUp className="w-6 h-6 text-purple-600 drop-shadow-sm" />
+                        <div className="w-14 h-14 bg-purple-50/80 rounded-[1.25rem] flex items-center justify-center mb-4 group-hover:bg-purple-100/50 transition-colors">
+                            <TrendingUp className="w-7 h-7 text-purple-600 drop-shadow-sm group-hover:scale-110 transition-transform" />
                         </div>
-                        <h4 className="font-bold text-[13px] text-gray-900 leading-tight">Dobro de XP</h4>
-                        <p className="text-[10px] text-gray-500 mb-2 mt-1 px-1">Ganha 2x XP Pelas próximas 24h.</p>
-                        <div className="mt-auto bg-yellow-100 px-3 py-1 rounded-full border border-yellow-300 flex items-center gap-1">
-                            <Coins className="w-3.5 h-3.5 text-yellow-600" />
-                            <span className="text-[12px] font-black text-yellow-700">30</span>
+                        <h4 className="font-extrabold text-[14px] text-gray-800 leading-tight">Dobro de XP</h4>
+                        <p className="text-[11px] text-gray-400 font-medium mb-3 mt-1.5 px-1">Ganha 2x XP Pelas próximas 24h.</p>
+                        <div className="mt-auto bg-amber-50 px-3.5 py-1.5 rounded-full border border-amber-100 flex items-center gap-1.5">
+                            <Coins className="w-4 h-4 text-amber-500" />
+                            <span className="text-[13px] font-black text-amber-600">30</span>
                         </div>
                     </div>
                 </div>
             </section>
 
             <section>
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-4">
                     <Paintbrush className="w-5 h-5 text-emerald-500" />
-                    <h3 className="text-[18px] font-black text-gray-900 uppercase">Cosméticos</h3>
+                    <h3 className="text-[18px] font-extrabold text-gray-800 uppercase tracking-tight">Cosméticos</h3>
                 </div>
                 <div className="space-y-3">
                     {AVATARS.map((avatar) => {
@@ -108,22 +108,22 @@ export default function SocialPage() {
                         const isUnlocked = user.unlockedAvatars.includes(avatar.id);
 
                         return (
-                            <div key={avatar.id} className="bg-white rounded-2xl p-3 border-2 border-b-4 border-gray-200 shadow-sm flex items-center gap-4">
-                                <div className={cn("w-14 h-14 rounded-xl border-2 border-b-4 border-gray-300 flex items-center justify-center shrink-0 shadow-inner", avatar.color)}>
+                            <div key={avatar.id} className="bg-white/80 backdrop-blur-md rounded-[1.5rem] p-4 ring-1 ring-black/[0.02] shadow-sm flex items-center gap-4">
+                                <div className={cn("w-14 h-14 rounded-[1.25rem] flex items-center justify-center shrink-0 shadow-sm ring-1 ring-black/5", avatar.color)}>
                                     {avatar.icon}
                                 </div>
                                 <div className="flex-1">
-                                    <h4 className="font-black text-[15px] text-gray-900 uppercase">{avatar.name}</h4>
+                                    <h4 className="font-extrabold text-[15px] text-gray-800 uppercase">{avatar.name}</h4>
                                     <p className="text-[11px] font-bold text-gray-400 uppercase mt-0.5">Avatar Especial</p>
                                 </div>
                                 <button
                                     onClick={() => handlePurchase(100, "avatar", avatar.name)}
                                     disabled={isUnlocked}
                                     className={cn(
-                                        "px-4 py-2 rounded-xl text-[13px] font-black transition-all flex items-center gap-1.5 active:translate-y-[2px] active:border-b-2",
+                                        "px-4 py-2.5 rounded-[1rem] text-[13px] font-black transition-all flex items-center gap-1.5 active:scale-95",
                                         isUnlocked
-                                            ? "bg-gray-100 text-gray-400 border-2 border-b-4 border-gray-200 cursor-not-allowed"
-                                            : "bg-white text-yellow-600 border-2 border-b-4 border-yellow-400 hover:bg-yellow-50"
+                                            ? "bg-gray-100/50 text-gray-400 cursor-not-allowed border border-gray-200/50"
+                                            : "bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100"
                                     )}
                                 >
                                     {isUnlocked ? (
@@ -149,13 +149,14 @@ export default function SocialPage() {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-4"
         >
-            <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-3xl p-5 border-2 border-b-4 border-indigo-900 shadow-xl relative overflow-hidden text-center mb-6">
-                 <Crown className="w-12 h-12 text-yellow-400 mx-auto mb-2 drop-shadow-md" />
-                 <h2 className="text-[20px] font-black text-white uppercase drop-shadow-md">Liga Degrau {user.currentStep}</h2>
-                 <p className="text-[12px] text-indigo-200 font-bold uppercase tracking-widest mt-1">Temporada Atual</p>
+            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2rem] p-6 shadow-[0_8px_30px_rgba(79,70,229,0.2)] relative overflow-hidden text-center mb-6 border border-white/20">
+                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl transform translate-x-10 -translate-y-10" />
+                 <Crown className="w-12 h-12 text-yellow-300 mx-auto mb-3 drop-shadow-md relative z-10" />
+                 <h2 className="text-[20px] font-black text-white uppercase tracking-tight relative z-10">Liga Degrau {user.currentStep}</h2>
+                 <p className="text-[12px] text-indigo-100 font-bold uppercase tracking-widest mt-1 relative z-10">Temporada Atual</p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
                 {MOCK_LEADERBOARD.map((player, index) => {
                     const isTop1 = index === 0;
                     const isTop2 = index === 1;
@@ -165,34 +166,34 @@ export default function SocialPage() {
                         <div
                             key={player.id}
                             className={cn(
-                                "flex items-center gap-4 p-3 rounded-2xl border-2 border-b-4 transition-all",
+                                "flex items-center gap-4 p-4 rounded-[1.25rem] transition-all",
                                 player.isCurrentUser
-                                    ? "bg-blue-50 border-blue-300"
-                                    : "bg-white border-gray-200"
+                                    ? "bg-blue-50/80 border border-blue-200 ring-1 ring-blue-500/20 shadow-md shadow-blue-900/5"
+                                    : "bg-white/80 backdrop-blur-md border border-white/50 ring-1 ring-black/[0.02] shadow-sm"
                             )}
                         >
                             <span className={cn(
                                 "text-[18px] font-black w-6 text-center drop-shadow-sm",
-                                isTop1 ? "text-yellow-500" : isTop2 ? "text-gray-400" : isTop3 ? "text-amber-700" : "text-gray-300"
+                                isTop1 ? "text-amber-400" : isTop2 ? "text-slate-400" : isTop3 ? "text-amber-700" : "text-gray-300"
                             )}>
                                 #{index + 1}
                             </span>
                             
                             <div className="flex-1">
-                                <h4 className="font-bold text-[15px] text-gray-900">{player.name}</h4>
+                                <h4 className="font-extrabold text-[15px] text-gray-800">{player.name}</h4>
                             </div>
 
-                            <div className="flex gap-4 items-center">
+                            <div className="flex gap-5 items-center">
                                 <div className="flex flex-col items-center">
-                                    <span className="text-[13px] font-black text-gray-900">{player.score}</span>
-                                    <span className="text-[9px] font-bold text-gray-400 uppercase">Eficien.</span>
+                                    <span className="text-[14px] font-black text-gray-800">{player.score}</span>
+                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Eficien.</span>
                                 </div>
                                 <div className="flex flex-col items-center">
                                     <div className="flex items-center gap-0.5">
                                         <Flame className="w-3.5 h-3.5 text-orange-500" />
-                                        <span className="text-[13px] font-black text-gray-900">{player.streak}</span>
+                                        <span className="text-[14px] font-black text-gray-800">{player.streak}</span>
                                     </div>
-                                    <span className="text-[9px] font-bold text-gray-400 uppercase">Streak</span>
+                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Streak</span>
                                 </div>
                             </div>
                         </div>
@@ -200,66 +201,73 @@ export default function SocialPage() {
                 })}
             </div>
             
-            <p className="text-center text-[11px] text-gray-400 font-bold mt-4 px-8 uppercase">A liga é reiniciada todo dia 1° do mês e o pareamento é feito pela sua eficiência.</p>
+            <p className="text-center text-[10px] text-gray-400 font-bold mt-6 px-8 uppercase tracking-wider">A liga é reiniciada todo dia 1° do mês e o pareamento é feito pela sua eficiência.</p>
         </motion.div>
     );
 
     return (
-        <div className="min-h-screen bg-[#f8fafc] pb-24 font-sans selection:bg-blue-500/30">
-            <AppHeader />
+        <div className="min-h-screen bg-[#f4f6fb] pb-24 font-sans selection:bg-blue-500/30">
+            {/* Ambient Base Light */}
+            <div className="fixed inset-0 pointer-events-none z-0">
+                <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-400/[0.03] rounded-full blur-[120px]" />
+            </div>
 
-            <main className="px-5 mt-2 max-w-lg mx-auto">
-                {/* Economy Header */}
-                <div className="bg-white rounded-3xl p-4 border-2 border-b-4 border-gray-200 shadow-sm flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-yellow-100 rounded-2xl border-2 border-b-4 border-yellow-300 shadow-inner flex items-center justify-center">
-                            <Coins className="w-6 h-6 text-yellow-600 drop-shadow-sm" />
+            <div className="relative z-10">
+                <AppHeader />
+
+                <main className="px-5 mt-2 max-w-lg mx-auto">
+                    {/* Economy Header */}
+                    <div className="bg-white/80 backdrop-blur-md rounded-[2rem] p-5 shadow-xl shadow-blue-900/5 ring-1 ring-black/[0.02] flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 bg-amber-50 rounded-[1.25rem] flex items-center justify-center shadow-sm ring-1 ring-amber-100">
+                                <Coins className="w-7 h-7 text-amber-500 drop-shadow-sm" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Saldo Atual</p>
+                                <p className="text-[24px] font-black text-gray-800 leading-none">
+                                    {user.coins} <span className="text-[13px] text-gray-400 font-bold ml-0.5">Z-Coins</span>
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Saldo Atual</p>
-                            <p className="text-[22px] font-black text-gray-900 leading-tight">
-                                {user.coins} <span className="text-[14px] text-gray-500 font-bold">Z-Coins</span>
-                            </p>
+                        <div className="bg-blue-50/80 rounded-[1rem] px-3.5 py-2.5 border border-blue-100/50 text-center">
+                            <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest mb-1">Baú de Nível</p>
+                            <p className="text-[12px] font-extrabold text-blue-800 leading-none">Em Breve</p>
                         </div>
                     </div>
-                    <div className="bg-blue-50 rounded-xl px-3 py-2 border-2 border-blue-100 text-center">
-                         <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest mb-0.5">Baú de Nível</p>
-                         <p className="text-[12px] font-black text-blue-800">Em Breve</p>
+
+                    {/* Tabs */}
+                    <div className="flex gap-2 p-1.5 bg-gray-200/50 rounded-[1.25rem] mb-6 backdrop-blur-sm">
+                        <button
+                            onClick={() => setActiveTab("store")}
+                            className={cn(
+                                "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-extrabold text-[13px] uppercase tracking-wide transition-all",
+                                activeTab === "store"
+                                    ? "bg-white text-blue-600 shadow-sm ring-1 ring-black/[0.02]"
+                                    : "text-gray-400 hover:text-gray-600"
+                            )}
+                        >
+                            <ShoppingCart className="w-4 h-4" /> Loja
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("ranking")}
+                            className={cn(
+                                "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-extrabold text-[13px] uppercase tracking-wide transition-all",
+                                activeTab === "ranking"
+                                    ? "bg-white text-indigo-600 shadow-sm ring-1 ring-black/[0.02]"
+                                    : "text-gray-400 hover:text-gray-600"
+                            )}
+                        >
+                            <Trophy className="w-4 h-4" /> Ligas
+                        </button>
                     </div>
-                </div>
 
-                {/* Tabs */}
-                <div className="flex gap-2 p-1.5 bg-gray-200/60 rounded-2xl mb-6">
-                    <button
-                        onClick={() => setActiveTab("store")}
-                        className={cn(
-                            "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-black text-[13px] uppercase tracking-wide transition-all",
-                            activeTab === "store"
-                                ? "bg-white text-[#2563eb] shadow-sm border-2 border-b-4 border-gray-200"
-                                : "text-gray-500 hover:text-gray-700"
-                        )}
-                    >
-                        <ShoppingCart className="w-4 h-4" /> Loja
-                    </button>
-                    <button
-                        onClick={() => setActiveTab("ranking")}
-                        className={cn(
-                            "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-black text-[13px] uppercase tracking-wide transition-all",
-                            activeTab === "ranking"
-                                ? "bg-white text-indigo-600 shadow-sm border-2 border-b-4 border-gray-200"
-                                : "text-gray-500 hover:text-gray-700"
-                        )}
-                    >
-                        <Trophy className="w-4 h-4" /> Ligas
-                    </button>
-                </div>
-
-                <AnimatePresence mode="wait">
-                    {activeTab === "store" ? <StoreContent key="store" /> : <RankingContent key="ranking" />}
-                </AnimatePresence>
-            </main>
-            
-            <BottomNav />
+                    <AnimatePresence mode="wait">
+                        {activeTab === "store" ? <StoreContent key="store" /> : <RankingContent key="ranking" />}
+                    </AnimatePresence>
+                </main>
+                
+                <BottomNav />
+            </div>
         </div>
     );
 }

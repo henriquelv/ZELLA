@@ -43,6 +43,7 @@ export interface UserState {
 
     // Actions
     completeOnboarding: (step: number, name: string, initialRevenue?: number, initialFixedCosts?: number) => void
+    setCurrentStep: (step: number) => void
     addXp: (amount: number) => void
     addCoins: (amount: number) => void
     spendCoins: (amount: number, itemType: "freezeStreak" | "xpMultiplier" | "avatar") => boolean
@@ -69,6 +70,7 @@ export interface UserState {
 
     calculateMetricsFromTransactions: () => void
     generateContextualGoals: () => Promise<void>
+    evaluateGoalsExpiry: () => void
 }
 
 export interface Transaction {
@@ -88,7 +90,16 @@ export interface Goal {
     category: 'saving' | 'spending' | 'investing' | 'habit'
     createdAt: string
     completed: boolean
+    failed?: boolean
     xpReward: number
+    // Campos de rastreamento automático
+    conditionType?: 'spending_limit' | 'no_spending' | 'register_income' | null
+    targetCategory?: string | null // Categoria monitorada
+    targetAmount?: number | null   // Limite de gastos (para spending_limit)
+    spentSoFar?: number            // Acumulado de gasto (calculado)
+    progressCount?: number         // Contador geral de progresso
+    targetCount?: number           // Meta numérica (ex: registrar 3 transações)
+    startDate?: string             // Data de início para janela de 7 dias
 }
 
 export interface Mission {
@@ -146,6 +157,8 @@ export const useUserStore = create<UserState>()(
             completeOnboarding: (step: number, name: string, initialRevenue?: number, initialFixedCosts?: number) =>
                 set({ hasOnboarded: true, currentStep: step, currentPhase: 1, name, revenue: initialRevenue || 0, fixedCosts: initialFixedCosts || 0 }),
 
+            setCurrentStep: (step: number) => set({ currentStep: step }),
+
             addXp: (amount: number) => {
                 set((state: UserState) => {
                     const newXp = state.xp + amount;
@@ -198,26 +211,53 @@ export const useUserStore = create<UserState>()(
                 set((state: UserState) => {
                     const newTransactions = [t, ...state.transactions];
                     let xpGained = 0;
-                    let updatedGoals = [...state.goals];
+                    let updatedGoals = state.goals.map(goal => {
+                        if (goal.completed || goal.failed) return goal;
 
-                    if (t.type === 'expense') {
-                        updatedGoals = updatedGoals.map(goal => {
-                            if (!goal.completed && goal.category === 'spending' && goal.title.includes(t.category)) {
-                                return { ...goal, completed: true, xpReward: 0, title: goal.title + " (Falhou⚠️)" };
+                        const now = new Date();
+                        const startDate = goal.startDate ? new Date(goal.startDate) : null;
+                        const isWithinWindow = !startDate || (now.getTime() - startDate.getTime()) <= 7 * 24 * 60 * 60 * 1000;
+
+                        if (!isWithinWindow) return goal;
+
+                        // --- spending_limit: Falha se gastar MAIS que o limite na categoria ---
+                        if (goal.conditionType === 'spending_limit' && goal.targetCategory && t.type === 'expense') {
+                            if (t.category === goal.targetCategory) {
+                                const newSpent = (goal.spentSoFar || 0) + t.amount;
+                                if (goal.targetAmount && newSpent > goal.targetAmount) {
+                                    // Falhou — ultrapassou o limite
+                                    return { ...goal, failed: true, completed: true, spentSoFar: newSpent, xpReward: 0, title: goal.title + " (Falhou⚠️)" };
+                                }
+                                return { ...goal, spentSoFar: newSpent };
                             }
-                            return goal;
-                        });
-                    }
+                        }
 
-                    if (t.type === 'income') {
-                        updatedGoals = updatedGoals.map(goal => {
-                            if (!goal.completed && goal.category === 'saving') {
+                        // --- no_spending: Falha se fizer qualquer gasto na categoria ---
+                        if (goal.conditionType === 'no_spending' && goal.targetCategory && t.type === 'expense') {
+                            if (t.category === goal.targetCategory) {
+                                return { ...goal, failed: true, completed: true, xpReward: 0, title: goal.title + " (Falhou⚠️)" };
+                            }
+                        }
+
+                        // --- register_income: Completa ao registrar uma receita ---
+                        if (goal.conditionType === 'register_income' && t.type === 'income') {
+                            const newCount = (goal.progressCount || 0) + 1;
+                            const target = goal.targetCount || 1;
+                            if (newCount >= target) {
                                 xpGained += goal.xpReward;
-                                return { ...goal, completed: true };
+                                return { ...goal, completed: true, progressCount: newCount };
                             }
-                            return goal;
-                        });
-                    }
+                            return { ...goal, progressCount: newCount };
+                        }
+
+                        // --- Legado: metas de 'saving' genéricas (sem conditionType) ---
+                        if (!goal.conditionType && goal.category === 'saving' && t.type === 'income') {
+                            xpGained += goal.xpReward;
+                            return { ...goal, completed: true };
+                        }
+
+                        return goal;
+                    });
 
                     const newXp = state.xp + xpGained;
 
@@ -285,6 +325,14 @@ export const useUserStore = create<UserState>()(
                             category: goalData.category || 'habit',
                             xpReward: goalData.xpReward || 150,
                             completed: false,
+                            failed: false,
+                            conditionType: goalData.conditionType || null,
+                            targetCategory: goalData.targetCategory || null,
+                            targetAmount: goalData.targetAmount || null,
+                            spentSoFar: 0,
+                            progressCount: 0,
+                            targetCount: goalData.targetCount || 1,
+                            startDate: new Date().toISOString(),
                             createdAt: new Date().toISOString()
                         });
                     }
@@ -386,12 +434,35 @@ export const useUserStore = create<UserState>()(
                 get().generateContextualGoals();
             },
             // A nova versão de `generateContextualGoals` já está definida acima.
+            evaluateGoalsExpiry: () => {
+                const now = new Date();
+                let xpGained = 0;
+                set((state: UserState) => {
+                    const updatedGoals = state.goals.map(goal => {
+                        if (goal.completed || goal.failed || !goal.startDate || !goal.conditionType) return goal;
+                        const start = new Date(goal.startDate);
+                        const elapsed = now.getTime() - start.getTime();
+                        const sevenDays = 7 * 24 * 60 * 60 * 1000;
+                        // Se passou 7 dias e a meta ainda não falhou → Sucesso!
+                        if (elapsed >= sevenDays) {
+                            if (goal.conditionType === 'spending_limit' || goal.conditionType === 'no_spending') {
+                                xpGained += goal.xpReward;
+                                return { ...goal, completed: true };
+                            }
+                        }
+                        return goal;
+                    });
+                    return { goals: updatedGoals };
+                });
+                if (xpGained > 0) get().addXp(xpGained);
+            },
             checkAndApplyStreak: () => {
                 const today = format(new Date(), 'yyyy-MM-dd');
                 const lastLogin = get().lastLoginDate;
 
                 if (!lastLogin) {
                     set({ lastLoginDate: today, streak: 1 });
+                    get().evaluateGoalsExpiry();
                     return;
                 }
 
@@ -402,6 +473,8 @@ export const useUserStore = create<UserState>()(
                     } else if (daysDiff > 1) {
                         set({ lastLoginDate: today, streak: 1 });
                     }
+                    // Avalia vencimento de metas ao abrir o app
+                    get().evaluateGoalsExpiry();
                 }
             },
             setActiveAvatar: (avatarId: string) => set({ activeAvatar: avatarId }),

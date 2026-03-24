@@ -3,43 +3,25 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, Wallet, Target, ShieldCheck, Trophy } from "lucide-react";
+import { ArrowRight, Sparkles, Wallet, Target, ShieldCheck, Trophy, Lock, Building2, Loader2, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUserStoreHydrated } from "@/store/useStore";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { supabase } from "@/lib/supabase";
-
 
 export default function OnboardingPage() {
     const [step, setStep] = useState(1);
     const [name, setName] = useState("");
-    const [revenue, setRevenue] = useState("");
-    const [fixedCosts, setFixedCosts] = useState("");
+    const [isConnecting, setIsConnecting] = useState(false);
 
     const router = useRouter();
     const userStore = useUserStoreHydrated((state) => state);
 
-    const handleFinish = async () => {
-        if (!name.trim() || !revenue.trim() || !fixedCosts.trim()) return;
-        if (!userStore) return;
-
-        const parsedRevenue = parseFloat(revenue.replace(/[^\d.,]/g, "").replace(",", "."));
-        const parsedFixedCosts = parseFloat(fixedCosts.replace(/[^\d.,]/g, "").replace(",", "."));
-        if (isNaN(parsedRevenue) || parsedRevenue <= 0 || isNaN(parsedFixedCosts) || parsedFixedCosts < 0) return;
-
-        // --- Lógica Inicial de Pareamento (LogicaBack Simplificada para Onboarding) ---
-        const ie = ((parsedRevenue - parsedFixedCosts) / parsedRevenue) * 100;
-        const is = (parsedFixedCosts / parsedRevenue) * 100;
-
-        let initialStep = 1;
-        if (ie >= 20 && is <= 50) initialStep = 5;
-        else if (ie >= 10 && is <= 70) initialStep = 4;
-        else if (ie >= 5 && is <= 75) initialStep = 3;
-        else if (ie > 0 && is <= 80) initialStep = 2;
+    const finalizeOnboarding = async (initialStep: number, parsedRevenue: number, parsedFixedCosts: number) => {
+        if (!name.trim() || !userStore) return;
 
         const { data: sessionData } = await supabase.auth.getSession();
-        if (sessionData.session) {
+        if (sessionData?.session) {
             await supabase.from('profiles').update({
                 name: name,
                 revenue: parsedRevenue,
@@ -61,6 +43,52 @@ export default function OnboardingPage() {
         });
 
         router.push("/dashboard");
+    };
+
+    const generateMockFinancialProfile = (bank: string) => {
+        // Base income depends on the "mock" bank just for flavor
+        const baseMin = bank === "Itaú" ? 5000 : 2000;
+        const baseMax = bank === "Itaú" ? 20000 : 8000;
+        const revenue = Math.floor(Math.random() * (baseMax - baseMin)) + baseMin;
+        
+        // Random scenario to generate different IS (Fixed Costs) percentages
+        const isMultipliers = [0.95, 0.85, 0.75, 0.65, 0.55, 0.45];
+        const baseIs = isMultipliers[Math.floor(Math.random() * isMultipliers.length)];
+        
+        // Apply slight random variance (+/- 3%)
+        const variance = (Math.random() * 0.06) - 0.03;
+        const finalIs = Math.max(0.3, Math.min(1.0, baseIs + variance)); // between 30% and 100%
+        
+        const fixedCosts = Math.floor(revenue * finalIs);
+        return { revenue, fixedCosts };
+    };
+
+    const calculateInitialDegrau = (revenue: number, fixedCosts: number) => {
+        const ie = ((revenue - fixedCosts) / revenue) * 100;
+        const is = (fixedCosts / revenue) * 100;
+
+        if (ie >= 20 && is <= 50) return 6; // Mestre
+        if (ie >= 15 && is <= 60) return 5; // Estrategista
+        if (ie >= 10 && is <= 70) return 4; // Construtor
+        if (ie >= 5 && is <= 75) return 3; // Controlador
+        if (ie > 0 && is <= 80) return 2; // Organizando
+        return 1; // Sobrevivente
+    };
+
+    const handleSkip = async () => {
+        // Se pular, inicializa manualmente no nível mais baixo e genérico (Sobrevivente)
+        await finalizeOnboarding(1, 3000, 2750);
+    };
+
+    const handleConnect = async (bank: string) => {
+        setIsConnecting(true);
+        // Simulando a "Análise Zella AI" em cima do Open Finance
+        setTimeout(async () => {
+            const { revenue, fixedCosts } = generateMockFinancialProfile(bank);
+            const degrau = calculateInitialDegrau(revenue, fixedCosts);
+            
+            await finalizeOnboarding(degrau, revenue, fixedCosts);
+        }, 3500);
     };
 
     return (
@@ -178,115 +206,130 @@ export default function OnboardingPage() {
                     </motion.div>
                 )}
 
-                {/* STEP 3: Revenue */}
+                {/* STEP 3: Inteligência Zella (Intro Open Finance) */}
                 {step === 3 && (
                     <motion.div
-                        key="revenue"
+                        key="intelligence"
                         initial={{ opacity: 0, x: 30 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -30 }}
                         className="flex-1 flex flex-col justify-center space-y-10 relative z-10"
                     >
-                        <div className="space-y-3 text-center">
-                            <div className="w-20 h-20 bg-emerald-100 rounded-[28px] border-2 border-b-6 border-emerald-300 flex items-center justify-center mx-auto mb-6 shadow-inner relative overflow-hidden">
-                                <Wallet className="w-10 h-10 text-emerald-600 drop-shadow-sm z-10 relative" />
+                        <div className="space-y-4 text-center">
+                            <div className="w-20 h-20 bg-blue-50/80 backdrop-blur-sm rounded-[2rem] flex items-center justify-center mx-auto shadow-sm ring-1 ring-blue-100/50 relative overflow-hidden">
+                                <Sparkles className="w-10 h-10 text-blue-500 drop-shadow-sm z-10 relative" />
                                 <div className="absolute inset-0 bg-white/20 blur-md rounded-full pointer-events-none" />
                             </div>
-                            <h2 className="text-[28px] font-black tracking-tight text-gray-900 leading-tight">
-                                Qual sua Renda Mensal?
+                            <h2 className="text-[26px] font-extrabold tracking-tight text-gray-800 leading-tight">
+                                Esqueça as<br />planilhas chatas.
                             </h2>
-                            <p className="text-gray-500 text-[14px] max-w-[260px] mx-auto font-medium">
-                                Usamos esse valor para desbloquear o seu <span className="text-emerald-600 font-bold">Arena Zella</span> com precisão.
+                            <p className="text-gray-500 text-[14px] max-w-[280px] mx-auto font-medium leading-relaxed">
+                                A <span className="font-bold text-blue-600">Inteligência Zella</span> atua como seu copiloto. Analisamos seus últimos 30 dias automaticamente para criar sua rota de liberdade.
                             </p>
                         </div>
 
-                        <div className="w-full">
-                            <div className="bg-white rounded-[24px] p-6 border-2 border-b-4 border-gray-200 shadow-sm relative overflow-hidden group focus-within:border-emerald-400 focus-within:shadow-md transition-all">
-                                <div className="absolute inset-0 bg-emerald-50/30 opacity-0 group-focus-within:opacity-100 transition-opacity" />
-                                <div className="relative z-10 flex flex-col items-center">
-                                    <span className="text-[14px] font-bold text-gray-400 uppercase tracking-wider mb-2">Salário Líquido Estimado</span>
-                                    <div className="flex items-center justify-center w-full">
-                                        <span className="text-3xl font-black text-emerald-600 mr-2 drop-shadow-sm">R$</span>
-                                        <input
-                                            type="text"
-                                            inputMode="decimal"
-                                            placeholder="5.000,00"
-                                            className="w-full text-left text-4xl font-black bg-transparent focus:outline-none placeholder:text-gray-300 text-gray-900 tracking-tight"
-                                            value={revenue}
-                                            onChange={(e) => setRevenue(e.target.value)}
-                                            autoFocus
-                                        />
-                                    </div>
+                        <div className="space-y-3">
+                            <div className="bg-white/70 backdrop-blur-sm p-4 rounded-2xl flex items-start gap-4 shadow-sm border border-black/[0.02]">
+                                <div className="p-2.5 bg-emerald-50 rounded-xl">
+                                    <Target className="w-5 h-5 text-emerald-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-[14px] text-gray-800">Cálculo de Degrau</h4>
+                                    <p className="text-[12px] text-gray-500 mt-0.5 leading-snug">Descobrimos exatamente em qual estágio financeiro você está hoje.</p>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-white/70 backdrop-blur-sm p-4 rounded-2xl flex items-start gap-4 shadow-sm border border-black/[0.02]">
+                                <div className="p-2.5 bg-blue-50 rounded-xl">
+                                    <Lock className="w-5 h-5 text-blue-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-[14px] text-gray-800">100% Criptografado</h4>
+                                    <p className="text-[12px] text-gray-500 mt-0.5 leading-snug">Conexão via Open Finance. Apenas leitura. Ninguém pode movimentar seu dinheiro.</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="pt-6">
+                        <div className="pt-4">
                             <Button
-                                className="w-full h-14 rounded-2xl text-[16px] font-black uppercase tracking-wide shadow-[0_4px_0_rgb(21,128,61)] bg-[#16a34a] text-white hover:bg-[#15803d] active:shadow-none active:translate-y-[4px] border-2 border-[#14532d] transition-all group"
+                                className="w-full h-14 rounded-2xl text-[15px] font-extrabold tracking-wide shadow-md bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-95 active:scale-[0.98] transition-all group border-0"
                                 onClick={() => setStep(4)}
-                                disabled={!revenue.trim()}
                             >
-                                Continuar
+                                Entendi, vamos lá
                                 <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                             </Button>
                         </div>
                     </motion.div>
                 )}
 
-                {/* STEP 4: Fixed Costs */}
+                {/* STEP 4: Conexão Open Finance */}
                 {step === 4 && (
                     <motion.div
-                        key="fixedCosts"
+                        key="openfinance"
                         initial={{ opacity: 0, x: 30 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -30 }}
-                        className="flex-1 flex flex-col justify-center space-y-10 relative z-10"
+                        className="flex-1 flex flex-col justify-center space-y-8 relative z-10"
                     >
                         <div className="space-y-3 text-center">
-                            <div className="w-20 h-20 bg-red-100 rounded-[28px] border-2 border-b-6 border-red-300 flex items-center justify-center mx-auto mb-6 shadow-inner relative overflow-hidden">
-                                <ShieldCheck className="w-10 h-10 text-red-600 drop-shadow-sm z-10 relative" />
-                                <div className="absolute inset-0 bg-white/20 blur-md rounded-full pointer-events-none" />
+                            <div className="w-20 h-20 bg-white shadow-xl shadow-blue-900/5 rounded-[2rem] border border-black/[0.05] flex items-center justify-center mx-auto mb-6 relative">
+                                <Building2 className="w-10 h-10 text-gray-800 drop-shadow-sm" />
+                                <div className="absolute -bottom-2 -right-2 bg-emerald-500 rounded-full p-1.5 border-2 border-[#f4f6fb] shadow-sm">
+                                    <CheckCircle2 className="w-4 h-4 text-white" />
+                                </div>
                             </div>
-                            <h2 className="text-[28px] font-black tracking-tight text-gray-900 leading-tight">
-                                E seus Custos Fixos?
+                            <h2 className="text-[26px] font-extrabold tracking-tight text-gray-800 leading-tight">
+                                Conecte sua conta
                             </h2>
-                            <p className="text-gray-500 text-[14px] max-w-[260px] mx-auto font-medium">
-                                Aluguel, contas base e mercado vital. Qual o custo apenas para <span className="font-bold text-red-600">sobreviver</span>?
+                            <p className="text-gray-500 text-[14px] max-w-[280px] mx-auto font-medium leading-relaxed">
+                                Selecione sua instituição principal para a Zella montar seu <strong className="text-gray-800">Plano de Adaptação</strong> inicial.
                             </p>
                         </div>
 
-                        <div className="w-full">
-                            <div className="bg-white rounded-[24px] p-6 border-2 border-b-4 border-gray-200 shadow-sm relative overflow-hidden group focus-within:border-red-400 focus-within:shadow-md transition-all">
-                                <div className="absolute inset-0 bg-red-50/30 opacity-0 group-focus-within:opacity-100 transition-opacity" />
-                                <div className="relative z-10 flex flex-col items-center">
-                                    <span className="text-[14px] font-bold text-gray-400 uppercase tracking-wider mb-2">Sua base mensal</span>
-                                    <div className="flex items-center justify-center w-full">
-                                        <span className="text-3xl font-black text-red-600 mr-2 drop-shadow-sm">R$</span>
-                                        <input
-                                            type="text"
-                                            inputMode="decimal"
-                                            placeholder="2.500,00"
-                                            className="w-full text-left text-4xl font-black bg-transparent focus:outline-none placeholder:text-gray-300 text-gray-900 tracking-tight"
-                                            value={fixedCosts}
-                                            onChange={(e) => setFixedCosts(e.target.value)}
-                                            autoFocus
-                                        />
-                                    </div>
+                        {isConnecting ? (
+                            <div className="py-8 space-y-6 flex flex-col items-center">
+                                <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+                                <div className="text-center space-y-1">
+                                    <h3 className="font-extrabold text-[15px] text-gray-800">Analisando 30 dias...</h3>
+                                    <p className="text-[13px] text-gray-500">Buscando inteligência via Open Finance</p>
                                 </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <Button
+                                    onClick={() => handleConnect("Nubank")}
+                                    className="w-full h-16 rounded-2xl bg-white border border-gray-200 shadow-sm flex items-center justify-between px-6 hover:border-blue-300 hover:ring-1 hover:ring-blue-100 transition-all active:scale-[0.98]"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                                            <span className="font-bold text-purple-700 text-xs">Nu</span>
+                                        </div>
+                                        <span className="font-extrabold text-[#8A05BE] text-[15px]">Nubank</span>
+                                    </div>
+                                    <ArrowRight className="w-5 h-5 text-gray-400" />
+                                </Button>
 
-                        <div className="pt-6">
-                            <Button
-                                className="w-full h-14 rounded-2xl text-[16px] font-black uppercase tracking-wide shadow-[0_4px_0_rgb(30,64,175)] bg-[#2563eb] text-white hover:bg-[#1e40af] active:shadow-none active:translate-y-[4px] border-2 border-[#1e3a8a] transition-all group"
-                                onClick={handleFinish}
-                                disabled={!fixedCosts.trim()}
-                            >
-                                Iniciar Jornada Real
-                                <Sparkles className="ml-2 w-4 h-4" />
-                            </Button>
-                        </div>
+                                <Button
+                                    onClick={() => handleConnect("Itaú")}
+                                    className="w-full h-16 rounded-2xl bg-white border border-gray-200 shadow-sm flex items-center justify-between px-6 hover:border-blue-300 hover:ring-1 hover:ring-blue-100 transition-all active:scale-[0.98]"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                                            <span className="font-bold text-orange-600 text-xs">It</span>
+                                        </div>
+                                        <span className="font-extrabold text-[#EC7000] text-[15px]">Itaú</span>
+                                    </div>
+                                    <ArrowRight className="w-5 h-5 text-gray-400" />
+                                </Button>
+
+                                <button 
+                                    onClick={handleSkip}
+                                    className="w-full mt-4 py-3 text-[13px] font-bold text-gray-400 hover:text-gray-600 transition-colors uppercase tracking-widest"
+                                >
+                                    Pular e adicionar depois
+                                </button>
+                            </div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

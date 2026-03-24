@@ -50,15 +50,22 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#f4f6fb] pb-24">
+        <div className="min-h-screen bg-[#f4f6fb] pb-24 font-sans selection:bg-blue-500/30">
+            {/* Ambient Background Lights */}
+            <div className="fixed inset-0 pointer-events-none z-0">
+                <div className="absolute top-[10%] left-[-10%] w-[60%] h-[50%] bg-blue-400/[0.04] rounded-full blur-[120px]" />
+                <div className="absolute top-[40%] right-[-10%] w-[50%] h-[40%] bg-emerald-400/[0.03] rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-10%] left-[20%] w-[60%] h-[30%] bg-purple-400/[0.03] rounded-full blur-[120px]" />
+            </div>
+
             {/* Header */}
-            <header className="px-6 pt-12 pb-6 bg-white shadow-sm border-b border-gray-100 sticky top-0 z-10 flex items-center gap-4">
-                <Link href="/dashboard" className="p-2 rounded-xl bg-gray-50 text-gray-400 hover:bg-gray-100 transition-colors">
+            <header className="px-6 pt-14 pb-4 bg-white/60 backdrop-blur-lg border-b border-white/40 ring-1 ring-black/[0.01] sticky top-0 z-10 flex items-center gap-4">
+                <Link href="/dashboard" className="p-2 rounded-[1rem] bg-gray-50/80 text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-all active:scale-95 shadow-sm ring-1 ring-black/[0.02]">
                     <ArrowLeft className="w-5 h-5" />
                 </Link>
                 <div>
-                    <h1 className="text-xl font-bold text-gray-900 tracking-tight">Perfil & Maturidade</h1>
-                    <p className="text-[13px] text-gray-500 font-medium">Sua evolução financeira real</p>
+                    <h1 className="text-xl font-extrabold text-gray-800 tracking-tight leading-tight">Perfil & Maturidade</h1>
+                    <p className="text-[12px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Sua evolução financeira real</p>
                 </div>
             </header>
 
@@ -69,14 +76,14 @@ export default function ProfilePage() {
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white rounded-3xl p-5 border border-black/[0.05] shadow-sm flex flex-col items-center justify-center text-center relative overflow-hidden"
+                        className="bg-white/80 backdrop-blur-md rounded-[2rem] p-6 ring-1 ring-black/[0.02] shadow-xl shadow-blue-900/5 flex flex-col items-center justify-center text-center relative overflow-hidden"
                     >
-                        <div className="absolute top-0 right-0 w-16 h-16 bg-blue-50 rounded-bl-3xl -z-0 opacity-50" />
-                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 z-10">O Jogador</span>
-                        <div className="w-14 h-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black text-2xl z-10 shadow-inner mb-2">
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-blue-100/50 rounded-bl-full -z-0 blur-xl" />
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 z-10">O Jogador</span>
+                        <div className="w-16 h-16 rounded-[1.25rem] bg-blue-50/80 ring-1 ring-blue-100/50 text-blue-500 flex items-center justify-center font-black text-3xl z-10 shadow-sm mb-3">
                             {user.level}
                         </div>
-                        <p className="text-[13px] text-gray-500 font-semibold z-10 border-t border-gray-100 pt-2 w-full">Medida de Hábito</p>
+                        <p className="text-[12px] text-gray-500 font-bold z-10 border-t border-gray-100/50 pt-3 w-full uppercase tracking-wider">Medida de Hábito</p>
                     </motion.div>
 
                     {/* Financial Degrau */}
@@ -84,14 +91,14 @@ export default function ProfilePage() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className={cn("rounded-3xl p-5 border shadow-sm flex flex-col items-center justify-center text-center relative overflow-hidden", currentDegrau.bg, currentDegrau.border)}
+                        className={cn("backdrop-blur-md rounded-[2rem] p-6 shadow-xl shadow-blue-900/5 flex flex-col items-center justify-center text-center relative overflow-hidden ring-1 ring-black/[0.02]", currentDegrau.bg)}
                     >
-                        <div className="absolute top-0 left-0 w-16 h-16 bg-white/40 rounded-br-3xl -z-0" />
-                        <span className={cn("text-[11px] font-bold uppercase tracking-wider mb-2 z-10 opacity-70", currentDegrau.color)}>A Carteira</span>
-                        <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center font-black shadow-sm mb-2 z-10 bg-white", currentDegrau.color)}>
-                            <Shield className="w-7 h-7" />
+                        <div className="absolute top-0 left-0 w-20 h-20 bg-white/40 rounded-br-full -z-0 blur-xl" />
+                        <span className={cn("text-[10px] font-black uppercase tracking-widest mb-3 z-10 opacity-70", currentDegrau.color)}>A Carteira</span>
+                        <div className={cn("w-16 h-16 rounded-[1.25rem] flex items-center justify-center shadow-sm mb-3 z-10 bg-white/80 backdrop-blur-sm ring-1 ring-black/[0.02]", currentDegrau.color)}>
+                            <Shield className="w-8 h-8 drop-shadow-sm" />
                         </div>
-                        <p className={cn("text-[13px] font-bold z-10 border-t pt-2 w-full", currentDegrau.color, currentDegrau.border)}>
+                        <p className={cn("text-[12px] font-black uppercase tracking-wider z-10 border-t border-black/[0.05] pt-3 w-full", currentDegrau.color)}>
                             Degrau {currentDegrau.id}
                         </p>
                     </motion.div>
@@ -109,80 +116,80 @@ export default function ProfilePage() {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.2 }}
-                    className="bg-white rounded-3xl p-6 border border-black/[0.05] shadow-sm relative"
+                    className="bg-white/80 backdrop-blur-md rounded-[2rem] p-6 ring-1 ring-black/[0.02] shadow-xl shadow-blue-900/5 relative"
                 >
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                            <Target className="w-5 h-5 text-gray-400" />
+                        <h3 className="font-extrabold text-[15px] text-gray-800 flex items-center gap-2 tracking-tight">
+                            <Target className="w-5 h-5 text-blue-500 drop-shadow-sm" />
                             Análise de Travas
                         </h3>
                         {currentDegrauIdx < 5 && (
-                            <span className="text-[12px] bg-gray-50 px-3 py-1 rounded-full font-bold text-gray-500 border border-gray-200">
-                                Alvo: Degrau {nextDegrau.id} ({nextDegrau.name})
+                            <span className="text-[10px] bg-gray-50/80 backdrop-blur-sm px-3 py-1.5 rounded-full font-black text-gray-500 ring-1 ring-black/[0.05] uppercase tracking-widest shadow-sm">
+                                Alvo: D{nextDegrau.id}
                             </span>
                         )}
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {/* IE: ÍNDICE DE EFICIÊNCIA */}
-                        <div className="flex items-center justify-between p-4 rounded-2xl border border-gray-50 bg-gray-50/50">
+                        <div className="flex items-center justify-between p-4 rounded-[1.25rem] bg-white/60 border border-white ring-1 ring-black/[0.02] shadow-sm backdrop-blur-sm transition-all hover:shadow-md hover:ring-blue-500/10">
                             <div>
-                                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Índice de Eficiência (IE)</p>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Índice de Eficiência (IE)</p>
                                 <div className="flex items-end gap-2">
-                                    <span className="text-xl font-bold text-gray-900">{user.ie.toFixed(1)}%</span>
-                                    <span className="text-[12px] text-gray-500 font-medium mb-1">Média: Reserva Gerada</span>
+                                    <span className="text-[22px] font-black text-gray-800 leading-tight tracking-tighter">{user.ie.toFixed(1)}%</span>
+                                    <span className="text-[11px] text-gray-500 font-bold mb-1 opacity-80">Média: Reserva Gerada</span>
                                 </div>
                             </div>
-                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", getMetricStatus('ie', user.ie).bg, getMetricStatus('ie', user.ie).color)}>
-                                {checkMetric('ie', user.ie) ? <Unlock className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
+                            <div className={cn("w-11 h-11 rounded-[0.85rem] flex items-center justify-center shadow-sm border border-white/50 ring-1 ring-black/[0.02]", getMetricStatus('ie', user.ie).bg, getMetricStatus('ie', user.ie).color)}>
+                                {checkMetric('ie', user.ie) ? <Unlock className="w-5 h-5 drop-shadow-sm" /> : <Lock className="w-5 h-5 drop-shadow-sm opacity-80" />}
                             </div>
                         </div>
 
                         {/* IS: ÍNDICE DE SOBREVIVÊNCIA */}
-                        <div className="flex items-center justify-between p-4 rounded-2xl border border-gray-50 bg-gray-50/50">
+                        <div className="flex items-center justify-between p-4 rounded-[1.25rem] bg-white/60 border border-white ring-1 ring-black/[0.02] shadow-sm backdrop-blur-sm transition-all hover:shadow-md hover:ring-blue-500/10">
                             <div>
-                                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Sobrevivência (IS)</p>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Sobrevivência (IS)</p>
                                 <div className="flex items-end gap-2">
-                                    <span className="text-xl font-bold text-gray-900">{user.is.toFixed(1)}%</span>
-                                    <span className="text-[12px] text-gray-500 font-medium mb-1">Gastos Essenciais</span>
+                                    <span className="text-[22px] font-black text-gray-800 leading-tight tracking-tighter">{user.is.toFixed(1)}%</span>
+                                    <span className="text-[11px] text-gray-500 font-bold mb-1 opacity-80">Gastos Essenciais</span>
                                 </div>
                             </div>
-                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", getMetricStatus('is', user.is).bg, getMetricStatus('is', user.is).color)}>
-                                {checkMetric('is', user.is) ? <Unlock className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
+                            <div className={cn("w-11 h-11 rounded-[0.85rem] flex items-center justify-center shadow-sm border border-white/50 ring-1 ring-black/[0.02]", getMetricStatus('is', user.is).bg, getMetricStatus('is', user.is).color)}>
+                                {checkMetric('is', user.is) ? <Unlock className="w-5 h-5 drop-shadow-sm" /> : <Lock className="w-5 h-5 drop-shadow-sm opacity-80" />}
                             </div>
                         </div>
 
                         {/* ID: ÍNDICE DE DRENOS */}
-                        <div className="flex items-center justify-between p-4 rounded-2xl border border-gray-50 bg-gray-50/50">
+                        <div className="flex items-center justify-between p-4 rounded-[1.25rem] bg-white/60 border border-white ring-1 ring-black/[0.02] shadow-sm backdrop-blur-sm transition-all hover:shadow-md hover:ring-blue-500/10">
                             <div>
-                                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Drenos (ID)</p>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Drenos (ID)</p>
                                 <div className="flex items-end gap-2">
-                                    <span className="text-xl font-bold text-gray-900">{user.idMetric.toFixed(1)}%</span>
-                                    <span className="text-[12px] text-gray-500 font-medium mb-1">Desperdícios / Gasto Ruim</span>
+                                    <span className="text-[22px] font-black text-gray-800 leading-tight tracking-tighter">{user.idMetric.toFixed(1)}%</span>
+                                    <span className="text-[11px] text-gray-500 font-bold mb-1 opacity-80">Desperdícios / Ruim</span>
                                 </div>
                             </div>
-                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", getMetricStatus('id', user.idMetric).bg, getMetricStatus('id', user.idMetric).color)}>
-                                {checkMetric('id', user.idMetric) ? <Unlock className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
+                            <div className={cn("w-11 h-11 rounded-[0.85rem] flex items-center justify-center shadow-sm border border-white/50 ring-1 ring-black/[0.02]", getMetricStatus('id', user.idMetric).bg, getMetricStatus('id', user.idMetric).color)}>
+                                {checkMetric('id', user.idMetric) ? <Unlock className="w-5 h-5 drop-shadow-sm" /> : <AlertTriangle className="w-5 h-5 drop-shadow-sm opacity-80" />}
                             </div>
                         </div>
 
                         {/* RS: RESERVA DE SEGURANÇA */}
-                        <div className="flex items-center justify-between p-4 rounded-2xl border border-gray-50 bg-gray-50/50">
+                        <div className="flex items-center justify-between p-4 rounded-[1.25rem] bg-white/60 border border-white ring-1 ring-black/[0.02] shadow-sm backdrop-blur-sm transition-all hover:shadow-md hover:ring-blue-500/10">
                             <div>
-                                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Reserva (RS)</p>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Reserva (RS)</p>
                                 <div className="flex items-end gap-2">
-                                    <span className="text-xl font-bold text-gray-900">{user.rs.toFixed(1)}x</span>
-                                    <span className="text-[12px] text-gray-500 font-medium mb-1">Meses Cobertos</span>
+                                    <span className="text-[22px] font-black text-gray-800 leading-tight tracking-tighter">{user.rs.toFixed(1)}x</span>
+                                    <span className="text-[11px] text-gray-500 font-bold mb-1 opacity-80">Meses Cobertos</span>
                                 </div>
                             </div>
-                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", getMetricStatus('rs', user.rs).bg, getMetricStatus('rs', user.rs).color)}>
-                                {checkMetric('rs', user.rs) ? <Unlock className="w-5 h-5" /> : <Lock className="w-5 h-5" />}
+                            <div className={cn("w-11 h-11 rounded-[0.85rem] flex items-center justify-center shadow-sm border border-white/50 ring-1 ring-black/[0.02]", getMetricStatus('rs', user.rs).bg, getMetricStatus('rs', user.rs).color)}>
+                                {checkMetric('rs', user.rs) ? <Unlock className="w-5 h-5 drop-shadow-sm" /> : <Lock className="w-5 h-5 drop-shadow-sm opacity-80" />}
                             </div>
                         </div>
                     </div>
 
-                    <p className="text-[12px] text-gray-400 font-medium leading-relaxed mt-5 text-center px-4">
-                        O Zella avalia seus últimos 30 dias continuamente. Melhore as métricas com cadeado para evoluir de Degrau.
+                    <p className="text-[11px] text-gray-400 font-bold uppercase tracking-wide leading-relaxed mt-6 text-center px-4">
+                        O Zella avalia seus últimos 30 dias continuamente.
                     </p>
                 </motion.div>
 

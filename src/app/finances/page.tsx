@@ -132,7 +132,7 @@ export default function FinancesPage() {
                         </h1>
                         <p className="text-[13px] text-gray-400 mt-1 font-medium">Sincronização de campo</p>
                     </div>
-                    <div className="flex items-center gap-1.5 bg-white/80 backdrop-blur-md ring-1 ring-black/[0.03] px-3.5 py-2 rounded-xl shadow-sm">
+                    <div className="flex items-center gap-1.5 bg-white/95 ring-1 ring-black/[0.03] px-3.5 py-2 rounded-xl shadow-sm">
                         <Star className="w-4 h-4 text-amber-500 drop-shadow-sm" />
                         <span className="text-[12px] font-black text-gray-700">{user.xp} XP</span>
                     </div>
@@ -143,7 +143,7 @@ export default function FinancesPage() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="bg-white/80 backdrop-blur-md rounded-[2rem] p-6 shadow-xl shadow-blue-900/5 ring-1 ring-black/[0.02] relative overflow-hidden group mb-4"
+                        className="bg-white/95 rounded-[2rem] p-6 shadow-xl shadow-blue-900/5 ring-1 ring-black/[0.02] relative overflow-hidden group mb-4"
                     >
                         <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-400/10 to-emerald-400/10 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-110 duration-700" />
                         <p className="text-[12px] text-gray-400 font-bold tracking-widest uppercase mb-2">Saldo Atual</p>
@@ -179,7 +179,7 @@ export default function FinancesPage() {
                     </div>
 
                     {user.transactions.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-16 text-center bg-white/80 backdrop-blur-md rounded-[1.5rem] shadow-sm ring-1 ring-black/[0.02]">
+                        <div className="flex flex-col items-center justify-center py-16 text-center bg-white/95 rounded-[1.5rem] shadow-sm ring-1 ring-black/[0.02]">
                             <div className="w-16 h-16 bg-blue-50/80 rounded-[1.25rem] flex items-center justify-center mb-5 ring-1 ring-blue-100 border border-white">
                                 <Wallet className="w-8 h-8 text-[#2563eb] drop-shadow-sm" />
                             </div>
@@ -202,7 +202,7 @@ export default function FinancesPage() {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: idx * 0.03 }}
                                     key={t.id}
-                                    className="flex justify-between items-center p-4 bg-white/80 backdrop-blur-md rounded-[1.25rem] shadow-sm ring-1 ring-black/[0.02] active:scale-[0.98] transition-all group"
+                                    className="flex justify-between items-center p-4 bg-white/95 rounded-[1.25rem] shadow-sm ring-1 ring-black/[0.02] active:scale-[0.98] transition-all group"
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className={cn(

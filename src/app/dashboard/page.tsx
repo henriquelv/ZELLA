@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStoreHydrated, useUserStore } from "@/store/useStore";
 import { BottomNav } from "@/components/ui/bottom-nav";
@@ -12,12 +12,13 @@ import {
     Map as MapIcon,
     GamepadIcon,
     Sparkles,
-    Users,
+    ShoppingBag,
     Zap,
     ArrowRight,
     ShieldCheck,
     TrendingUp,
-    ChevronRight
+    ChevronRight,
+    Link2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { steps } from "@/data/steps";
@@ -25,20 +26,34 @@ import { cn } from "@/lib/utils";
 import { AppHeader } from "@/components/ui/app-header";
 import { PageLoader } from "@/components/ui/page-loader";
 import { InsightsWidget } from "@/components/ui/insights-widget";
-import { AVATARS } from "@/components/ui/avatar-selector";
+import { ArenaEffects } from "@/components/ui/arena-effects";
+import { OpenFinanceModal } from "@/components/ui/open-finance-modal";
+import { getCharacter, SpeechBubble } from "@/components/ui/character-3d";
+import { getCharacterSpeech } from "@/lib/character-speech";
 import Link from "next/link";
 
 const QUICK_ACTIONS = [
-    { label: "Finanças", icon: PiggyBank, href: "/finances", color: "text-emerald-600", bg: "bg-emerald-50" },
-    { label: "Jornada", icon: MapIcon, href: "/journey", color: "text-blue-600", bg: "bg-blue-50" },
-    { label: "Missões", icon: GamepadIcon, href: "/missions", color: "text-violet-600", bg: "bg-violet-50" },
-    { label: "Social", icon: Users, href: "/social", color: "text-orange-600", bg: "bg-orange-50" },
+    { label: "Minhas finanças", icon: PiggyBank, href: "/finances", color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "Minha trilha", icon: MapIcon, href: "/journey", color: "text-blue-600", bg: "bg-blue-50" },
+    { label: "Mini-jogos", icon: GamepadIcon, href: "/games", color: "text-violet-600", bg: "bg-violet-50" },
+    { label: "Lojinha", icon: ShoppingBag, href: "/store", color: "text-amber-600", bg: "bg-amber-50" },
 ];
+
+// Temas de personalização persistentes (devem casar com store/page.tsx)
+const THEME_BG: Record<string, string> = {
+    classic: "bg-[#f4f6fb]",
+    ember: "bg-gradient-to-br from-orange-100 via-red-50 to-amber-100",
+    ocean: "bg-gradient-to-br from-blue-100 via-cyan-50 to-sky-100",
+    forest: "bg-gradient-to-br from-emerald-100 via-green-50 to-teal-100",
+    galaxy: "bg-gradient-to-br from-violet-100 via-indigo-50 to-purple-100",
+    elite: "bg-gradient-to-br from-gray-200 via-slate-100 to-zinc-200",
+};
 
 export default function DashboardPage() {
     const router = useRouter();
     const user = useUserStoreHydrated((state) => state);
     const checkAndApplyStreak = useUserStore((state) => state.checkAndApplyStreak);
+    const [isOpenFinanceOpen, setIsOpenFinanceOpen] = useState(false);
 
     useEffect(() => {
         checkAndApplyStreak();
@@ -112,75 +127,98 @@ export default function DashboardPage() {
     };
 
     const currentTheme = ARENA_THEMES[displayStep] || ARENA_THEMES[1];
+    const character = getCharacter(user.activeCharacter || "panda");
+    const CharacterScene = character.Scene;
+    const themeBgClass = THEME_BG[user.activeTheme || "classic"] || THEME_BG.classic;
+
+    // Saudação personalizada por hora do dia
+    const hour = new Date().getHours();
+    const timeGreeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+
+    // Fala contextual do personagem (status-aware, Duolingo-style)
+    const characterSpeech = getCharacterSpeech(character.id, user);
 
     return (
-        <div className="min-h-screen pb-24 relative overflow-x-hidden font-sans selection:bg-blue-500/30 bg-[#f4f6fb] transition-colors duration-1000">
+        <div className={cn("min-h-screen pb-24 relative overflow-x-hidden font-sans selection:bg-blue-500/30 transition-colors duration-1000", themeBgClass)}>
             {/* Dynamic Arena Background - Premium Light */}
             <div className="fixed inset-0 pointer-events-none z-0">
                 <div className={cn("absolute inset-0 bg-gradient-to-br transition-colors duration-1000 opacity-80", currentTheme.bg)} />
-                
+
                 {/* Subtle Ambient Glows - dynamically themed */}
                 <div className={cn("absolute top-[-10%] left-[-10%] w-[60%] h-[50%] rounded-full blur-[120px] transition-colors duration-1000", currentTheme.glow1)} />
                 <div className={cn("absolute top-[20%] right-[-20%] w-[50%] h-[50%] rounded-full blur-[100px] transition-colors duration-1000", currentTheme.glow2)} />
                 <div className={cn("absolute bottom-[10%] left-[10%] w-[40%] h-[40%] rounded-full blur-[120px] transition-colors duration-1000", currentTheme.glow3)} />
             </div>
 
+            {/* Rich Arena Effects (cracks, gears, waves, hex shields, golden rays, aurora) */}
+            <ArenaEffects level={displayStep} />
+
             <AppHeader />
 
             <main className="px-4 space-y-4 mt-4 max-w-lg mx-auto relative z-10">
-                {/* 1. HERO ARENA BANNER (Profile) */}
+                {/* 1. HERO — Personagem 3D + saudação amigável */}
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                 >
-                    <Link href="/profile" className="block group active:scale-95 transition-transform">
-                        <div className="bg-white/80 backdrop-blur-md rounded-[2rem] p-5 shadow-xl shadow-blue-900/5 relative overflow-hidden border border-white/50 ring-1 ring-black/[0.02]">
-                            {/* Subtle internal gradient */}
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/40 to-green-100/20 blur-2xl rounded-full" />
-                            
-                            <div className="flex justify-between items-start mb-5 relative z-10">
-                                <div className="flex gap-4 items-center">
-                                    <div className={cn("w-16 h-16 rounded-[1.25rem] bg-gradient-to-br flex items-center justify-center shrink-0 border border-white/20 transition-all duration-700", currentTheme.heroNumberBg)}>
-                                        <span className="text-2xl font-black text-white drop-shadow-sm">{displayStep}</span>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h2 className="font-extrabold text-[22px] text-gray-900 tracking-tight leading-tight uppercase transition-colors duration-700">
-                                            {currentStepData.title}
-                                        </h2>
-                                        <p className="text-[13px] text-gray-400 font-bold mt-0.5 tracking-wider uppercase flex items-center gap-1.5 transition-colors duration-700">
-                                            <span className={currentTheme.heroText}>Arena {displayStep}</span> 
-                                            <span>•</span> 
-                                            <span className="text-emerald-500">Fase {displayPhase}</span>
-                                        </p>
-                                    </div>
-                                </div>
+                    <div className="bg-white/95 rounded-[2rem] p-5 shadow-xl shadow-blue-900/5 relative overflow-hidden border border-white/50 ring-1 ring-black/[0.02]">
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-100/40 to-emerald-100/20 blur-2xl rounded-full" />
+
+                        <div className="flex items-center gap-3 relative z-10">
+                            {/* 3D Character */}
+                            <div className="shrink-0 -my-2">
+                                <CharacterScene size={120} />
                             </div>
 
-                            {/* Secondary Gamification bar */}
-                            <div className="bg-gray-50/50 rounded-2xl p-4 flex items-center justify-between relative z-10 border border-gray-100">
-                                <div className="flex items-center gap-3">
-                                    <div className="bg-orange-50 p-2 rounded-xl border border-orange-100/50">
-                                        <Trophy className="w-5 h-5 text-orange-500 drop-shadow-sm" />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Jogador</p>
-                                        <p className="text-[15px] font-black text-gray-800 leading-none">Nível {currentLevel}</p>
-                                    </div>
+                            {/* Greeting + Arena badge */}
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[12px] text-gray-400 font-bold mb-0.5">{timeGreeting},</p>
+                                <h2 className="font-extrabold text-[20px] text-gray-900 tracking-tight leading-tight truncate">
+                                    {user.name || "amigo"} 👋
+                                </h2>
+                                <div className="mt-2">
+                                    <SpeechBubble tailSide="left" tailOffset="top-3">
+                                        <p className="text-[12px] text-gray-600 font-medium leading-snug">
+                                            {characterSpeech.text}
+                                        </p>
+                                    </SpeechBubble>
                                 </div>
-                                <div className="w-32 h-2.5 bg-gray-200/50 rounded-full overflow-hidden relative shadow-inner">
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${xpProgress}%` }}
-                                        transition={{ duration: 1, ease: "easeOut" }}
-                                        className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full"
-                                    />
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                                        <span className="text-[8px] font-bold text-gray-700">{xpProgress}%</span>
-                                    </div>
-                                </div>
+
+                                {/* Arena tag */}
+                                <Link
+                                    href="/profile"
+                                    className="inline-flex items-center gap-1.5 mt-2 bg-gray-50 hover:bg-gray-100 active:scale-95 transition-all rounded-full px-2.5 py-1 border border-gray-100"
+                                >
+                                    <span className={cn("w-1.5 h-1.5 rounded-full", currentTheme.heroText.replace("text-", "bg-"))} />
+                                    <span className={cn("text-[10px] font-black uppercase tracking-wider", currentTheme.heroText)}>
+                                        {currentStepData.title}
+                                    </span>
+                                    <ChevronRight className="w-3 h-3 text-gray-400" />
+                                </Link>
                             </div>
                         </div>
-                    </Link>
+
+                        {/* Player level bar */}
+                        <div className="mt-4 bg-gray-50/50 rounded-2xl p-3 flex items-center justify-between relative z-10 border border-gray-100">
+                            <div className="flex items-center gap-2.5">
+                                <div className="bg-orange-50 p-1.5 rounded-xl border border-orange-100/50">
+                                    <Trophy className="w-4 h-4 text-orange-500 drop-shadow-sm" />
+                                </div>
+                                <div>
+                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Você está no</p>
+                                    <p className="text-[13px] font-black text-gray-800 leading-none">Nível {currentLevel}</p>
+                                </div>
+                            </div>
+                            <div className="w-28 h-2.5 bg-gray-200/50 rounded-full overflow-hidden relative shadow-inner">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${xpProgress}%` }}
+                                    transition={{ duration: 1, ease: "easeOut" }}
+                                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full"
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </motion.div>
 
                 {/* KPI SQUARES (Métricas) */}
@@ -190,34 +228,59 @@ export default function DashboardPage() {
                     transition={{ delay: 0.1 }}
                     className="grid grid-cols-4 gap-3 z-10 relative"
                 >
-                    <div className="bg-white/80 backdrop-blur-md rounded-[1.25rem] p-3.5 flex flex-col items-center justify-center text-center shadow-lg shadow-blue-900/5 ring-1 ring-black/[0.02]">
+                    <div className="bg-white/95 rounded-[1.25rem] p-3.5 flex flex-col items-center justify-center text-center shadow-lg shadow-blue-900/5 ring-1 ring-black/[0.02]">
                         <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center mb-2">
                             <Flame className="w-5 h-5 text-orange-500 drop-shadow-sm" />
                         </div>
                         <span className="text-[17px] font-black text-gray-800 leading-none">{user.streak}d</span>
-                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide mt-1">Streak</span>
+                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide mt-1">Sequência</span>
                     </div>
-                    <div className="bg-white/80 backdrop-blur-md rounded-[1.25rem] p-3.5 flex flex-col items-center justify-center text-center shadow-lg shadow-blue-900/5 ring-1 ring-black/[0.02]">
+                    <div className="bg-white/95 rounded-[1.25rem] p-3.5 flex flex-col items-center justify-center text-center shadow-lg shadow-blue-900/5 ring-1 ring-black/[0.02]">
                         <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center mb-2">
                             <Zap className="w-5 h-5 text-blue-500 drop-shadow-sm" />
                         </div>
                         <span className="text-[17px] font-black text-gray-800 leading-none">{user.ie || 0}%</span>
-                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide mt-1">Eficien.</span>
+                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide mt-1">Sobra</span>
                     </div>
-                    <div className="bg-white/80 backdrop-blur-md rounded-[1.25rem] p-3.5 flex flex-col items-center justify-center text-center shadow-lg shadow-blue-900/5 ring-1 ring-black/[0.02]">
+                    <div className="bg-white/95 rounded-[1.25rem] p-3.5 flex flex-col items-center justify-center text-center shadow-lg shadow-blue-900/5 ring-1 ring-black/[0.02]">
                         <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center mb-2">
                             <ShieldCheck className="w-5 h-5 text-emerald-500 drop-shadow-sm" />
                         </div>
                         <span className="text-[17px] font-black text-gray-800 leading-none">{user.is || 0}%</span>
-                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide mt-1">Sobrev.</span>
+                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide mt-1">Essencial</span>
                     </div>
-                    <div className="bg-white/80 backdrop-blur-md rounded-[1.25rem] p-3.5 flex flex-col items-center justify-center text-center shadow-lg shadow-blue-900/5 ring-1 ring-black/[0.02]">
+                    <div className="bg-white/95 rounded-[1.25rem] p-3.5 flex flex-col items-center justify-center text-center shadow-lg shadow-blue-900/5 ring-1 ring-black/[0.02]">
                         <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center mb-2">
                             <TrendingUp className="w-5 h-5 text-red-500 rotate-180 drop-shadow-sm" />
                         </div>
                         <span className="text-[17px] font-black text-gray-800 leading-none">{user.idMetric || 0}%</span>
-                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide mt-1">Drenos</span>
+                        <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wide mt-1">Vazamentos</span>
                     </div>
+                </motion.section>
+
+                {/* OPEN FINANCE — Conectar Banco */}
+                <motion.section
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.12 }}
+                >
+                    <button
+                        onClick={() => setIsOpenFinanceOpen(true)}
+                        className="w-full group relative bg-white/95 rounded-[2rem] p-4 shadow-xl shadow-blue-900/5 ring-1 ring-black/[0.02] flex items-center gap-4 active:scale-[0.98] transition-all overflow-hidden text-left"
+                    >
+                        <div className="absolute -top-6 -right-6 w-24 h-24 bg-blue-100/40 rounded-full blur-2xl" />
+                        <div className="w-12 h-12 rounded-[1rem] bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-200/50 shrink-0 relative z-10">
+                            <Link2 className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0 relative z-10">
+                            <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Open Finance</p>
+                            <p className="text-[14px] font-extrabold text-gray-800 leading-tight">Conecte seu banco</p>
+                            <p className="text-[11px] text-gray-400 font-medium mt-0.5">Sincronizo seus gastos automaticamente</p>
+                        </div>
+                        <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center shrink-0 relative z-10 group-hover:bg-blue-100 transition-colors">
+                            <ChevronRight className="w-5 h-5 text-blue-600" />
+                        </div>
+                    </button>
                 </motion.section>
 
                 <motion.section
@@ -243,16 +306,16 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <div className="bg-white/80 backdrop-blur-md rounded-[2rem] p-5 shadow-xl shadow-blue-900/5 ring-1 ring-black/[0.02]">
+                    <div className="bg-white/95 rounded-[2rem] p-5 shadow-xl shadow-blue-900/5 ring-1 ring-black/[0.02]">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-extrabold text-[16px] text-gray-800 uppercase tracking-tight">Jornada da Arena</h3>
+                            <h3 className="font-extrabold text-[16px] text-gray-800 tracking-tight">Sua trilha</h3>
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => router.push('/journey')}
-                                className="text-[12px] font-bold uppercase text-blue-600 hover:bg-blue-50 h-8 rounded-xl px-4"
+                                className="text-[12px] font-bold text-blue-600 hover:bg-blue-50 h-8 rounded-xl px-4"
                             >
-                                Ver Mapa
+                                Ver tudo
                             </Button>
                         </div>
 
@@ -261,8 +324,8 @@ export default function DashboardPage() {
                                 <currentStepData.icon className="w-6 h-6 drop-shadow-sm" />
                             </div>
                             <div className="flex-1">
-                                <p className="font-black text-[15px] text-gray-800 uppercase">Degrau {displayStep}</p>
-                                <p className="text-[13px] text-gray-400 font-bold mt-0.5 uppercase tracking-wide">Fase {displayPhase}</p>
+                                <p className="font-black text-[15px] text-gray-800">Você está na fase {displayPhase}</p>
+                                <p className="text-[13px] text-gray-400 font-medium mt-0.5">{currentStepData.title} · Passo {displayStep}</p>
                             </div>
                             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
                                 <ArrowRight className="w-4 h-4 text-gray-400" />
@@ -290,10 +353,10 @@ export default function DashboardPage() {
 
                             <div className="flex-1 min-w-0">
                                 <h3 className="text-[19px] font-black text-white leading-tight mb-1 tracking-tight">
-                                    Adicionar Recibo
+                                    Manda esse cupom aqui
                                 </h3>
                                 <p className="text-[13px] text-blue-100 font-medium">
-                                    Escaneie via IA e ganhe <span className="font-bold text-white bg-blue-500/30 px-2 py-0.5 rounded-md ml-1">+50 XP</span>
+                                    Eu leio pra você e ganha <span className="font-bold text-white bg-blue-500/30 px-2 py-0.5 rounded-md ml-1">+50 XP</span>
                                 </p>
                             </div>
 
@@ -315,12 +378,12 @@ export default function DashboardPage() {
                             <button
                                 key={action.label}
                                 onClick={() => router.push(action.href)}
-                                className="group bg-white/80 backdrop-blur-md rounded-[1.5rem] p-4 flex items-center gap-3.5 shadow-lg shadow-blue-900/5 ring-1 ring-black/[0.02] active:scale-[0.97] transition-all text-left"
+                                className="group bg-white/95 rounded-[1.5rem] p-4 flex items-center gap-3.5 shadow-lg shadow-blue-900/5 ring-1 ring-black/[0.02] active:scale-[0.97] transition-all text-left"
                             >
                                 <div className={cn("w-12 h-12 rounded-[1rem] flex items-center justify-center bg-opacity-50", action.bg)}>
                                     <action.icon className={cn("w-6 h-6", action.color)} />
                                 </div>
-                                <span className="text-[15px] font-bold text-gray-700 uppercase tracking-wide">
+                                <span className="text-[14px] font-bold text-gray-700 tracking-wide">
                                     {action.label}
                                 </span>
                             </button>
@@ -329,6 +392,8 @@ export default function DashboardPage() {
                 </motion.section>
             </main>
             <BottomNav />
+
+            <OpenFinanceModal isOpen={isOpenFinanceOpen} onClose={() => setIsOpenFinanceOpen(false)} />
         </div>
     );
 }

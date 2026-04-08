@@ -30,6 +30,11 @@ export interface UserState {
     lastLoginDate: string | null
     unlockedAvatars: string[]
     activeAvatar: string
+    // Personalização persistida
+    activeCharacter: string // id do personagem 3D escolhido (panda, fox, lion, robot, dragon)
+    unlockedCharacters: string[]
+    activeTheme: string // id do tema visual ativo (classic, ember, ocean, forest, galaxy, elite)
+    unlockedThemes: string[]
     dailyQuizCompletedAt: string | null
     dailyCoinsEarned: number // Reset diário para capping
     inventory: {
@@ -57,6 +62,12 @@ export interface UserState {
     setActiveAvatar: (avatarId: string) => void
     unlockAvatar: (avatarId: string, cost: number) => boolean
     completeDailyQuiz: (xpReward: number) => void
+
+    // Personalização (Character + Theme)
+    setActiveCharacter: (characterId: string) => void
+    unlockCharacter: (characterId: string, cost: number) => boolean
+    setActiveTheme: (themeId: string) => void
+    unlockTheme: (themeId: string, cost: number) => boolean
 
     // Goals / Metas
     goals: Goal[]
@@ -142,6 +153,10 @@ export const useUserStore = create<UserState>()(
             lastLoginDate: null,
             unlockedAvatars: ['default'],
             activeAvatar: 'default',
+            activeCharacter: 'panda',
+            unlockedCharacters: ['panda'],
+            activeTheme: 'classic',
+            unlockedThemes: ['classic'],
             dailyQuizCompletedAt: null,
             dailyCoinsEarned: 0,
             inventory: {
@@ -291,6 +306,8 @@ export const useUserStore = create<UserState>()(
                 revenue: 0, fixedCosts: 0, totalBalance: 0, ie: 0, is: 0, idMetric: 0, rs: 0,
                 transactions: [], goals: [], lastLoginDate: null, unlockedAvatars: ['default'],
                 activeAvatar: 'default', dailyQuizCompletedAt: null, dailyCoinsEarned: 0,
+                activeCharacter: 'panda', unlockedCharacters: ['panda'],
+                activeTheme: 'classic', unlockedThemes: ['classic'],
                 missions: [], userMissions: []
             }),
 
@@ -488,6 +505,30 @@ export const useUserStore = create<UserState>()(
                     return true;
                 }
                 return false;
+            },
+            setActiveCharacter: (characterId: string) => set({ activeCharacter: characterId }),
+            unlockCharacter: (characterId: string, cost: number) => {
+                const state = get();
+                if (state.unlockedCharacters.includes(characterId)) return false;
+                if (state.coins < cost) return false;
+                set({
+                    coins: state.coins - cost,
+                    unlockedCharacters: [...state.unlockedCharacters, characterId],
+                    activeCharacter: characterId,
+                });
+                return true;
+            },
+            setActiveTheme: (themeId: string) => set({ activeTheme: themeId }),
+            unlockTheme: (themeId: string, cost: number) => {
+                const state = get();
+                if (state.unlockedThemes.includes(themeId)) return false;
+                if (state.coins < cost) return false;
+                set({
+                    coins: state.coins - cost,
+                    unlockedThemes: [...state.unlockedThemes, themeId],
+                    activeTheme: themeId,
+                });
+                return true;
             },
             completeDailyQuiz: (xpReward: number) => {
                 const today = format(new Date(), 'yyyy-MM-dd');

@@ -2,9 +2,11 @@
 
 import { motion } from "framer-motion";
 import { useUserStoreHydrated } from "@/store/useStore";
-import { ArrowLeft, Shield, TrendingUp, AlertTriangle, Target, Lock, Unlock } from "lucide-react";
+import { ArrowLeft, Shield, AlertTriangle, Target, Lock, Unlock } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { getCharacter, SpeechBubble } from "@/components/ui/character-3d";
+import { getCharacterSpeech } from "@/lib/character-speech";
 
 // Definições visuais para cada degrau (LogicaBack Base)
 const DEGRAUS_INFO = [
@@ -26,6 +28,11 @@ export default function ProfilePage() {
 
     const currentDegrau = DEGRAUS_INFO[currentDegrauIdx];
     const nextDegrau = DEGRAUS_INFO[nextDegrauIdx];
+
+    // Personagem ativo + fala contextual
+    const character = getCharacter(user.activeCharacter || "panda");
+    const CharacterScene = character.Scene;
+    const characterSpeech = getCharacterSpeech(character.id, user);
 
     // Helper para determinar se a métrica está boa para o PRÓXIMO degrau
     const checkMetric = (metric: 'ie' | 'is' | 'id' | 'rs', value: number) => {
@@ -70,13 +77,37 @@ export default function ProfilePage() {
             </header>
 
             <main className="p-6 max-w-lg mx-auto space-y-8">
+                {/* Character commentary hero */}
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white/95 rounded-[2rem] p-5 shadow-xl shadow-blue-900/5 ring-1 ring-black/[0.02] border border-white/50 relative overflow-hidden"
+                >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/40 to-emerald-100/20 blur-2xl rounded-full" />
+                    <div className="flex items-center gap-3 relative z-10">
+                        <div className="shrink-0 -my-2">
+                            <CharacterScene size={100} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1.5", character.accentColor)}>
+                                {character.name}
+                            </p>
+                            <SpeechBubble tailSide="left" tailOffset="top-3">
+                                <p className="text-[12px] text-gray-600 font-medium leading-snug">
+                                    {characterSpeech.text}
+                                </p>
+                            </SpeechBubble>
+                        </div>
+                    </div>
+                </motion.div>
+
                 {/* Separação: Level vs Degrau */}
                 <div className="grid grid-cols-2 gap-4">
                     {/* Gamification Level */}
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white/80 backdrop-blur-md rounded-[2rem] p-6 ring-1 ring-black/[0.02] shadow-xl shadow-blue-900/5 flex flex-col items-center justify-center text-center relative overflow-hidden"
+                        className="bg-white/95 rounded-[2rem] p-6 ring-1 ring-black/[0.02] shadow-xl shadow-blue-900/5 flex flex-col items-center justify-center text-center relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 w-20 h-20 bg-blue-100/50 rounded-bl-full -z-0 blur-xl" />
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 z-10">O Jogador</span>
@@ -116,7 +147,7 @@ export default function ProfilePage() {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.2 }}
-                    className="bg-white/80 backdrop-blur-md rounded-[2rem] p-6 ring-1 ring-black/[0.02] shadow-xl shadow-blue-900/5 relative"
+                    className="bg-white/95 rounded-[2rem] p-6 ring-1 ring-black/[0.02] shadow-xl shadow-blue-900/5 relative"
                 >
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="font-extrabold text-[15px] text-gray-800 flex items-center gap-2 tracking-tight">

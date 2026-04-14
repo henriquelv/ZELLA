@@ -35,6 +35,8 @@ export interface UserState {
     unlockedCharacters: string[]
     activeTheme: string // id do tema visual ativo (classic, ember, ocean, forest, galaxy, elite)
     unlockedThemes: string[]
+    activeTitle: string | null
+    unlockedTitles: string[]
     dailyQuizCompletedAt: string | null
     dailyCoinsEarned: number // Reset diário para capping
     inventory: {
@@ -51,7 +53,10 @@ export interface UserState {
     setCurrentStep: (step: number) => void
     addXp: (amount: number) => void
     addCoins: (amount: number) => void
-    spendCoins: (amount: number, itemType: "freezeStreak" | "xpMultiplier" | "avatar") => boolean
+    spendCoins: (amount: number, itemType: "freezeStreak" | "xpMultiplier" | "avatar" | "character" | "theme" | "title" | "generic") => boolean
+    setUserId: (id: string) => void
+    deleteTransaction: (id: string) => Promise<void>
+    updateTransaction: (id: string, patch: Partial<Transaction>) => Promise<void>
     incrementStreak: () => void
     addTransaction: (transaction: Transaction) => void
     setFinancialData: (revenue: number, fixedCosts: number) => void
@@ -63,11 +68,13 @@ export interface UserState {
     unlockAvatar: (avatarId: string, cost: number) => boolean
     completeDailyQuiz: (xpReward: number) => void
 
-    // Personalização (Character + Theme)
+    // Personalização (Character + Theme + Title)
     setActiveCharacter: (characterId: string) => void
     unlockCharacter: (characterId: string, cost: number) => boolean
     setActiveTheme: (themeId: string) => void
     unlockTheme: (themeId: string, cost: number) => boolean
+    setActiveTitle: (titleId: string | null) => void
+    unlockTitle: (titleId: string, cost: number) => boolean
 
     // Goals / Metas
     goals: Goal[]
@@ -157,6 +164,8 @@ export const useUserStore = create<UserState>()(
             unlockedCharacters: ['panda'],
             activeTheme: 'classic',
             unlockedThemes: ['classic'],
+            activeTitle: null,
+            unlockedTitles: [],
             dailyQuizCompletedAt: null,
             dailyCoinsEarned: 0,
             inventory: {
@@ -201,16 +210,14 @@ export const useUserStore = create<UserState>()(
                     dailyCoinsEarned: state.dailyCoinsEarned + actualGain
                 };
             }),
-            spendCoins: (amount: number, itemType: "freezeStreak" | "xpMultiplier" | "avatar") => {
+            spendCoins: (amount: number, itemType: "freezeStreak" | "xpMultiplier" | "avatar" | "character" | "theme" | "title" | "generic") => {
                 let success = false;
                 set((state: UserState) => {
                     if (state.coins >= amount) {
                         success = true;
-                        
                         const newInventory = { ...state.inventory };
                         if (itemType === "freezeStreak") newInventory.freezeStreak += 1;
                         if (itemType === "xpMultiplier") newInventory.xpMultiplier += 1;
-
                         return {
                             coins: state.coins - amount,
                             inventory: newInventory
@@ -220,6 +227,7 @@ export const useUserStore = create<UserState>()(
                 });
                 return success;
             },
+            setUserId: (id: string) => set({ id }),
             incrementStreak: () => set((state: UserState) => ({ streak: state.streak + 1 })),
             setFinancialData: (revenue: number, fixedCosts: number) => set({ revenue, fixedCosts }),
             addTransaction: (t: Transaction) => {
@@ -276,21 +284,20 @@ export const useUserStore = create<UserState>()(
 
                     const newXp = state.xp + xpGained;
 
-                    // Manual push for transaction table (profiles.transactions is now gone)
                     (async () => {
                         const { data } = await supabase.auth.getSession();
-                        if (data.session) {
-                            await supabase.from('transactions').insert({
-                                id: t.id,
-                                user_id: data.session.user.id,
-                                amount: t.amount,
-                                category: t.category,
-                                type: t.type,
-                                date: t.date,
-                                name: t.category,
-                                is_ai_generated: t.isAiGenerated || false
-                            });
-                        }
+                        if (!data.session) return;
+                        const { error } = await supabase.from('transactions').insert({
+                            id: t.id,
+                            user_id: data.session.user.id,
+                            amount: t.amount,
+                            category: t.category,
+                            type: t.type,
+                            date: t.date,
+                            description: t.description || null,
+                            is_ai_generated: t.isAiGenerated || false
+                        });
+                        if (error) console.error('[ZELLA] transaction insert failed:', error.message);
                     })();
 
                     return {
@@ -301,6 +308,34 @@ export const useUserStore = create<UserState>()(
                 });
                 get().calculateMetricsFromTransactions();
             },
+            deleteTransaction: async (id: string) => {
+                set((state: UserState) => ({
+                    transactions: state.transactions.filter(t => t.id !== id)
+                }));
+                try {
+                    await supabase.from('transactions').delete().eq('id', id);
+                } catch (e) {
+                    console.error('[ZELLA] deleteTransaction failed:', (e as Error).message);
+                }
+                get().calculateMetricsFromTransactions();
+            },
+            updateTransaction: async (id: string, patch: Partial<Transaction>) => {
+                set((state: UserState) => ({
+                    transactions: state.transactions.map(t => t.id === id ? { ...t, ...patch } : t)
+                }));
+                try {
+                    const payload: Record<string, unknown> = {};
+                    if (patch.amount !== undefined) payload.amount = patch.amount;
+                    if (patch.category !== undefined) payload.category = patch.category;
+                    if (patch.type !== undefined) payload.type = patch.type;
+                    if (patch.date !== undefined) payload.date = patch.date;
+                    if (patch.description !== undefined) payload.description = patch.description;
+                    await supabase.from('transactions').update(payload).eq('id', id);
+                } catch (e) {
+                    console.error('[ZELLA] updateTransaction failed:', (e as Error).message);
+                }
+                get().calculateMetricsFromTransactions();
+            },
             resetProgress: () => set({
                 hasOnboarded: false, currentStep: 1, currentPhase: 1, level: 1, xp: 0, coins: 0, streak: 0, name: "",
                 revenue: 0, fixedCosts: 0, totalBalance: 0, ie: 0, is: 0, idMetric: 0, rs: 0,
@@ -308,6 +343,8 @@ export const useUserStore = create<UserState>()(
                 activeAvatar: 'default', dailyQuizCompletedAt: null, dailyCoinsEarned: 0,
                 activeCharacter: 'panda', unlockedCharacters: ['panda'],
                 activeTheme: 'classic', unlockedThemes: ['classic'],
+                activeTitle: null, unlockedTitles: [],
+                inventory: { freezeStreak: 0, xpMultiplier: 0 },
                 missions: [], userMissions: []
             }),
 
@@ -497,14 +534,14 @@ export const useUserStore = create<UserState>()(
             setActiveAvatar: (avatarId: string) => set({ activeAvatar: avatarId }),
             unlockAvatar: (avatarId: string, cost: number) => {
                 const state = get();
-                if (state.xp >= cost && !state.unlockedAvatars.includes(avatarId)) {
-                    set({
-                        xp: state.xp - cost,
-                        unlockedAvatars: [...state.unlockedAvatars, avatarId]
-                    });
-                    return true;
-                }
-                return false;
+                if (state.unlockedAvatars.includes(avatarId)) return false;
+                if (state.coins < cost) return false;
+                set({
+                    coins: state.coins - cost,
+                    unlockedAvatars: [...state.unlockedAvatars, avatarId],
+                    activeAvatar: avatarId
+                });
+                return true;
             },
             setActiveCharacter: (characterId: string) => set({ activeCharacter: characterId }),
             unlockCharacter: (characterId: string, cost: number) => {
@@ -527,6 +564,18 @@ export const useUserStore = create<UserState>()(
                     coins: state.coins - cost,
                     unlockedThemes: [...state.unlockedThemes, themeId],
                     activeTheme: themeId,
+                });
+                return true;
+            },
+            setActiveTitle: (titleId: string | null) => set({ activeTitle: titleId }),
+            unlockTitle: (titleId: string, cost: number) => {
+                const state = get();
+                if (state.unlockedTitles.includes(titleId)) return false;
+                if (state.coins < cost) return false;
+                set({
+                    coins: state.coins - cost,
+                    unlockedTitles: [...state.unlockedTitles, titleId],
+                    activeTitle: titleId,
                 });
                 return true;
             },
@@ -557,50 +606,39 @@ export const useUserStore = create<UserState>()(
                     .single();
 
                 if (profile) {
-                    const typedProfile = profile as {
-                        id: string;
-                        name: string;
-                        xp: number;
-                        level: number;
-                        coins: number;
-                        streak: number;
-                        current_step: number;
-                        active_avatar: string;
-                        unlocked_avatars: string[];
-                        goals: any[];
-                        daily_quiz_completed_at: string | null;
-                        revenue: number;
-                        fixed_costs: number;
-                        ie: number;
-                        is: number;
-                        id_metric: number;
-                        rs: number;
-                        total_balance: number;
-                        daily_coins_earned: number;
-                    };
+                    const p = profile as Record<string, any>;
                     set({
-                        id: typedProfile.id || null,
-                        name: typedProfile.name || get().name,
-                        xp: typedProfile.xp ?? get().xp,
-                        level: typedProfile.level ?? get().level,
-                        coins: typedProfile.coins ?? get().coins,
-                        streak: typedProfile.streak ?? get().streak,
-                        currentStep: typedProfile.current_step ?? get().currentStep,
-                        activeAvatar: typedProfile.active_avatar || get().activeAvatar,
-                        unlockedAvatars: typedProfile.unlocked_avatars || get().unlockedAvatars,
-                        goals: typedProfile.goals || get().goals,
-                        dailyQuizCompletedAt: typedProfile.daily_quiz_completed_at,
+                        id: p.id || null,
+                        name: p.name || get().name,
+                        xp: p.xp ?? get().xp,
+                        level: p.level ?? get().level,
+                        coins: p.coins ?? get().coins,
+                        streak: p.streak ?? get().streak,
+                        currentStep: p.current_step ?? get().currentStep,
+                        currentPhase: p.current_phase ?? get().currentPhase,
+                        activeAvatar: p.active_avatar || get().activeAvatar,
+                        unlockedAvatars: p.unlocked_avatars || get().unlockedAvatars,
+                        activeCharacter: p.active_character || get().activeCharacter,
+                        unlockedCharacters: p.unlocked_characters || get().unlockedCharacters,
+                        activeTheme: p.active_theme || get().activeTheme,
+                        unlockedThemes: p.unlocked_themes || get().unlockedThemes,
+                        activeTitle: p.active_title ?? get().activeTitle,
+                        unlockedTitles: p.unlocked_titles || get().unlockedTitles,
+                        inventory: p.inventory || get().inventory,
+                        goals: p.goals || get().goals,
+                        dailyQuizCompletedAt: p.daily_quiz_completed_at,
+                        lastLoginDate: p.last_login_date || get().lastLoginDate,
 
-                        revenue: typedProfile.revenue ?? get().revenue,
-                        fixedCosts: typedProfile.fixed_costs ?? get().fixedCosts,
-                        ie: typedProfile.ie ?? get().ie,
-                        is: typedProfile.is ?? get().is,
-                        idMetric: typedProfile.id_metric ?? get().idMetric,
-                        rs: typedProfile.rs ?? get().rs,
-                        totalBalance: typedProfile.total_balance ?? get().totalBalance,
-                        dailyCoinsEarned: typedProfile.daily_coins_earned ?? get().dailyCoinsEarned,
+                        revenue: p.revenue ?? get().revenue,
+                        fixedCosts: p.fixed_costs ?? get().fixedCosts,
+                        ie: p.ie ?? get().ie,
+                        is: p.is_metric ?? get().is,
+                        idMetric: p.id_metric ?? get().idMetric,
+                        rs: p.rs ?? get().rs,
+                        totalBalance: p.total_balance ?? get().totalBalance,
+                        dailyCoinsEarned: p.daily_coins_earned ?? get().dailyCoinsEarned,
 
-                        hasOnboarded: typedProfile.name ? true : get().hasOnboarded
+                        hasOnboarded: p.has_onboarded ?? (p.name ? true : get().hasOnboarded)
                     });
                 }
 
@@ -619,6 +657,7 @@ export const useUserStore = create<UserState>()(
                             category: t.category,
                             type: t.type,
                             date: t.date,
+                            description: t.description || undefined,
                             isAiGenerated: t.is_ai_generated
                         }))
                     });
@@ -714,11 +753,25 @@ if (typeof window !== 'undefined') {
             state.xp !== prevState.xp ||
             state.coins !== prevState.coins ||
             state.streak !== prevState.streak ||
+            state.name !== prevState.name ||
+            state.hasOnboarded !== prevState.hasOnboarded ||
+            state.currentPhase !== prevState.currentPhase ||
+            state.revenue !== prevState.revenue ||
+            state.fixedCosts !== prevState.fixedCosts ||
             state.transactions.length !== prevState.transactions.length ||
             state.goals.length !== prevState.goals.length ||
             state.dailyQuizCompletedAt !== prevState.dailyQuizCompletedAt ||
             state.activeAvatar !== prevState.activeAvatar ||
-            state.unlockedAvatars.length !== prevState.unlockedAvatars.length;
+            state.unlockedAvatars.length !== prevState.unlockedAvatars.length ||
+            state.activeCharacter !== prevState.activeCharacter ||
+            state.unlockedCharacters.length !== prevState.unlockedCharacters.length ||
+            state.activeTheme !== prevState.activeTheme ||
+            state.unlockedThemes.length !== prevState.unlockedThemes.length ||
+            state.activeTitle !== prevState.activeTitle ||
+            state.unlockedTitles.length !== prevState.unlockedTitles.length ||
+            state.inventory.freezeStreak !== prevState.inventory.freezeStreak ||
+            state.inventory.xpMultiplier !== prevState.inventory.xpMultiplier ||
+            state.lastLoginDate !== prevState.lastLoginDate;
 
         if (fieldsChanged) {
             if (syncTimeout) clearTimeout(syncTimeout);
@@ -772,22 +825,37 @@ if (typeof window !== 'undefined') {
                     // If manually set higher in onboarding or has checkpoint, respect
                     const finalStep = Math.max(state.currentStep, calculatedStep);
 
-                    await supabase.from('profiles').update({
+                    const { error: upErr } = await supabase.from('profiles').update({
+                        name: state.name,
                         xp: state.xp,
                         level: state.level,
                         coins: state.coins,
                         streak: state.streak,
+                        revenue: state.revenue,
+                        fixed_costs: state.fixedCosts,
+                        has_onboarded: state.hasOnboarded,
+                        current_phase: state.currentPhase,
                         goals: state.goals,
                         daily_quiz_completed_at: state.dailyQuizCompletedAt,
+                        daily_coins_earned: state.dailyCoinsEarned,
+                        last_login_date: state.lastLoginDate,
                         active_avatar: state.activeAvatar,
                         unlocked_avatars: state.unlockedAvatars,
+                        active_character: state.activeCharacter,
+                        unlocked_characters: state.unlockedCharacters,
+                        active_theme: state.activeTheme,
+                        unlocked_themes: state.unlockedThemes,
+                        active_title: state.activeTitle,
+                        unlocked_titles: state.unlockedTitles,
+                        inventory: state.inventory,
                         current_step: finalStep,
                         ie: IE,
-                        is: IS,
+                        is_metric: IS,
                         id_metric: ID,
                         rs: RS,
                         total_balance: balance
                     }).eq('id', userId);
+                    if (upErr) console.warn('[ZELLA] profile sync error:', upErr.message);
 
                     // Update Internal Calculated State
                     useUserStore.setState({

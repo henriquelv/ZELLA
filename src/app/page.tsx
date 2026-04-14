@@ -5,23 +5,9 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUserStore } from "@/store/useStore";
 import { supabase } from "@/lib/supabase";
+import { runSupabaseDiagnostic } from "@/lib/supabase-diagnostic";
 import { ZellaLogo } from "@/components/ui/logo";
 import { ZLogoScene } from "@/components/ui/3d-scenes";
-
-interface UserProfile {
-  id: string;
-  name?: string;
-  xp: number;
-  coins?: number;
-  streak: number;
-  current_step: number;
-  active_avatar: string;
-  unlocked_avatars?: string[];
-  transactions?: any[];
-  goals?: any[];
-  daily_quiz_completed_at?: string | null;
-}
-
 
 export default function SplashPage() {
   const router = useRouter();
@@ -30,39 +16,35 @@ export default function SplashPage() {
 
   useEffect(() => {
     const prepareSession = async () => {
-      const { data } = await supabase.auth.getSession();
+      let { data } = await supabase.auth.getSession();
+
+      if (!data.session) {
+        const { data: anon, error } = await supabase.auth.signInAnonymously();
+        if (error) {
+          console.error("[ZELLA] Anonymous sign-in failed:", error.message);
+        } else if (anon.session) {
+          data = { session: anon.session };
+        }
+      }
+
+      runSupabaseDiagnostic().catch(() => { /* non-fatal */ });
+
       let destination = "/onboarding";
 
       if (data.session) {
-        // Sync profile in background
-        supabase.from('profiles').select('*').eq('id', data.session.user.id).single().then((res: any) => {
-          const profile = res.data as UserProfile | null;
-          if (profile) {
-            useUserStore.getState().syncWithSupabase({
-              xp: profile.xp,
-              coins: profile.coins || 0,
-              streak: profile.streak,
-              currentStep: profile.current_step,
-              activeAvatar: profile.active_avatar,
-              unlockedAvatars: profile.unlocked_avatars || ['default'],
-              name: profile.name || "",
-              transactions: profile.transactions || [],
-              goals: profile.goals || [],
-              dailyQuizCompletedAt: profile.daily_quiz_completed_at || null,
-            });
-          }
-        });
-
+        useUserStore.getState().setUserId(data.session.user.id);
+        try {
+          await useUserStore.getState().loadUserData();
+        } catch (e) {
+          console.warn("[ZELLA] loadUserData falhou — usando localStorage:", (e as Error).message);
+        }
         const hasOnboarded = useUserStore.getState().hasOnboarded;
         destination = hasOnboarded ? "/dashboard" : "/onboarding";
       }
 
       setTargetPath(destination);
 
-      // Wait 3 seconds before starting the exit animation
-      setTimeout(() => {
-        setIsLeaving(true);
-      }, 3000);
+      setTimeout(() => setIsLeaving(true), 3000);
     };
 
     prepareSession();

@@ -1,19 +1,63 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useUserStoreHydrated, useUserStore } from "@/store/useStore";
-import { ArrowLeft, Target, CheckCircle2, Circle, AlertCircle, Plus } from "lucide-react";
+import { ArrowLeft, Target, CheckCircle2, Circle, AlertCircle, Plus, X, Trophy } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toast } from "sonner";
 import { BottomNav } from "@/components/ui/bottom-nav";
+
+type GoalCondition = "spending_limit" | "no_spending" | "register_income";
 
 export default function MissionsPage() {
     const user = useUserStoreHydrated((state) => state);
     const toggleGoal = useUserStore((state) => state.toggleGoal);
+    const addGoal = useUserStore((state) => state.addGoal);
+
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [newTitle, setNewTitle] = useState("");
+    const [newDescription, setNewDescription] = useState("");
+    const [newCondition, setNewCondition] = useState<GoalCondition>("spending_limit");
+    const [newCategory, setNewCategory] = useState("Lazer");
+    const [newAmount, setNewAmount] = useState("");
 
     if (!user) return null;
+
+    const resetCreateForm = () => {
+        setNewTitle(""); setNewDescription(""); setNewCondition("spending_limit");
+        setNewCategory("Lazer"); setNewAmount("");
+    };
+
+    const handleCreateGoal = () => {
+        if (!newTitle.trim()) { toast.error("Informe um título"); return; }
+        if (newCondition === "spending_limit" && (!newAmount || parseFloat(newAmount) <= 0)) {
+            toast.error("Informe o limite em reais"); return;
+        }
+        addGoal({
+            id: crypto.randomUUID(),
+            title: newTitle.trim(),
+            description: newDescription.trim() || newTitle.trim(),
+            category: newCondition === "register_income" ? "saving" : "spending",
+            createdAt: new Date().toISOString(),
+            completed: false,
+            failed: false,
+            xpReward: 100,
+            conditionType: newCondition,
+            targetCategory: newCondition === "register_income" ? null : newCategory,
+            targetAmount: newCondition === "spending_limit" ? parseFloat(newAmount.replace(",", ".")) : null,
+            spentSoFar: 0,
+            progressCount: 0,
+            targetCount: newCondition === "register_income" ? 1 : undefined,
+            startDate: new Date().toISOString(),
+        });
+        toast.success("Meta criada — você tem 7 dias!");
+        resetCreateForm();
+        setIsCreateOpen(false);
+    };
 
     const activeGoals = user.goals.filter(g => !g.completed);
     const completedGoals = user.goals.filter(g => g.completed);
@@ -29,15 +73,21 @@ export default function MissionsPage() {
 
             {/* Header */}
             <header className="px-6 pt-14 pb-4 bg-white/60 backdrop-blur-lg border-b border-white/40 ring-1 ring-black/[0.01] sticky top-0 z-10 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link href="/dashboard" className="p-2 rounded-[1rem] bg-gray-50/80 text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-all active:scale-95 shadow-sm ring-1 ring-black/[0.02]">
+                <div className="flex items-center gap-3 min-w-0">
+                    <Link href="/dashboard" className="p-2 rounded-[1rem] bg-gray-50/80 text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-all active:scale-95 shadow-sm ring-1 ring-black/[0.02] shrink-0">
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
-                    <div>
-                        <h1 className="text-xl font-extrabold text-gray-800 tracking-tight leading-tight">Missões da sua Carteira</h1>
-                        <p className="text-[12px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Aceleradores da sua Liberdade</p>
+                    <div className="min-w-0">
+                        <h1 className="text-lg font-extrabold text-gray-800 tracking-tight leading-tight truncate">Missões da sua Carteira</h1>
+                        <p className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mt-0.5 truncate">Aceleradores da sua Liberdade</p>
                     </div>
                 </div>
+                <button
+                    onClick={() => setIsCreateOpen(true)}
+                    className="shrink-0 flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white px-3.5 py-2 rounded-xl font-black text-[11px] uppercase tracking-widest shadow-md shadow-blue-500/30 active:scale-95 transition-all"
+                >
+                    <Plus className="w-3.5 h-3.5" /> Criar
+                </button>
             </header>
 
             <main className="p-6 max-w-lg mx-auto space-y-6">
@@ -189,6 +239,125 @@ export default function MissionsPage() {
                     </section>
                 )}
             </main>
+
+            {/* Create Goal Modal */}
+            <AnimatePresence>
+                {isCreateOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
+                        onClick={() => setIsCreateOpen(false)}
+                    >
+                        <motion.div
+                            initial={{ y: 40, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: 40, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-full max-w-md bg-white rounded-[2rem] p-6 shadow-2xl ring-1 ring-black/[0.02] max-h-[90vh] overflow-y-auto"
+                        >
+                            <div className="flex items-center justify-between mb-5">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center ring-1 ring-blue-100">
+                                        <Trophy className="w-5 h-5 text-blue-500" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-extrabold text-[16px] text-gray-800 tracking-tight">Nova Meta</h3>
+                                        <p className="text-[11px] text-gray-500 font-medium">Vale por 7 dias</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setIsCreateOpen(false)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-50">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest block mb-1.5">Título</label>
+                                    <input
+                                        value={newTitle}
+                                        onChange={(e) => setNewTitle(e.target.value)}
+                                        placeholder="Ex: Segurar gastos com Lazer"
+                                        className="w-full px-4 py-3 bg-gray-50 rounded-xl text-[14px] font-medium text-gray-800 ring-1 ring-black/[0.04] focus:ring-blue-300 outline-none placeholder:text-gray-400"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest block mb-1.5">Descrição <span className="text-gray-300 normal-case">(opcional)</span></label>
+                                    <input
+                                        value={newDescription}
+                                        onChange={(e) => setNewDescription(e.target.value)}
+                                        placeholder="Algo que te motive"
+                                        className="w-full px-4 py-3 bg-gray-50 rounded-xl text-[14px] font-medium text-gray-800 ring-1 ring-black/[0.04] focus:ring-blue-300 outline-none placeholder:text-gray-400"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest block mb-1.5">Tipo de Desafio</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {([
+                                            { id: "spending_limit" as const, label: "Limitar" },
+                                            { id: "no_spending" as const, label: "Zerar" },
+                                            { id: "register_income" as const, label: "Receber" },
+                                        ]).map(opt => (
+                                            <button
+                                                key={opt.id}
+                                                onClick={() => setNewCondition(opt.id)}
+                                                className={cn(
+                                                    "py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ring-1",
+                                                    newCondition === opt.id
+                                                        ? "bg-blue-500 text-white ring-blue-500 shadow-sm"
+                                                        : "bg-gray-50 text-gray-500 ring-black/[0.04] hover:bg-gray-100"
+                                                )}
+                                            >
+                                                {opt.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {newCondition !== "register_income" && (
+                                    <div>
+                                        <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest block mb-1.5">Categoria</label>
+                                        <select
+                                            value={newCategory}
+                                            onChange={(e) => setNewCategory(e.target.value)}
+                                            className="w-full px-4 py-3 bg-gray-50 rounded-xl text-[14px] font-medium text-gray-800 ring-1 ring-black/[0.04] focus:ring-blue-300 outline-none"
+                                        >
+                                            {["Lazer", "Alimentação", "Transporte", "Moradia", "Saúde", "Educação", "Roupas", "Tecnologia", "Outros"].map(c => (
+                                                <option key={c} value={c}>{c}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
+                                {newCondition === "spending_limit" && (
+                                    <div>
+                                        <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest block mb-1.5">Limite em R$</label>
+                                        <input
+                                            type="number"
+                                            inputMode="decimal"
+                                            value={newAmount}
+                                            onChange={(e) => setNewAmount(e.target.value)}
+                                            placeholder="200"
+                                            className="w-full px-4 py-3 bg-gray-50 rounded-xl text-[14px] font-medium text-gray-800 ring-1 ring-black/[0.04] focus:ring-blue-300 outline-none placeholder:text-gray-400"
+                                        />
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={handleCreateGoal}
+                                    className="w-full py-3.5 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-xl text-[12px] uppercase tracking-widest shadow-md shadow-blue-500/30 active:scale-[0.98] transition-all"
+                                >
+                                    Criar Meta
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <BottomNav />
         </div>
     );

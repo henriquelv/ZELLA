@@ -23,6 +23,10 @@ export default function JourneyPage() {
         return <PageLoader message="Mapeando jornada..." />;
     }
 
+    const requiredStreak = [7, 14, 21, 30, 0][user.currentStep - 1] ?? 0;
+    const streakProgress = requiredStreak > 0 ? Math.min(100, (user.streak / requiredStreak) * 100) : 100;
+    const currentStepData = steps.find(s => s.id === user.currentStep);
+
     const handleStepClick = (stepId: number) => {
         if (stepId > user.currentStep) {
             setShakeId(stepId);
@@ -104,6 +108,64 @@ export default function JourneyPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Real Metrics Panel */}
+            <section className="relative z-10 max-w-md mx-auto w-full px-4 pt-5">
+                <div className="bg-white/90 backdrop-blur-md rounded-[1.5rem] p-5 ring-1 ring-black/[0.02] shadow-lg shadow-blue-900/5">
+                    <div className="flex items-center justify-between mb-3">
+                        <div>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Você está em</p>
+                            <h3 className="font-extrabold text-gray-800 text-[15px] leading-tight tracking-tight">
+                                {currentStepData?.title ?? "Seu caminho"} · Fase {user.currentPhase}
+                            </h3>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Streak</p>
+                            <p className="font-black text-blue-500 text-[18px] leading-none">{user.streak}d</p>
+                        </div>
+                    </div>
+
+                    {requiredStreak > 0 && user.currentStep < 5 && (
+                        <div className="mb-3">
+                            <div className="flex items-center justify-between mb-1.5">
+                                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Próximo nível</span>
+                                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                                    {user.streak}/{requiredStreak} dias
+                                </span>
+                            </div>
+                            <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${streakProgress}%` }}
+                                    transition={{ duration: 0.6, ease: "easeOut" }}
+                                    className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full"
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100">
+                        <div className="text-center">
+                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">IE</p>
+                            <p className={cn("font-black text-[13px]", user.ie >= 10 ? "text-emerald-600" : user.ie > 0 ? "text-amber-600" : "text-red-500")}>
+                                {user.ie.toFixed(1)}%
+                            </p>
+                        </div>
+                        <div className="text-center border-x border-gray-100">
+                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Drenos</p>
+                            <p className={cn("font-black text-[13px]", user.idMetric < 10 ? "text-emerald-600" : user.idMetric < 20 ? "text-amber-600" : "text-red-500")}>
+                                {user.idMetric.toFixed(1)}%
+                            </p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Reserva</p>
+                            <p className={cn("font-black text-[13px]", user.rs >= 1 ? "text-emerald-600" : user.rs > 0 ? "text-amber-600" : "text-red-500")}>
+                                {user.rs.toFixed(1)}x
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             {/* Map Container */}
             <main className="flex-1 relative w-full max-w-md mx-auto py-10 px-4">

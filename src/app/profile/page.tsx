@@ -8,6 +8,14 @@ import { cn } from "@/lib/utils";
 import { getCharacter, SpeechBubble } from "@/components/ui/character-3d";
 import { getCharacterSpeech } from "@/lib/character-speech";
 
+const TITLE_LABELS: Record<string, string> = {
+    saver: "O Poupador",
+    hunter: "Caçador de Drenos",
+    analyst: "Analista Financeiro",
+    master: "Mestre da Eficiência",
+    elite: "Guardião do Patrimônio",
+};
+
 // Definições visuais para cada degrau (LogicaBack Base)
 const DEGRAUS_INFO = [
     { id: 1, name: "Sobrevivente", color: "text-gray-500", bg: "bg-gray-100", border: "border-gray-200" },
@@ -92,6 +100,9 @@ export default function ProfilePage() {
                             <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1.5", character.accentColor)}>
                                 {character.name}
                             </p>
+                            {user.activeTitle && TITLE_LABELS[user.activeTitle] && (
+                                <p className="text-[11px] font-black text-amber-600 italic mb-1.5">&quot;{TITLE_LABELS[user.activeTitle]}&quot;</p>
+                            )}
                             <SpeechBubble tailSide="left" tailOffset="top-3">
                                 <p className="text-[12px] text-gray-600 font-medium leading-snug">
                                     {characterSpeech.text}

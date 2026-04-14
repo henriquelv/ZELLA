@@ -6,13 +6,14 @@ import { BottomNav } from "@/components/ui/bottom-nav";
 import { AppHeader } from "@/components/ui/app-header";
 import { PageLoader } from "@/components/ui/page-loader";
 import {
-    Coins, Snowflake, Zap, ShieldCheck, Lock,
-    Sparkles, Crown, Palette, Star, HelpCircle, X, Check
+    Coins, Snowflake, Zap, Lock,
+    Sparkles, Crown, Palette, Star, HelpCircle, X, Check, UserCircle2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { CHARACTERS, SpeechBubble } from "@/components/ui/character-3d";
+import { AVATARS } from "@/components/ui/avatar-selector";
 
 // ─── Store Data ───────────────────────────────────────────────────────────────
 const POWER_UPS = [
@@ -35,16 +36,6 @@ const POWER_UPS = [
         iconColor: "text-violet-500",
         cost: 30,
         type: "xpMultiplier" as const,
-    },
-    {
-        id: "shield",
-        name: "Escudo Financeiro",
-        desc: "Protege seu degrau por 3 dias caso as métricas piorem.",
-        icon: ShieldCheck,
-        iconBg: "bg-emerald-50",
-        iconColor: "text-emerald-500",
-        cost: 60,
-        type: "freezeStreak" as const, // mapped to freezeStreak inventory
     },
 ];
 
@@ -117,6 +108,10 @@ export default function StorePage() {
     const unlockCharacter = useUserStore((state) => state.unlockCharacter);
     const setActiveTheme = useUserStore((state) => state.setActiveTheme);
     const unlockTheme = useUserStore((state) => state.unlockTheme);
+    const setActiveAvatar = useUserStore((state) => state.setActiveAvatar);
+    const unlockAvatar = useUserStore((state) => state.unlockAvatar);
+    const setActiveTitle = useUserStore((state) => state.setActiveTitle);
+    const unlockTitle = useUserStore((state) => state.unlockTitle);
     const [showHowTo, setShowHowTo] = useState(false);
 
     if (!user) return <PageLoader message="Carregando lojinha..." />;
@@ -162,14 +157,38 @@ export default function StorePage() {
         if (ok) toast.success(`Tema ${name} aplicado!`);
     };
 
-    const handlePurchaseTitle = (cost: number, title: string) => {
+    const handleTitleAction = (id: string, cost: number, title: string) => {
+        const isOwned = user.unlockedTitles.includes(id);
+        if (isOwned) {
+            if (user.activeTitle === id) {
+                setActiveTitle(null);
+                toast.success("Título removido do perfil");
+            } else {
+                setActiveTitle(id);
+                toast.success(`Título "${title}" equipado!`);
+            }
+            return;
+        }
         if (user.coins < cost) { toast.error("Z-Coins insuficientes!"); return; }
-        const ok = spendCoins(cost, "freezeStreak"); // Using freezeStreak as generic token
-        if (ok) toast.success(`Título "${title}" equipado!`);
+        const ok = unlockTitle(id, cost);
+        if (ok) toast.success(`Título "${title}" desbloqueado e equipado!`);
     };
 
-    // Featured character of the week — Lion
-    const featured = CHARACTERS.find(c => c.id === "lion") || CHARACTERS[2];
+    const handleSelectAvatar = (id: string, cost: number, name: string) => {
+        const isOwned = user.unlockedAvatars.includes(id);
+        if (isOwned) {
+            setActiveAvatar(id);
+            toast.success(`Avatar ${name} equipado!`);
+            return;
+        }
+        if (user.coins < cost) { toast.error("Z-Coins insuficientes!"); return; }
+        const ok = unlockAvatar(id, cost);
+        if (ok) toast.success(`${name} desbloqueado e equipado!`);
+    };
+
+    // Featured rotates weekly
+    const weekIdx = Math.floor(Date.now() / (7 * 86400000)) % CHARACTERS.length;
+    const featured = CHARACTERS[weekIdx];
     const FeaturedScene = featured.Scene;
     const featuredOwned = user.unlockedCharacters.includes(featured.id);
 
@@ -221,9 +240,7 @@ export default function StorePage() {
                         <div className="flex items-center gap-2 mb-3">
                             <Sparkles className="w-5 h-5 text-amber-500" />
                             <h2 className="font-extrabold text-[17px] text-gray-800 tracking-tight">Em destaque</h2>
-                            <div className="flex items-center gap-1 bg-red-500 px-2 py-0.5 rounded-full ml-auto">
-                                <span className="text-white text-[10px] font-black uppercase">-30%</span>
-                            </div>
+                            <span className="text-[10px] text-gray-400 font-bold ml-auto uppercase tracking-wider">Da semana</span>
                         </div>
 
                         <div className={cn("rounded-[2rem] p-5 relative overflow-hidden border border-white/30 shadow-xl bg-gradient-to-br", featured.bgGradient)}>
@@ -241,7 +258,6 @@ export default function StorePage() {
                                         </p>
                                     </SpeechBubble>
                                     <div className="flex items-center gap-2 mt-2">
-                                        <span className="text-gray-400 line-through text-[12px] font-bold">{Math.round(featured.cost * 1.3)}</span>
                                         <div className="flex items-center gap-1 bg-amber-100 px-2.5 py-1 rounded-full border border-amber-200">
                                             <Coins className="w-3.5 h-3.5 text-amber-600" />
                                             <span className="text-[14px] font-black text-amber-700">{featured.cost}</span>
@@ -346,6 +362,58 @@ export default function StorePage() {
                         </div>
                     </motion.section>
 
+                    {/* 4b. Avatares 2D */}
+                    <motion.section
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.17 }}
+                    >
+                        <div className="flex items-center gap-2 mb-3">
+                            <UserCircle2 className="w-5 h-5 text-indigo-500" />
+                            <h2 className="font-extrabold text-[17px] text-gray-800 tracking-tight">Avatares</h2>
+                            <span className="text-[10px] text-gray-400 font-bold ml-auto">Usado no header</span>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                            {AVATARS.map(a => {
+                                const isOwned = user.unlockedAvatars.includes(a.id);
+                                const isActive = user.activeAvatar === a.id;
+                                const isFree = a.cost === 0;
+                                return (
+                                    <button
+                                        key={a.id}
+                                        onClick={() => handleSelectAvatar(a.id, a.cost, a.name)}
+                                        className={cn(
+                                            "bg-white/95 rounded-[1.5rem] p-3 flex flex-col items-center text-center ring-1 shadow-sm border transition-all active:scale-[0.97]",
+                                            isActive
+                                                ? "ring-blue-300 border-blue-200 bg-blue-50/40"
+                                                : isOwned ? "ring-emerald-100 border-emerald-100" : "ring-black/[0.02] border-white/50"
+                                        )}
+                                    >
+                                        <div className={cn("w-14 h-14 rounded-full flex items-center justify-center text-[28px] shadow-inner", a.color)}>
+                                            <span>{a.icon}</span>
+                                        </div>
+                                        <p className="font-extrabold text-[12px] text-gray-800 mt-2 leading-tight">{a.name}</p>
+                                        <div className="mt-1.5">
+                                            {isActive ? (
+                                                <span className="text-[10px] font-black text-blue-600 uppercase">Equipado</span>
+                                            ) : isOwned ? (
+                                                <span className="text-[10px] font-black text-emerald-600 uppercase">Equipar</span>
+                                            ) : isFree ? (
+                                                <span className="text-[10px] font-black text-emerald-600 uppercase">Grátis</span>
+                                            ) : (
+                                                <div className="flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
+                                                    <Coins className="w-3 h-3 text-amber-600" />
+                                                    <span className="text-[11px] font-black text-amber-700">{a.cost}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </motion.section>
+
                     {/* 5. Temas — personalização da tela inicial */}
                     <motion.section
                         initial={{ opacity: 0, y: 10 }}
@@ -417,20 +485,40 @@ export default function StorePage() {
                         </div>
 
                         <div className="space-y-2.5">
-                            {SPECIAL_TITLES.map(t => (
-                                <div key={t.id} className="bg-white/95 rounded-[1.5rem] p-4 flex items-center gap-4 ring-1 ring-black/[0.02] shadow-sm border border-white/50">
-                                    <div className="flex-1">
-                                        <p className="font-extrabold text-[15px] text-gray-800">&quot;{t.title}&quot;</p>
-                                        <p className="text-[11px] text-gray-400 font-medium mt-0.5">{t.desc}</p>
+                            {SPECIAL_TITLES.map(t => {
+                                const isOwned = user.unlockedTitles.includes(t.id);
+                                const isActive = user.activeTitle === t.id;
+                                return (
+                                    <div key={t.id} className={cn(
+                                        "rounded-[1.5rem] p-4 flex items-center gap-4 ring-1 shadow-sm border",
+                                        isActive ? "bg-blue-50/40 ring-blue-200 border-blue-200" : "bg-white/95 ring-black/[0.02] border-white/50"
+                                    )}>
+                                        <div className="flex-1">
+                                            <p className="font-extrabold text-[15px] text-gray-800">&quot;{t.title}&quot;</p>
+                                            <p className="text-[11px] text-gray-400 font-medium mt-0.5">{t.desc}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => handleTitleAction(t.id, t.cost, t.title)}
+                                            className={cn(
+                                                "flex items-center gap-1.5 px-3.5 py-2.5 rounded-[1rem] border font-black text-[12px] active:scale-95 transition-all shrink-0",
+                                                isActive
+                                                    ? "bg-blue-50 border-blue-200 text-blue-700"
+                                                    : isOwned
+                                                        ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                                        : "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
+                                            )}
+                                        >
+                                            {isActive ? (
+                                                <><Check className="w-3.5 h-3.5" /> Ativo</>
+                                            ) : isOwned ? (
+                                                "Equipar"
+                                            ) : (
+                                                <><Coins className="w-3.5 h-3.5" /> {t.cost}</>
+                                            )}
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={() => handlePurchaseTitle(t.cost, t.title)}
-                                        className="flex items-center gap-1.5 bg-amber-50 px-3.5 py-2.5 rounded-[1rem] border border-amber-200 text-amber-700 font-black text-[13px] hover:bg-amber-100 active:scale-95 transition-all shrink-0"
-                                    >
-                                        <Coins className="w-3.5 h-3.5" /> {t.cost}
-                                    </button>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </motion.section>
 

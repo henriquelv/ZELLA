@@ -51,26 +51,10 @@ Exemplo de retorno JSON:
 export async function POST(req: NextRequest) {
     try {
         if (!apiKey) {
-            // Fallback de teste quando não há chave configurada
-            await new Promise((resolve) => setTimeout(resolve, 2500));
-            return NextResponse.json({
-                transactions: [
-                    {
-                        description: "Mercado Zella Fake",
-                        amount: 145.90,
-                        category: "Alimentação",
-                        type: "expense",
-                        date: new Date().toISOString()
-                    },
-                    {
-                        description: "Crédito Dinâmico",
-                        amount: 50.00,
-                        category: "Outros",
-                        type: "income",
-                        date: new Date().toISOString()
-                    }
-                ]
-            });
+            return NextResponse.json(
+                { error: "Scanner IA indisponível — configure OPENAI_API_KEY no ambiente." },
+                { status: 500 }
+            );
         }
 
         const formData = await req.formData();

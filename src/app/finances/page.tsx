@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { useUserStoreHydrated, type Transaction } from "@/store/useStore";
+import { useUserStoreHydrated, useUserStore, type Transaction } from "@/store/useStore";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     PlusCircle,
@@ -17,7 +17,9 @@ import {
     Star,
     Wallet,
     ChevronRight,
-    X
+    X,
+    Pencil,
+    Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/ui/bottom-nav";
@@ -31,6 +33,8 @@ import { toast } from "sonner";
 
 export default function FinancesPage() {
     const user = useUserStoreHydrated((state) => state);
+    const deleteTransaction = useUserStore((state) => state.deleteTransaction);
+    const updateTransaction = useUserStore((state) => state.updateTransaction);
     const [isChatOpen, setIsChatOpen] = useState(false);
 
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -39,6 +43,11 @@ export default function FinancesPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalAction, setModalAction] = useState<'select' | 'income' | 'expense' | 'scanner'>('select');
     const [extractedData, setExtractedData] = useState<ExtractedTransaction[] | null>(null);
+    const [actionTx, setActionTx] = useState<Transaction | null>(null);
+    const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+    const [editAmount, setEditAmount] = useState("");
+    const [editCategory, setEditCategory] = useState("");
+    const [editDescription, setEditDescription] = useState("");
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -90,6 +99,34 @@ export default function FinancesPage() {
             setIsAnalyzing(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
         }
+    };
+
+    const openEdit = (t: Transaction) => {
+        setActionTx(null);
+        setEditingTx(t);
+        setEditAmount(String(t.amount));
+        setEditCategory(t.category);
+        setEditDescription(t.description || "");
+    };
+
+    const saveEdit = async () => {
+        if (!editingTx) return;
+        const amt = parseFloat(editAmount.replace(",", "."));
+        if (isNaN(amt) || amt <= 0) { toast.error("Valor inválido"); return; }
+        if (!editCategory.trim()) { toast.error("Informe uma categoria"); return; }
+        await updateTransaction(editingTx.id, {
+            amount: amt,
+            category: editCategory.trim(),
+            description: editDescription.trim() || undefined,
+        });
+        toast.success("Transação atualizada");
+        setEditingTx(null);
+    };
+
+    const confirmDelete = async (t: Transaction) => {
+        await deleteTransaction(t.id);
+        toast.success("Transação excluída");
+        setActionTx(null);
     };
 
     const handleConfirmExtraction = (reviewedTransactions: ExtractedTransaction[]) => {
@@ -197,12 +234,13 @@ export default function FinancesPage() {
                     ) : (
                         <div className="space-y-3 pb-20">
                             {user.transactions.slice(0, 15).map((t, idx) => (
-                                <motion.div
+                                <motion.button
                                     initial={{ opacity: 0, y: 5 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: idx * 0.03 }}
                                     key={t.id}
-                                    className="flex justify-between items-center p-4 bg-white/95 rounded-[1.25rem] shadow-sm ring-1 ring-black/[0.02] active:scale-[0.98] transition-all group"
+                                    onClick={() => setActionTx(t)}
+                                    className="w-full text-left flex justify-between items-center p-4 bg-white/95 rounded-[1.25rem] shadow-sm ring-1 ring-black/[0.02] active:scale-[0.98] transition-all group"
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className={cn(
@@ -230,7 +268,7 @@ export default function FinancesPage() {
                                     )}>
                                         {t.type === 'expense' ? "-" : "+"} <span className="text-[12px] opacity-80">R$</span> {Number(t.amount).toFixed(2)}
                                     </span>
-                                </motion.div>
+                                </motion.button>
                             ))}
                         </div>
                     )}
@@ -382,6 +420,113 @@ export default function FinancesPage() {
                 onConfirm={handleConfirmExtraction}
             />
             <AIFinancialChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+
+            {/* Action sheet — tap on transaction */}
+            <AnimatePresence>
+                {actionTx && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setActionTx(null)}
+                        className="fixed inset-0 z-[70] bg-black/40 backdrop-blur-sm flex flex-col justify-end p-5 pb-8"
+                    >
+                        <motion.div
+                            initial={{ y: "100%" }}
+                            animate={{ y: 0 }}
+                            exit={{ y: "100%" }}
+                            transition={{ type: "spring", damping: 28, stiffness: 320 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white rounded-3xl p-5 shadow-2xl w-full max-w-sm mx-auto"
+                        >
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="text-[16px] font-extrabold text-gray-800">{actionTx.description || actionTx.category}</h3>
+                                <button onClick={() => setActionTx(null)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                                    <X className="w-4 h-4 text-gray-500" />
+                                </button>
+                            </div>
+                            <p className={cn("text-[20px] font-black mb-4", actionTx.type === 'expense' ? "text-red-500" : "text-emerald-500")}>
+                                {actionTx.type === 'expense' ? "-" : "+"} R$ {Number(actionTx.amount).toFixed(2)}
+                            </p>
+                            <div className="space-y-2">
+                                <button
+                                    onClick={() => openEdit(actionTx)}
+                                    className="w-full flex items-center gap-3 bg-blue-50 hover:bg-blue-100 p-4 rounded-[1rem] border border-blue-100 transition-colors active:scale-[0.98]"
+                                >
+                                    <Pencil className="w-5 h-5 text-blue-600" />
+                                    <span className="font-bold text-[14px] text-blue-700">Editar</span>
+                                </button>
+                                <button
+                                    onClick={() => confirmDelete(actionTx)}
+                                    className="w-full flex items-center gap-3 bg-red-50 hover:bg-red-100 p-4 rounded-[1rem] border border-red-100 transition-colors active:scale-[0.98]"
+                                >
+                                    <Trash2 className="w-5 h-5 text-red-600" />
+                                    <span className="font-bold text-[14px] text-red-700">Excluir</span>
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Edit modal */}
+            <AnimatePresence>
+                {editingTx && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[75] bg-black/50 backdrop-blur-sm flex items-end justify-center p-5 pb-8"
+                    >
+                        <motion.div
+                            initial={{ y: "100%" }}
+                            animate={{ y: 0 }}
+                            exit={{ y: "100%" }}
+                            transition={{ type: "spring", damping: 28, stiffness: 320 }}
+                            className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm mx-auto space-y-4"
+                        >
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-[18px] font-extrabold text-gray-800">Editar transação</h3>
+                                <button onClick={() => setEditingTx(null)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                                    <X className="w-4 h-4 text-gray-500" />
+                                </button>
+                            </div>
+                            <div>
+                                <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-1 block">Valor</label>
+                                <input
+                                    inputMode="decimal"
+                                    value={editAmount}
+                                    onChange={(e) => setEditAmount(e.target.value)}
+                                    className="w-full bg-gray-50 rounded-[1rem] px-4 py-3 text-[15px] font-bold text-gray-800 outline-none ring-1 ring-black/[0.04] focus:ring-blue-300"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-1 block">Categoria</label>
+                                <input
+                                    value={editCategory}
+                                    onChange={(e) => setEditCategory(e.target.value)}
+                                    className="w-full bg-gray-50 rounded-[1rem] px-4 py-3 text-[15px] font-bold text-gray-800 outline-none ring-1 ring-black/[0.04] focus:ring-blue-300"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-1 block">Descrição</label>
+                                <input
+                                    value={editDescription}
+                                    onChange={(e) => setEditDescription(e.target.value)}
+                                    className="w-full bg-gray-50 rounded-[1rem] px-4 py-3 text-[14px] text-gray-700 outline-none ring-1 ring-black/[0.04] focus:ring-blue-300"
+                                />
+                            </div>
+                            <button
+                                onClick={saveEdit}
+                                className="w-full py-3 bg-gradient-to-r from-[#2563eb] to-[#1e40af] text-white font-black rounded-[1rem] uppercase tracking-widest text-[13px] active:scale-[0.98] transition-transform"
+                            >
+                                Salvar
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <BottomNav />
         </div>
     );
